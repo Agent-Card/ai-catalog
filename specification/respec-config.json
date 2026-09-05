@@ -29,6 +29,24 @@
       "status": "RFC",
       "publisher": "IETF"
     },
+    "RFC7797": {
+      "title": "JSON Web Signature (JWS) Unencoded Payload Option",
+      "href": "https://www.rfc-editor.org/rfc/rfc7797",
+      "status": "RFC",
+      "publisher": "IETF"
+    },
+    "DIDCORE": {
+      "title": "Decentralized Identifiers (DIDs) v1.0",
+      "href": "https://www.w3.org/TR/did-core/",
+      "status": "W3C Recommendation",
+      "publisher": "W3C"
+    },
+    "DIDWEB": {
+      "title": "did:web Method Specification (8 May 2026 snapshot)",
+      "href": "https://github.com/w3c-ccg/did-method-web/blob/ea423c114e6f2537498ee6f94e8d794c64f60c18/index.html",
+      "status": "W3C Community Group Draft Report",
+      "publisher": "W3C Credentials Community Group"
+    },
     "RFC8725": {
       "title": "JSON Web Token Best Current Practices",
       "href": "https://www.rfc-editor.org/rfc/rfc8725",
