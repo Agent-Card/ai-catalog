@@ -20,5 +20,7 @@ These implementations are maintained by the Agent Card Working Group or its memb
 
 Community-built tools, libraries, and integrations. Listed here to help discovery — not formally endorsed by the working group.
 
+- [anchor-x402](https://api.anchor-x402.com/.well-known/ai-catalog.json) — a live x402-paid service publishing a conformant AI Catalog; wraps its A2A card, MCP server, and OpenAPI as typed entries, each carrying the proposed access/monetization extension ([#83](https://github.com/Agent-Card/ai-catalog/issues/83)).
+
 !!! tip "Add your project"
     Have an implementation to share? Open a pull request to add it here.
