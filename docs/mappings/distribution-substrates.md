@@ -1,7 +1,7 @@
 # Mapping to Distribution Substrates
 
 The AI Catalog specification defines a **logical format**: a JSON
-document with `entries`, `displayName`, `type`, and `trustManifest`
+document with `entries`, `displayName`, `type`, and `trustManifests`
 fields that are immediately meaningful to anyone working with AI
 artifacts. Authors write simple JSON. APIs serve simple JSON. Clients
 consume simple JSON.
@@ -20,12 +20,12 @@ Authoring                      Distribution                    Consumption
 ─────────                      ────────────                    ───────────
 ai-catalog.json   ──pack──►   OCI / xRegistry / HTTP  ──unpack──►   ai-catalog.json
   entries[]                     substrate-native form                entries[]
-  trustManifest                                                      trustManifest
+  trustManifests                                                     trustManifests
 ```
 
 This separation keeps authoring and consumption simple: publishers and
 clients work with domain vocabulary (`entries`, `displayName`,
-`type`, `trustManifest`), while infrastructure that wants
+`type`, `trustManifests`), while infrastructure that wants
 content-addressing, signing, replication, or registry APIs uses whichever
 binding below matches its substrate.
 
@@ -40,9 +40,9 @@ a pack/unpack round-trip.
 | Entry identity (`identifier`) | A stable, addressable identity for each entry |
 | Artifact content + `type` | The artifact bytes are retrievable together with their media type |
 | Catalog structure / nesting | Nested catalogs remain navigable as a hierarchy |
-| Trust Manifest association | An entry's Trust Manifest is discoverable from that entry |
-| Content integrity | The served bytes are verifiably bound to `trustManifest.subject.digest` |
-| Signing | The Trust Manifest's authenticity is cryptographically verifiable |
+| Trust Manifest association | An entry's Trust Manifests and their contributor identity keys are discoverable from that entry |
+| Content integrity | The served bytes are verifiably bound to `entry.digest` |
+| Signing | The Trust Manifests' authenticity is cryptographically verifiable |
 
 ## Delegate, Don't Duplicate
 
@@ -53,7 +53,7 @@ cross-referencing but no native digest or signature primitive.
 
 To avoid expressing the same guarantee twice, a binding **delegates** an
 invariant to a native substrate primitive when one exists, and otherwise
-**carries** it in the logical Trust Manifest. A binding MUST NOT restate,
+**carries** it in the logical document. A binding MUST NOT restate,
 in substrate vocabulary, a guarantee it has delegated, and MUST NOT drop
 a guarantee the substrate cannot express.
 
@@ -62,9 +62,9 @@ a guarantee the substrate cannot express.
 | Identity | Repository path + digest | `resourceid` / `xid` | `entry.identifier` |
 | Content + media type | `layers[0]` + `artifactType` | Resource document + `contenttype` | Entry artifact + `type` |
 | Nesting | Nested Image Index | Nested Group / `xref` | Nested entry |
-| Manifest association | Referrers API (`subject`) | `xref` / extension attribute | Inline `trustManifest` |
-| Content integrity | Content-addressed digest | *(none — carried)* | `subject.digest` |
-| Signing | Cosign / Notation referrer | *(none — carried)* | Detached JWS in Trust Manifest |
+| Manifest association | Referrers API (`subject`) | `xref` / extension attribute | Inline `trustManifests` |
+| Content integrity | Content-addressed digest | *(none — carried)* | `entry.digest` |
+| Signing | Cosign / Notation referrer | *(none — carried)* | Entry `signatures` |
 
 The [OCI Distribution](oci-distribution.md) and [xRegistry](xregistry.md)
 mappings are concrete bindings of this contract. The OCI binding delegates
