@@ -44,7 +44,7 @@ The existing fields map to the proposed structure as follows:
 
 | Existing location | Proposed location |
 | --- | --- |
-| `trustManifest.identity` | Key in `entry.trustManifests` |
+| `trustManifest.identity` | Contributor key in `entry.trustManifests`; endorsement identity in `entry.signatures[].signer` |
 | `trustManifest.identityType` | Removed; the signer profile determines how to interpret the identity URI |
 | `trustManifest.trustSchema` | `entry.trustManifests[identity].trustSchema` |
 | `trustManifest.attestations` | `entry.trustManifests[identity].attestations` |
@@ -61,13 +61,19 @@ The existing fields map to the proposed structure as follows:
 
 ### Sign selected fields
 
-Entries and the catalog root can each carry a `signatures` array.
-Each signature object contains `paths`, `issuedAt`, optional `expiresAt`, and
-`jws`. For example, this signature object selects an assessor's Trust Manifest
-and the entry fields identifying the artifact release:
+Entries and the catalog root can each carry a `signatures` array. Each
+signature names its signer with an absolute identity URI in `signer` and
+selects the fields it endorses through `paths`. It also carries `issuedAt`,
+optional `expiresAt`, and a detached `jws`. The array supports multiple
+endorsements by the same identity, with different selected fields, issuance
+times, or keys.
+
+For example, an assessor can endorse its Trust Manifest together with the
+entry fields identifying the artifact release:
 
 ```json
 {
+  "signer": "did:web:assessor.example",
   "paths": [
     ["identifier"],
     ["version"],
@@ -87,18 +93,19 @@ A path can select an entire array, such as a contributor's `attestations`
 list, but cannot select an individual array element.
 
 The signer collects each selected path and its value into a pair, sorts those
-pairs by path, and adds the endorsement timestamps and a context identifying
-the object kind and payload construction. This collected data is the
-**payload**: the data over which the signature is computed. JCS gives it a
-deterministic JSON encoding, and JWS supplies the cryptographic signature.
-The detached JWS stored in `jws` omits the payload; the verifier constructs
-that same payload from the selected fields and signature metadata.
+pairs by path, and adds the signer identity, endorsement timestamps, and a
+context identifying the object kind and payload construction. This collected
+data is the **payload**: the data over which the signature is computed. JCS
+gives it a deterministic JSON encoding, and JWS supplies the cryptographic
+signature. The detached JWS stored in `jws` omits the payload; the verifier
+constructs that same payload from the selected fields and signature metadata.
 
 For example, the signature object above could have this payload:
 
 ```json
 {
   "context": "ai-catalog-entry-signature",
+  "signer": "did:web:assessor.example",
   "fields": [
     [["digest"], "sha256:56bbd2ff730d81a52951fc2f58809dfb086b4be7a82766dcc18cfe32ff6acbbd"],
     [["identifier"], "urn:air:publisher.example:agent:example"],
@@ -122,8 +129,8 @@ For example, the signature object above could have this payload:
 
 Including both paths and values authenticates which fields the signer
 endorses. Sorting the pairs lets authors reorder the path list without
-changing the signature. The timestamps are authenticated along with the
-selected fields.
+changing the signature. The exact `signer` value and timestamps are
+authenticated along with the selected fields.
 
 To endorse claims about an artifact release, a signature selects the claims
 and the entry's `identifier`, `type`, `digest`, and `version` when present.
@@ -138,16 +145,25 @@ payload construction, verification, and required field coverage.
 
 ### Authenticate contributors and establish publisher authority
 
-Extend the existing `did:web` verification mechanism to authenticate
-independent contributors as well as publishers. Publisher authorization
-additionally requires the authenticated identity to match the publisher
-domain in the entry's signed `urn:air` identifier.
+The `signer` field identifies whose endorsement is claimed; the protected
+JWS `kid` identifies the verification key. An explicit identity field gives
+consumers a consistent way to inspect signers across verification profiles
+without decoding JWS headers. Each profile defines how to discover a key and
+establish that it is authorized to sign for the claimed identity.
 
-A manifest's identity key attributes its claims to a contributor. Accepting
-those claims as that contributor's assertions requires a signature
-authenticated as that identity. For example, a catalog operator can endorse
-an assessor's manifest, but the operator's signature alone does not establish
-that the assessor made those claims.
+The initial `did:web` profile authenticates publishers and independent
+contributors through their root DIDs. The DID in `kid` must exactly match
+`signer`, and that DID's document must authorize the selected key through
+`assertionMethod`. These checks and verification of the signature authenticate
+`signer`. This profile repeats the identity in `signer` and `kid`, requiring a
+consistency check in exchange for a common identity field across profiles.
+
+To attribute selected Trust Manifest claims to their named contributor, the
+authenticated `signer` must match the manifest's identity key. A catalog
+operator can endorse an assessor's manifest, but the operator's signature
+alone does not establish that the assessor made those claims. Publisher
+authorization additionally requires the authenticated identity to match the
+publisher domain in the entry's signed `urn:air` identifier.
 
 Additional profiles can define other identity mechanisms and their key
 discovery and authorization procedures. The consumer decides whether an

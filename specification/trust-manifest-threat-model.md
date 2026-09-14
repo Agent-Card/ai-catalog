@@ -119,8 +119,8 @@ Trust boundaries:
   author and endorsements that require a publisher's, contributor's, or
   catalog operator's private key.
 - **B4 — Third-party endpoints.** Servers referenced by the (possibly
-  attacker-controlled) trust metadata or signature key identifier. The
-  consumer is induced to contact them.
+  attacker-controlled) trust metadata, claimed signer, or signature key
+  identifier. The consumer is induced to contact them.
 - **B5 — Consumer verification egress.** The consumer's own network
   egress while fetching manifest-referenced URLs (SSRF surface).
 
@@ -274,14 +274,14 @@ applicable signer authority.
 |---------|---------|------------------|-------------------------------|--------------|
 | F1 | T1 | Detached JWS over manifest; OPTIONAL `sourceDigest` | Require the same entry signature to cover the claims relied upon and entry `identifier`, `type`, `digest`, and `version` when present; verify the artifact against `entry.digest` | Verification → Entry Release Coverage |
 | F2 | T2 | Level 3 requires manifest presence | Level 3 requires an acceptable publisher-authorized release signature where publisher authenticity is relied upon; named-contributor claims require that contributor's acceptable signature over those claims and the release | Conformance Level 3 |
-| F3 | S1 | Unconstrained key resolution from `identity` | Authenticate each signer through an assertion-authorized key; require that signer to match the manifest identity key for contributor attribution, and the signed `urn:air` publisher domain for publisher authorization | Verification → `did:web` Signer and Publisher Profiles |
+| F3 | S1 | Unconstrained key resolution from `identity` | Authenticate the signed `signer` identity through an assertion-authorized key whose protected `kid` has that exact DID portion; require that signer to match the manifest identity key for contributor attribution, and the signed `urn:air` publisher domain for publisher authorization | Verification → `did:web` Signer and Publisher Profiles |
 | F4 | E1 | "detached JWS" | Require ES256 with a P-256 `publicKeyJwk` in the initial Signer Profile; require protected `alg` and `kid`; prohibit attacker-selected key-source headers | Verification → `did:web` Signer Profile |
 | F5 | R1, E2 | Signature times and current key authorization | Check current key authorization and each signature's authenticated `issuedAt` and optional `expiresAt`; compare acceptable contributor signatures covering the whole manifest for observed updates. Trusted current-release information or consumer state is still required to prevent rollback | Trust Manifest → Independent Contributions and Updates; Verification → Signature Acceptance and Time |
 | F6 | T3 | OCI Layer 3 (informative) | Require complete root-field coverage for snapshot acceptance and separate operator authorization; recommend a signature meeting both requirements or an authenticated content-addressed channel | Verification → Catalog Snapshot Coverage and Catalog Authorization; Security Considerations |
 | F7 | I1, I2, D1 | none | Safe-Fetching subsection: size caps, timeouts, no redirects to private ranges, host allowlist | Verification → Safe Fetching |
 | F8 | R2 | Fields only | Delegate signer authorization and signature verification to the provenance statement's format; an entry endorsement of its reference does not verify the statement itself | Verification → Provenance Statements |
 | F9 | S2 | Publisher fields outside the signed Trust Manifest | Distinguish selected metadata authenticated by the publisher from unselected metadata or another entity's endorsement; release coverage alone does not authenticate publisher or policy fields | Verification → Publisher and Policy Metadata |
-| F10 | — | JCS | JCS-canonicalize the payload binding paths, selected values, context, and signature times; enforce path-resolution rules and I-JSON constraints, including numeric round-trip limits | Verification → Signature Object |
+| F10 | — | JCS | JCS-canonicalize the payload binding the claimed signer, paths, selected values, context, and signature times; enforce path-resolution rules and I-JSON constraints, including numeric round-trip limits | Verification → Signature Object |
 | F11 | T4 | Signed subject contains representation type, digest, and optional URL only | Require the same signature to select entry `identifier` and `version` when present, alongside the representation and claims; adding an unsigned version makes coverage insufficient | Verification → Entry Release Coverage |
 
 ## 7. Comparison with the Sigstore Architecture

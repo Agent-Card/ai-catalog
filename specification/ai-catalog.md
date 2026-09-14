@@ -826,8 +826,16 @@ MUST reject digest values using algorithms shorter than SHA-256.
 ### Signature Object
 
 The optional `signatures` array is supported on a Catalog Entry and the
-catalog root. A Signature object MUST contain `paths`, `issuedAt`,
+catalog root. A Signature object MUST contain `signer`, `paths`, `issuedAt`,
 and `jws`, and MAY contain `expiresAt`. It MUST NOT contain other members.
+The array MAY contain multiple signatures from the same signer with different
+selected fields, issuance times, or signing keys.
+
+`signer`
+: An absolute URI [[RFC3986]] identifying the party claimed to have issued
+  this endorsement. The applicable signer profile MUST establish that the
+  verification key is authorized to sign for this identity. Consumers MUST
+  NOT infer authentication or authority from this field alone.
 
 `paths`
 : A non-empty array of paths. Each path is a non-empty array of strings
@@ -880,6 +888,7 @@ Construct this JSON object (the names and context strings are literal):
 ```json
 {
   "context": "ai-catalog-entry-signature",
+  "signer": "did:web:acme.com",
   "fields": [
     [["identifier"], "urn:air:acme.com:agent:finance"],
     [["type"], "application/a2a-agent-card+json"]
@@ -890,19 +899,19 @@ Construct this JSON object (the names and context strings are literal):
 
 This illustrates payload construction only, not sufficient release coverage.
 `fields` MUST contain the sorted pairs for exactly the stored paths.
-`issuedAt` and, when present, `expiresAt` MUST be copied exactly from the
-Signature object; an absent `expiresAt` MUST be omitted, not replaced by
-`null`. The consumer MUST derive `context` from the containing object:
+`signer`, `issuedAt`, and, when present, `expiresAt` MUST be copied exactly
+from the Signature object. An absent `expiresAt` MUST be omitted, not replaced
+by `null`. The consumer MUST derive `context` from the containing object:
 
 | Containing object | `context` |
 | --- | --- |
 | Catalog Entry | `ai-catalog-entry-signature` |
 | Catalog root | `ai-catalog-catalog-signature` |
 
-This binds both the selected names and their values, the endorsement times,
-and the object kind and payload construction defined here. Reordering
-`paths` does not affect the payload. Changing a selected name, value, or
-timestamp does.
+This binds the claimed signer, the selected names and their values, the
+endorsement times, and the object kind and payload construction defined here.
+Reordering `paths` does not affect the payload. Changing `signer`, a selected
+name or value, or a timestamp does.
 
 Canonicalize this payload with JCS [[RFC8785]]. Its UTF-8 bytes are the JWS
 payload. Use ordinary base64url-encoded JWS signing input, then omit only the
@@ -986,14 +995,10 @@ contributor. Authentication does not by itself grant publisher, host, or
 catalog authority. The [`did:web` Publisher Profile](#the-did-web-publisher-profile)
 adds publisher namespace authorization.
 
-The protected `kid` MUST be an absolute DID URL consisting of a root
-`did:web` DID followed by a non-empty fragment, with no path or query. Its
-DID portion is the candidate signer identity. The domain MUST be lowercase
-ASCII, with no port, IP address, trailing root dot, or Unicode U-label;
-IDNA A-labels are permitted [[DIDWEB]] [[RFC5890]] [[RFC5891]]. For example,
-`did:web:assessor.example#assertion-key` identifies a key for the candidate
-identity `did:web:assessor.example`. That identity is authenticated only
-when all resolution, authorization, and cryptographic checks below succeed.
+The Signature object's `signer` MUST be a root `did:web` DID. Its domain
+MUST be lowercase ASCII, with no port, IP address, trailing root dot, or
+Unicode U-label; IDNA A-labels are permitted [[DIDWEB]] [[RFC5890]]
+[[RFC5891]].
 
 Other identity mechanisms, delegated controllers, path-based `did:web` DIDs,
 and algorithms require separately defined profiles. Implementations MAY
@@ -1015,23 +1020,22 @@ or `x5c`; a verifier applying the `did:web` Signer Profile selects key
 material only through the issuer's DID document, never from a key source named
 by the signature itself.
 
-The protected `kid` value MUST be an absolute DID URL consisting of the
-candidate signer identity followed by a non-empty fragment. For example:
+The protected `kid` MUST be an absolute DID URL consisting of the exact
+`signer` value followed by a non-empty fragment, with no path or query.
+A mismatch MUST fail verification under this profile. It identifies a
+verification method in the signer's DID document.
 
-    did:web:example.com#release-signing-key
-
-The `kid` MUST NOT contain a path or query component. It identifies a
-verification method in the issuer's DID document; it does not identify another
-DID or an external key document.
+For example, a signature with `signer` set to `did:web:assessor.example`
+can use `kid` set to `did:web:assessor.example#assertion-key`.
 
 #### DID Document Resolution and Key Selection
 
-The verifier MUST resolve the candidate signer identity according to the
-`did:web` method [[DIDWEB]] and process the result as a DID document according to DID Core
+The verifier MUST resolve `signer` according to the `did:web` method
+[[DIDWEB]] and process the result as a DID document according to DID Core
 [[DIDCORE]]. The resolution MUST satisfy the safe-fetching requirements in
 [Safe Fetching](#safe-fetching). Resolution fails under the `did:web` Signer
-Profile if the DID document cannot be retrieved and validated or if its `id` is
-not exactly equal to the candidate signer identity.
+Profile if the DID document cannot be retrieved and validated or if its `id`
+is not exactly equal to `signer`.
 
 The verification method selected by `kid` MUST be authorized by the DID
 document's `assertionMethod` verification relationship. An
@@ -1043,8 +1047,8 @@ exactly one verification method whose `id` exactly equals `kid`.
 A key's presence in the top-level `verificationMethod` collection does not by
 itself authorize the key to sign an AI Catalog endorsement. A key used only
 for another relationship, such as `authentication` or `keyAgreement`, MUST NOT be accepted.
-The selected verification method's `controller` MUST exactly equal the
-candidate signer identity; the `did:web` Signer Profile does not support a verification method
+The selected verification method's `controller` MUST exactly equal
+`signer`; the `did:web` Signer Profile does not support a verification method
 controlled by another DID.
 
 The selected verification method MUST contain `publicKeyJwk` [[RFC7517]]. The
@@ -1075,8 +1079,7 @@ Signer authentication succeeds only when the Signature object and detached
 JWS satisfy [Signature Object](#signature-object), the DID document resolves
 and authorizes exactly one suitable ES256 key under `assertionMethod`, and
 the signature verifies over the reconstructed payload. The authenticated
-identity is the DID whose document and key authorization were checked, not
-an unsigned display label or an unverified `kid` string.
+identity is the Signature object's `signer`.
 
 Failure MUST NOT be treated as a verified endorsement. Consumers MAY retain
 or display unverified content, retry temporarily unavailable resolution, or
@@ -1708,6 +1711,7 @@ classDiagram
         sourceDigest string
     }
     class Signature {
+        signer string
         paths string[][]
         issuedAt string
         expiresAt string
@@ -1869,6 +1873,7 @@ TrustManifest = {
 }
 
 Signature = {
+  signer: text,
   paths: [+ [+ text]],
   issuedAt: tdate,
   ? expiresAt: tdate,
@@ -1992,6 +1997,7 @@ Digest and JWS strings in illustrative examples are placeholders.
       "digest": "sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111",
       "signatures": [
         {
+          "signer": "did:web:acme.com",
           "paths": [
             ["identifier"],
             ["type"],
