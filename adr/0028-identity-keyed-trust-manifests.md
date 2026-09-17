@@ -62,11 +62,11 @@ The existing fields map to the proposed structure as follows:
 ### Sign selected fields
 
 Entries and the catalog root can each carry a `signatures` array. Each
-signature names its signer with an absolute identity URI in `signer` and
-selects the fields it endorses through `paths`. It also carries `issuedAt`,
-optional `expiresAt`, and a detached `jws`. The array supports multiple
-endorsements by the same identity, with different selected fields, issuance
-times, or keys.
+signature names its signer with an absolute identity URI in `signer`, selects
+its verification procedure with `profile`, and selects the fields it endorses
+through `paths`. It also carries `issuedAt`, optional `expiresAt`, and a
+detached `jws`. The array supports multiple endorsements by the same identity,
+with different profiles, selected fields, issuance times, or keys.
 
 For example, an assessor can endorse its Trust Manifest together with the
 entry fields identifying the artifact release:
@@ -74,6 +74,7 @@ entry fields identifying the artifact release:
 ```json
 {
   "signer": "did:web:assessor.example",
+  "profile": "did-web-v1",
   "paths": [
     ["identifier"],
     ["version"],
@@ -92,13 +93,14 @@ containing the signature array. For example,
 A path can select an entire array, such as a contributor's `attestations`
 list, but cannot select an individual array element.
 
-The signer collects each selected path and its value into a pair, sorts those
-pairs by path, and adds the signer identity, endorsement timestamps, and a
-context identifying the object kind and payload construction. This collected
-data is the **payload**: the data over which the signature is computed. JCS
-gives it a deterministic JSON encoding, and JWS supplies the cryptographic
-signature. The detached JWS stored in `jws` omits the payload; the verifier
-constructs that same payload from the selected fields and signature metadata.
+The signer collects each selected path and its value into a pair, sorts
+those pairs by path, and adds the signer identity, profile identifier,
+endorsement timestamps, and a context identifying the object kind and
+payload construction. This collected data is the **payload**: the data over
+which the signature is computed. JCS gives it a deterministic JSON encoding,
+and JWS supplies the cryptographic signature. The detached JWS stored in
+`jws` omits the payload; the verifier constructs that same payload from the
+selected fields and signature metadata.
 
 For example, the signature object above could have this payload:
 
@@ -106,6 +108,7 @@ For example, the signature object above could have this payload:
 {
   "context": "ai-catalog-entry-signature",
   "signer": "did:web:assessor.example",
+  "profile": "did-web-v1",
   "fields": [
     [["digest"], "sha256:56bbd2ff730d81a52951fc2f58809dfb086b4be7a82766dcc18cfe32ff6acbbd"],
     [["identifier"], "urn:air:publisher.example:agent:example"],
@@ -129,8 +132,10 @@ For example, the signature object above could have this payload:
 
 Including both paths and values authenticates which fields the signer
 endorses. Sorting the pairs lets authors reorder the path list without
-changing the signature. The exact `signer` value and timestamps are
-authenticated along with the selected fields.
+changing the signature. The exact `signer` and `profile` values and timestamps
+are authenticated along with the selected fields. Binding `profile` prevents
+an intermediary from relabeling an existing signature to select a different
+verification procedure without invalidating it.
 
 To endorse claims about an artifact release, a signature selects the claims
 and the entry's `identifier`, `type`, `digest`, and `version` when present.
@@ -145,25 +150,40 @@ payload construction, verification, and required field coverage.
 
 ### Authenticate contributors and establish publisher authority
 
-The `signer` field identifies whose endorsement is claimed; the protected
-JWS `kid` identifies the verification key. An explicit identity field gives
-consumers a consistent way to inspect signers across verification profiles
-without decoding JWS headers. Each profile defines how to discover a key and
-establish that it is authorized to sign for the claimed identity.
+The `signer` field identifies whose endorsement is claimed, `profile` selects
+the signer verification procedure, and the protected JWS `kid` identifies the
+verification key under that procedure. These explicit fields let consumers
+inspect identities and select profiles without decoding JWS headers. Each
+profile defines how to discover a key and establish that it is authorized to
+sign for the claimed identity.
 
-The initial `did:web` profile authenticates publishers and independent
-contributors through their root DIDs. The DID in `kid` must exactly match
-`signer`, and that DID's document must authorize the selected key through
-`assertionMethod`. These checks and verification of the signature authenticate
-`signer`. This profile repeats the identity in `signer` and `kid`, requiring a
-consistency check in exchange for a common identity field across profiles.
+An identity's URI syntax need not uniquely identify its verification rules:
+the same identity could participate in future profiles with different
+algorithms or delegation rules. An explicit, signed profile identifier lets
+that choice travel with the signature through federated catalogs, instead of
+requiring an out-of-band agreement. Consumers apply only the named, supported,
+and locally permitted profile, without guessing or fallback on failure.
+Independent profiles use URI identifiers; no profile discovery protocol is
+introduced.
+
+The initial `did:web` profile, identified by `did-web-v1`, authenticates
+publishers and independent contributors through their root DIDs. The DID in
+`kid` must exactly match `signer`, and that DID's document must authorize
+the selected key through `assertionMethod`. These checks and verification of
+the signature authenticate `signer`. This profile repeats the identity in
+`signer` and `kid`, requiring a consistency check in exchange for a common
+identity field across profiles.
 
 To attribute selected Trust Manifest claims to their named contributor, the
 authenticated `signer` must match the manifest's identity key. A catalog
 operator can endorse an assessor's manifest, but the operator's signature
 alone does not establish that the assessor made those claims. Publisher
 authorization additionally requires the authenticated identity to match the
-publisher domain in the entry's signed `urn:air` identifier.
+publisher domain in the entry's signed `urn:air` identifier. The `did:web`
+Publisher Profile combines this check and the required release coverage with
+the `did:web` Signer Profile. This lets the same authentication procedure
+serve publishers and independent contributors, while consumers check the
+authority needed for the intended endorsement.
 
 Additional profiles can define other identity mechanisms and their key
 discovery and authorization procedures. The consumer decides whether an

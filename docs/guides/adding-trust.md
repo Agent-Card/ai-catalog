@@ -99,13 +99,14 @@ The `relation` field is an open string. Three common values:
 
 ## Signing an entry
 
-To endorse an entry, add an object to `entry.signatures`. Set `signer` to the absolute identity URI of the party issuing the endorsement and use `paths` to select the fields being endorsed.
+To endorse an entry, add an object to `entry.signatures`. Set `signer` to the absolute identity URI of the party issuing the endorsement, `profile` to the identifier of the signer verification procedure, and `paths` to the fields being endorsed. The `did:web` Signer Profile uses `profile: "did-web-v1"`.
 
 For example, Acme can endorse its Trust Manifest together with the entry fields identifying the artifact release:
 
 ```json
 {
   "signer": "did:web:acme-corp.com",
+  "profile": "did-web-v1",
   "paths": [
     ["identifier"],
     ["type"],
@@ -121,22 +122,24 @@ The JWS here is an illustrative placeholder. If the entry declares `version`, in
 
 Each path lists exact object keys, starting at the entry. For example, `["extensions", "https://example.com/metadata"]` selects one entry extension. A path can select an entire array, such as a contributor's attestations, but cannot select an individual array element.
 
-Record the issuance time in `issuedAt` and, optionally, an expiry time in `expiresAt`. To produce `jws`, resolve each path and sort the resulting path/value pairs using the specification's ordering rule. Construct the payload with those pairs, the signature context, the exact `signer` value, and the timestamps. JCS (RFC 8785) canonicalizes that payload before JWS signing. The detached JWS stores no second copy of the values. Follow the full specification for the exact payload and verification algorithm.
+Record the issuance time in `issuedAt` and, optionally, an expiry time in `expiresAt`. To produce `jws`, resolve each path and sort the resulting path/value pairs using the specification's ordering rule. Construct the payload with those pairs, the signature context, the exact `signer` and `profile` values, and the timestamps. JCS (RFC 8785) canonicalizes that payload before JWS signing. The detached JWS stores no second copy of the values. Follow the full specification for the exact payload and verification algorithm.
 
 Signing one contributor's manifest permits another contributor to add a separate manifest and signature without invalidating the first signature. Changing a value selected by the first signature invalidates it. Selecting an entire map or array also covers its membership and all nested values.
 
 ## Authenticating the signer
 
-For the example above, the `did:web` Signer Profile verifies Acme's endorsement using `signer: "did:web:acme-corp.com"` and the protected JWS header's `kid: "did:web:acme-corp.com#release-signing-key"`. The DID in `kid` must exactly match `signer`, and the header's `alg` must be `ES256`.
+First select the procedure named by `profile`, checking that it is supported and permitted by local policy. Other signatures can be evaluated independently.
 
-The verifier retrieves Acme's root DID document from `https://acme-corp.com/.well-known/did.json` and checks that it authorizes the selected P-256 key through `assertionMethod`. A key listed only for authentication or key agreement does not satisfy this profile. The verifier uses the authorized key to check the JWS against the reconstructed payload, including its exact `signer` value. The identity becomes authenticated only after these checks succeed.
+For the example above, `profile: "did-web-v1"` selects the `did:web` Signer Profile, which verifies Acme's endorsement using `signer: "did:web:acme-corp.com"` and the protected JWS header's `kid: "did:web:acme-corp.com#release-signing-key"`. The DID in `kid` must exactly match `signer`, and the header's `alg` must be `ES256`.
+
+The verifier retrieves Acme's root DID document from `https://acme-corp.com/.well-known/did.json` and checks that it authorizes the selected P-256 key through `assertionMethod`. A key listed only for authentication or key agreement does not satisfy this profile. The verifier uses the authorized key to check the JWS against the reconstructed payload, including its exact `signer` and `profile` values. Changing the profile label therefore invalidates the signature. The identity becomes authenticated only after these checks succeed.
 
 For the selected manifest to count as Acme's claims, its identity key must match the authenticated `signer`. Publisher authority requires an additional check: Acme's root `did:web` domain must match the publisher domain of the entry's standard `urn:air` identifier. An independent contributor can authenticate with its own DID without thereby becoming the artifact's publisher.
 
 Consumers should:
 
-1. Check path validity and required field coverage, including `identifier`, `type`, `digest`, and any declared `version` together for artifact binding.
-2. Reconstruct and canonicalize the payload, including its context, exact `signer` value, and timestamps.
+1. Select the named, supported, and locally permitted profile (`did-web-v1` here). Check path validity and required field coverage, including `identifier`, `type`, `digest`, and any declared `version` together for artifact binding.
+2. Reconstruct and canonicalize the payload, including its context, exact `signer` and `profile` values, and timestamps.
 3. Check that the DID in the protected `kid` exactly matches `signer`, resolve the key, check assertion authorization, and verify the ES256 JWS.
 4. Check freshness and the authority needed for the intended endorsement; check the contributor identity key when accepting a manifest as that contributor's claims.
 5. Verify the artifact bytes against the signed entry digest, and evaluate referenced evidence according to its format and local policy.
@@ -199,6 +202,7 @@ An entry with a contributor manifest, artifact digest, policy links, and a signa
   "signatures": [
     {
       "signer": "did:web:acme-corp.com",
+      "profile": "did-web-v1",
       "paths": [
         ["identifier"],
         ["type"],

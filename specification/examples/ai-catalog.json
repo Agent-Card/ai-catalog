@@ -33,6 +33,7 @@
       "signatures": [
         {
           "signer": "did:web:acme-corp.com",
+          "profile": "did-web-v1",
           "paths": [
             ["identifier"],
             ["type"],

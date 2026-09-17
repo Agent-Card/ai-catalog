@@ -281,7 +281,7 @@ applicable signer authority.
 | F7 | I1, I2, D1 | none | Safe-Fetching subsection: size caps, timeouts, no redirects to private ranges, host allowlist | Verification → Safe Fetching |
 | F8 | R2 | Fields only | Delegate signer authorization and signature verification to the provenance statement's format; an entry endorsement of its reference does not verify the statement itself | Verification → Provenance Statements |
 | F9 | S2 | Publisher fields outside the signed Trust Manifest | Distinguish selected metadata authenticated by the publisher from unselected metadata or another entity's endorsement; release coverage alone does not authenticate publisher or policy fields | Verification → Publisher and Policy Metadata |
-| F10 | — | JCS | JCS-canonicalize the payload binding the claimed signer, paths, selected values, context, and signature times; enforce path-resolution rules and I-JSON constraints, including numeric round-trip limits | Verification → Signature Object |
+| F10 | — | JCS | JCS-canonicalize the payload binding the claimed signer, profile identifier, paths, selected values, context, and signature times; enforce path-resolution rules and I-JSON constraints, including numeric round-trip limits | Verification → Signature Object |
 | F11 | T4 | Signed subject contains representation type, digest, and optional URL only | Require the same signature to select entry `identifier` and `version` when present, alongside the representation and claims; adding an unsigned version makes coverage insufficient | Verification → Entry Release Coverage |
 
 ## 7. Comparison with the Sigstore Architecture

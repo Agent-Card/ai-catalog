@@ -783,10 +783,11 @@ Verification is OPTIONAL — consumers that do not need trust assurance can
 skip this entirely.
 
 [The `did:web` Signer Profile](#the-did-web-signer-profile) defines an initial
-interoperable authentication mechanism. Other identity mechanisms, including
-future profiles, can use the same data model. A profile MUST define key
-discovery, signer authentication, and any authorization it establishes;
-consumers MUST NOT treat an unsupported identity as authenticated.
+interoperable authentication mechanism. Other signer profiles can use the
+same data model. A signer profile MUST define permitted signer identities,
+key discovery and authorization, algorithms, JWS header requirements, validity
+checks, and any authority it establishes. Consumers MUST NOT authenticate an
+identity using an unsupported profile.
 
 ### Safe Fetching
 
@@ -826,16 +827,22 @@ MUST reject digest values using algorithms shorter than SHA-256.
 ### Signature Object
 
 The optional `signatures` array is supported on a Catalog Entry and the
-catalog root. A Signature object MUST contain `signer`, `paths`, `issuedAt`,
-and `jws`, and MAY contain `expiresAt`. It MUST NOT contain other members.
-The array MAY contain multiple signatures from the same signer with different
-selected fields, issuance times, or signing keys.
+catalog root. A Signature object MUST contain `signer`, `profile`, `paths`,
+`issuedAt`, and `jws`, and MAY contain `expiresAt`. It MUST NOT contain other
+members. The array MAY contain multiple signatures from the same signer with
+different profiles, selected fields, issuance times, or signing keys.
 
 `signer`
 : An absolute URI [[RFC3986]] identifying the party claimed to have issued
   this endorsement. The applicable signer profile MUST establish that the
   verification key is authorized to sign for this identity. Consumers MUST
   NOT infer authentication or authority from this field alone.
+
+`profile`
+: A non-empty string identifying the signer verification procedure, as defined
+  in [Profile Selection](#profile-selection). The profile identifier is
+  authenticated as part of the payload. It does not by itself establish
+  trust in the signer or authority to make the selected claims.
 
 `paths`
 : A non-empty array of paths. Each path is a non-empty array of strings
@@ -857,6 +864,36 @@ selected fields, issuance times, or signing keys.
   [payload](#signed-payload-and-jws-construction). Each signature has its own
   payload and signer; different signatures can select different fields.
   The stored form is `encodedProtectedHeader..encodedSignature`.
+
+#### Profile Selection
+
+Consumers MUST select the verification procedure named by `profile`, and
+MUST require that it is both supported and permitted by local policy. They
+MUST NOT infer another profile from `signer`, JWS headers, or other metadata,
+or fall back to another procedure if the selected profile is unsupported,
+disallowed, or fails verification. Such a signature MUST NOT count as a
+verified endorsement; other signatures are evaluated independently.
+
+Profiles defined by this specification use reserved names. Independently
+defined profiles MUST use absolute URI identifiers [[RFC3986]] under the
+profile author's control. Authors are encouraged to use a versioned HTTPS
+URL pointing to a human-readable definition of the profile's verification
+requirements. Consumers need an implementation of those requirements;
+retrieving the document does not supply verification behavior. Profile
+identifiers MUST be compared exactly and case-sensitively, without URI
+normalization.
+
+A profile identifier names a defined set of verification requirements. It
+MUST NOT be reused for a different set of requirements. Key rotation under
+those requirements does not change the profile. A consumer MAY impose
+stricter local acceptance requirements without defining another profile.
+
+The selected profile MUST authenticate the exact `signer` value using its
+specified key-authorization and verification rules. Consumers MUST also
+apply the coverage and authority checks required for the intended endorsement.
+The [`did:web` Publisher Profile](#the-did-web-publisher-profile), for example,
+adds publisher authorization and release coverage to the `did:web` Signer
+Profile.
 
 #### Path Resolution and Ordering
 
@@ -889,6 +926,7 @@ Construct this JSON object (the names and context strings are literal):
 {
   "context": "ai-catalog-entry-signature",
   "signer": "did:web:acme.com",
+  "profile": "did-web-v1",
   "fields": [
     [["identifier"], "urn:air:acme.com:agent:finance"],
     [["type"], "application/a2a-agent-card+json"]
@@ -899,19 +937,20 @@ Construct this JSON object (the names and context strings are literal):
 
 This illustrates payload construction only, not sufficient release coverage.
 `fields` MUST contain the sorted pairs for exactly the stored paths.
-`signer`, `issuedAt`, and, when present, `expiresAt` MUST be copied exactly
-from the Signature object. An absent `expiresAt` MUST be omitted, not replaced
-by `null`. The consumer MUST derive `context` from the containing object:
+`signer`, `profile`, `issuedAt`, and, when present, `expiresAt` MUST be copied
+exactly from the Signature object. An absent `expiresAt` MUST be omitted,
+not replaced by `null`. The consumer MUST derive `context` from the containing
+object:
 
 | Containing object | `context` |
 | --- | --- |
 | Catalog Entry | `ai-catalog-entry-signature` |
 | Catalog root | `ai-catalog-catalog-signature` |
 
-This binds the claimed signer, the selected names and their values, the
-endorsement times, and the object kind and payload construction defined here.
-Reordering `paths` does not affect the payload. Changing `signer`, a selected
-name or value, or a timestamp does.
+This binds the claimed signer and verification profile, the selected names
+and their values, the endorsement times, and the object kind and payload
+construction defined here. Reordering `paths` does not affect the payload.
+Changing `signer`, `profile`, a selected name or value, or a timestamp does.
 
 Canonicalize this payload with JCS [[RFC8785]]. Its UTF-8 bytes are the JWS
 payload. Use ordinary base64url-encoded JWS signing input, then omit only the
@@ -933,9 +972,10 @@ nor authority to make the selected claims.
 
 #### Signature Acceptance and Time
 
-Consumers MUST validate the Signature object's structure, path rules,
-payload, JWS, and signer profile before accepting an endorsement. They MUST
-validate timestamp syntax and compare timestamps as instants, not strings.
+Consumers MUST validate the Signature object's structure, profile selection,
+path rules, payload, JWS, and selected signer profile before accepting an
+endorsement. They MUST validate timestamp syntax and compare timestamps as
+instants, not strings.
 Consumers MUST NOT accept an endorsement before `issuedAt` or at or after
 `expiresAt`, when present. A deployment MAY allow a small, explicitly
 configured clock-skew tolerance. A new signature does not cryptographically
@@ -989,11 +1029,12 @@ authority of entry publishers.
 
 ### The `did:web` Signer Profile
 
-This profile authenticates a signer using a root `did:web` DID and an ES256
-assertion key. It can authenticate a publisher, assessor, registry, or other
-contributor. Authentication does not by itself grant publisher, host, or
-catalog authority. The [`did:web` Publisher Profile](#the-did-web-publisher-profile)
-adds publisher namespace authorization.
+This profile is selected by the exact `profile` value `did-web-v1`. It
+authenticates a signer using a root `did:web` DID and an ES256 assertion key.
+It can authenticate a publisher, assessor, registry, or other contributor.
+Authentication does not by itself grant publisher, host, or catalog authority.
+The [`did:web` Publisher Profile](#the-did-web-publisher-profile) adds publisher
+namespace authorization.
 
 The Signature object's `signer` MUST be a root `did:web` DID. Its domain
 MUST be lowercase ASCII, with no port, IP address, trailing root dot, or
@@ -1712,6 +1753,7 @@ classDiagram
     }
     class Signature {
         signer string
+        profile string
         paths string[][]
         issuedAt string
         expiresAt string
@@ -1874,6 +1916,7 @@ TrustManifest = {
 
 Signature = {
   signer: text,
+  profile: text,
   paths: [+ [+ text]],
   issuedAt: tdate,
   ? expiresAt: tdate,
@@ -1998,6 +2041,7 @@ Digest and JWS strings in illustrative examples are placeholders.
       "signatures": [
         {
           "signer": "did:web:acme.com",
+          "profile": "did-web-v1",
           "paths": [
             ["identifier"],
             ["type"],
