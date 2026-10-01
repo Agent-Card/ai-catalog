@@ -289,8 +289,8 @@ It MUST contain the following members:</p>
 <dl>
 <dt><code>identifier</code></dt>
 <dd>
-<p>A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). However, to ensure interoperability, identity uniqueness, and discoverability, the standard <code>urn:air</code> naming structure is <strong>HIGHLY RECOMMENDED</strong> and <strong>MUST</strong> be used for open or federated systems.</p>
-<p><strong>Standard Naming Format:</strong>
+<p>A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific <code>urn:air</code> naming structure with its own domain in the <code>{publisher}</code> segment. A catalog operator incorporating an entry for the first time with a publisher-authorized <code>urn:air</code> identifier MUST preserve that identifier exactly.</p>
+<p><strong><code>urn:air</code> Identifier Format:</strong>
 <code>urn:air:{publisher}:{namespace}:{name}</code></p>
 <ul>
 <li><code>{publisher}</code>: The domain name of the organization publishing the artifact (e.g., <code>example.com</code>).</li>
@@ -303,7 +303,7 @@ It MUST contain the following members:</p>
 <li><code>urn:air:example.com:mcp:weather</code></li>
 </ul>
 <p>For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.</p>
-<p>See <a href="#multi-version-entries">Multi-Version Entries</a> for uniqueness rules when multiple versions are present.</p>
+<p>See <a href="#multi-version-entries">Multi-Version Entries</a> for uniqueness rules when multiple versions are present, and <a href="#catalog-projection">Catalog Projection</a> for identifiers assigned while projecting an existing Catalog Entry or source-system record.</p>
 </dd>
 <dt><code>type</code></dt>
 <dd>
@@ -509,9 +509,9 @@ different <code>version</code> values, representing a version history for a
 single artifact — similar to a package registry.</p>
 <p>When <code>version</code> is present, the combination of <code>identifier</code> and <code>version</code>
 MUST be unique within the catalog. When <code>version</code> is absent, <code>identifier</code>
-alone MUST be unique. The <code>identifier</code> SHOULD be stable across versions
-and catalog locations so that the same logical artifact can be
-recognized wherever it appears.</p>
+alone MUST be unique. The <code>identifier</code> SHOULD be stable across versions.
+Only publisher-authorized <code>urn:air</code> identifiers receive a cross-catalog
+preservation requirement, as defined in <a href="#catalog-projection">Catalog Projection</a>.</p>
 <p>Clients that need only the latest version SHOULD sort entries
 sharing the same <code>identifier</code> by <code>version</code> (when parseable as a semantic
 version) or by <code>updatedAt</code>, and select the most recent. Clients
@@ -539,6 +539,65 @@ that need a specific version SHOULD match on both <code>identifier</code> and <c
 </code></pre>
 <p>Both entries share the same <code>identifier</code> but have distinct <code>version</code>
 values, so the combination is unique.</p>
+</section>
+<section id="catalog-projection">
+<h2>Catalog Projection</h2>
+<p>A publisher-authorized <code>urn:air</code> identifier is one assigned by the
+artifact publisher or its authorized delegate, with the artifact
+publisher's domain in the <code>{publisher}</code> segment.</p>
+<p>Catalog projection creates a Catalog Entry from either a source Catalog
+Entry in another AI Catalog or a source record in another system. When
+incorporating a projected entry for the first time, a catalog operator
+MUST select its identifier by applying these rules in order:</p>
+<ol>
+<li>If the source contains a publisher-authorized <code>urn:air</code> identifier,
+   the operator MUST preserve it exactly.</li>
+<li>Otherwise, the operator MAY preserve a non-<code>urn:air</code> source identifier
+   or replace it. Non-<code>urn:air</code> identifiers have no guaranteed portability
+   across catalogs.</li>
+<li>When assigning a new identifier, an operator that becomes the artifact
+   publisher SHOULD use <code>urn:air</code> with its own domain in the <code>{publisher}</code>
+   segment. An operator acting as an authorized delegate SHOULD use
+   <code>urn:air</code> with the delegating publisher's domain in that segment. An
+   operator that is neither the artifact publisher nor its authorized
+   delegate MUST use a non-<code>urn:air</code> identifier under its own control.</li>
+</ol>
+<p>A projected entry that uses <code>urn:air</code> and includes a Trust Manifest remains
+subject to the trust-domain alignment requirements in <a href="#identity">Identity</a>.</p>
+<p>Operating a catalog or aggregating an entry does not make its operator the
+artifact publisher. A catalog operator MUST NOT infer publisher
+authorization from the artifact's URL or an unsigned <code>publisher</code> field.</p>
+<p>Adopting a different primary identifier after publication requires an
+explicit migration mechanism, which this specification does not define.</p>
+<p>An identifier assigned by a catalog operator identifies the artifact, not
+a particular version or source record. It MUST remain stable across
+versions, source-coordinate changes, and retrieval-URL changes, and MUST
+NOT be reassigned to another artifact. The catalog operator and artifact
+publisher are distinct roles. The operator is the entity identified by the
+top-level <code>host</code> field when that field is present.</p>
+<p>A catalog operator MAY retain replaced source identifiers or source-system
+coordinates. If retained, they SHOULD be stored in a namespaced entry
+extension. They do not participate in catalog uniqueness or establish
+publisher identity, trust, or equivalence with another identifier.</p>
+<pre><code class="language-json">{
+  &quot;identifier&quot;: &quot;https://registry.example/ids/artifacts/7bf4a8c2&quot;,
+  &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+  &quot;url&quot;: &quot;https://registry.example/apis/registry/v3/groups/payments/artifacts/fraud-agent&quot;,
+  &quot;publisher&quot;: {
+    &quot;identifier&quot;: &quot;did:web:acme.example&quot;,
+    &quot;displayName&quot;: &quot;Acme&quot;
+  },
+  &quot;extensions&quot;: {
+    &quot;com.example.registry.coordinates&quot;: {
+      &quot;registryUri&quot;: &quot;https://registry.example&quot;,
+      &quot;sourceIdentifier&quot;: &quot;foo&quot;,
+      &quot;namespace&quot;: &quot;payments&quot;,
+      &quot;name&quot;: &quot;fraud-agent&quot;
+    }
+  }
+}
+</code></pre>
+<p>The extension key is illustrative.</p>
 </section>
 <section id="publisher-object">
 <h2>Publisher Object</h2>
