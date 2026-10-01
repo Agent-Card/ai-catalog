@@ -36,3 +36,15 @@ Use `url` as the field name.
   collection references, attestations).
 - Values MAY be relative URI references, despite the field name, though
   absolute URLs are RECOMMENDED.
+
+## Update (2026-07)
+
+The spec has since split naming by intent, and the split is deliberate:
+
+- `url`-suffixed fields (`url`, `documentationUrl`, `logoUrl`,
+  `privacyPolicyUrl`, `termsOfServiceUrl`) hold fetchable HTTP(S)
+  resources.
+- `uri`-suffixed fields (attestation `uri`, `governanceUri`,
+  `registryUri`, `statementUri`) allow non-HTTP schemes or values that
+  serve as identifiers rather than fetchable locations (e.g. `oci://`
+  references).
