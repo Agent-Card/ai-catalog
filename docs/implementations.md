@@ -20,5 +20,7 @@ These implementations are maintained by the Agent Card Working Group or its memb
 
 Community-built tools, libraries, and integrations. Listed here to help discovery — not formally endorsed by the working group.
 
+- [Apicurio Registry](https://github.com/Apicurio/apicurio-registry) (Java/Quarkus API and schema registry with experimental AI Catalog publishing for registered agent and tool metadata)
+
 !!! tip "Add your project"
     Have an implementation to share? Open a pull request to add it here.
