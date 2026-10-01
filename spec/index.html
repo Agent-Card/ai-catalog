@@ -104,7 +104,7 @@ implement bespoke logic for each artifact type, increasing complexity
 and reducing interoperability.</p>
 <p>This document defines the <strong>AI Catalog</strong>: a typed, nestable JSON
 container for discovering heterogeneous AI artifacts. Each entry
-declares its artifact type via a media type and may reference or
+declares its artifact type via a type identifier (which is an IANA media type) and may reference or
 embed the native artifact metadata. A minimal catalog is simply a
 list of entries — names, types, and URLs — requiring no additional
 infrastructure.</p>
@@ -117,7 +117,7 @@ that do not need trust metadata can ignore the Trust Manifest entirely.</p>
 <p>The AI Catalog is intentionally agnostic about the artifacts it
 indexes. It does not define or constrain the schema of MCP server
 manifests, A2A agent cards, or any other artifact format. Instead, it
-relies on media types to identify what each entry is, and delegates
+relies on type identifiers to indicate what each entry is, and delegates
 the definition of artifact-specific metadata to the respective protocol
 specifications.</p>
 <section id="terminology">
@@ -133,7 +133,7 @@ capitals, as shown here.</p>
 <dd>A JSON document conforming to the <code>application/ai-catalog+json</code>
   media type that contains an ordered list of catalog entries.</dd>
 <dt>Catalog Entry</dt>
-<dd>A single item in an AI Catalog, identified by a media type and
+<dd>A single item in an AI Catalog, identified by a type identifier and
   referencing or embedding an AI artifact.</dd>
 <dt>Trust Manifest</dt>
 <dd>A JSON object providing verifiable identity, attestation, and
@@ -154,8 +154,8 @@ capitals, as shown here.</p>
    artifact's internal schema.</p>
 </li>
 <li>
-<p><strong>Media Type Identification</strong>: Each catalog entry MUST declare its
-   artifact type using a media type, enabling clients to select,
+<p><strong>Type Identification</strong>: Each catalog entry MUST declare its
+   artifact type using a type identifier, enabling clients to select,
    filter, and route entries without parsing artifact content.</p>
 </li>
 <li>
@@ -1380,9 +1380,12 @@ procedure is:</p>
 <li>If neither is found, optionally fall back to the well-known URI
    <code>/.well-known/ai-catalog.json</code> as described in
    <a href="#well-known-uri">Well-Known URI</a>.</li>
-<li>Retrieve the discovered URL. If the response has a media type of
-   <code>application/ai-catalog+json</code> and contains a valid <code>specVersion</code>
-   field, treat it as the site's AI Catalog.</li>
+<li>Retrieve the discovered URL. If the response carries a JSON media
+   type (<code>application/ai-catalog+json</code> is preferred, but a generic
+   type such as <code>application/json</code> is acceptable, per
+   <a href="#location-independence">Location Independence</a>) and the document
+   contains a valid <code>specVersion</code> field, treat it as the site's AI
+   Catalog.</li>
 </ol>
 <p>This mechanism allows any website to surface its AI tools, agents,
 and services to visiting agents through a standard, machine-readable
