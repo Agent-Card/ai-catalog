@@ -36,7 +36,7 @@ An agent that supports both MCP and A2A protocols can be represented as a single
         ]
       },
       "trustManifest": {
-        "identity": "urn:air:acme-corp.com:agent:finance",
+        "identity": "did:web:acme-corp.com",
         "attestations": [
           {
             "type": "SOC2-Type2",

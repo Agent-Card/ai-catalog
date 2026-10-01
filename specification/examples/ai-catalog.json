@@ -38,7 +38,7 @@
           "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
         },
         "issuedAt": "2026-02-22T16:30:00Z",
-        "signature": "eyJhbGciOiJFUzI1NiJ9..detached-jws-signature"
+        "signature": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5In0..detached-jws-signature"
       }
     },
     {

@@ -6,6 +6,10 @@
 
 **Participants:** Luca Muscariello (Cisco)
 
+**Later clarification:** [ADR-0027](0027-did-web-entry-signature-profile.md)
+supersedes this ADR's description of `identity` as a workload principal. The
+manifest-validity rule established here remains unchanged.
+
 ## Context
 
 The Trust Manifest is an OPTIONAL companion to a Catalog Entry. Within

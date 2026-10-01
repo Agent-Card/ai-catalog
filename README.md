@@ -64,7 +64,7 @@ The project defines a schema for a secure, extensible AI Catalog. This may inclu
 
 * **Common catalog metadata**, such as publisher, documentation links, descriptions, icons, and versioning.
 * **Verifiable metadata**, such as attestations, certifications, provenance, and trust signals.
-* **Identity metadata**, such as Decentralized Identifiers (DID) or Secure Production Identity Framework For Everyone (SPIFFE).
+* **Identity metadata**, including a `did:web` profile for authenticating artifact publishers.
 * **Custom metadata** defined by individual producers or consumers for their own needs.
 
 Actual properties for inclusion will be debated in PRs.

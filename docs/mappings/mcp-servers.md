@@ -66,7 +66,7 @@ server's Server Card and whose `type` is the known type
     "displayName": "Acme Financial Corp"
   },
   "trustManifest": {
-    "identity": "urn:air:acme-corp.com:mcp:finance-server",
+    "identity": "did:web:acme-corp.com",
     "attestations": [
       {
         "type": "publisher-identity",

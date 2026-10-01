@@ -16,7 +16,8 @@ version selection) are in scope only where they affect trust decisions.
 This document is the security analysis that motivates the normative
 hardening in [ai-catalog.md](ai-catalog.md) and the decisions recorded
 in [ADR-0019](../adr/0019-trust-manifest-artifact-binding.md),
-[ADR-0025](../adr/0025-bind-signed-trust-manifests-to-releases.md), and
+[ADR-0025](../adr/0025-bind-signed-trust-manifests-to-releases.md),
+[ADR-0027](../adr/0027-did-web-entry-signature-profile.md), and
 [ADR-0009](../adr/0009-trust-manifest-substitution.md), together with the
 scope decision in [ADR-0026](../adr/0026-remove-host-trust-manifests.md). It
 exists to answer the substitution-attack concern raised in ADR-0009: *"The
@@ -27,9 +28,12 @@ especially if there's no tamper-proofness built in."*
 
 ### 1.1 External entities
 
-Publisher
-: Produces an artifact and (optionally) signs a Trust Manifest that
-  makes verifiable claims about it. Holds a signing key.
+Publisher / Trust Manifest issuer
+: Assigns the artifact's `urn:air` identifier, produces the artifact, and makes
+  the claims in its Trust Manifest. Under the `did:web` Publisher Profile, the
+  issuer is the same domain authority as the publisher. Publishing automation
+  can perform the signing operation with a key authorized by the publisher's
+  DID document, but a separately identified issuer is not supported.
 
 Catalog Host
 : Serves the AI Catalog document. May or may not be the publisher.
@@ -43,9 +47,8 @@ Consumer / Client
 
 Third-party endpoints
 : Servers referenced from a Trust Manifest: attestation documents
-  (`attestation.uri`), key material (DID documents, JWKS URLs, SPIFFE
-  Workload API), provenance statements (`statementUri`,
-  `registryUri`).
+  (`attestation.uri`), issuer key material (the publisher's `did:web` DID
+  document), and provenance statements (`statementUri`, `registryUri`).
 
 OCI registry
 : Optional content-addressed distribution channel (Layer 3).
@@ -59,7 +62,7 @@ Attacker
 - Trust Manifest (peer element on an entry)
 - Artifact bytes (served at `entry.url` or inlined in `entry.data`)
 - Attestation documents
-- Key material (DID documents, JWK Sets, X.509 SVIDs)
+- Key material (DID documents and JSON Web Keys)
 - Provenance statements
 - OCI registry content + signatures (Cosign / Notation)
 
@@ -68,7 +71,7 @@ Attacker
 1. Catalog fetch and parse
 2. Entry / nested-catalog resolution
 3. Trust Manifest signature verification
-4. Signer key resolution (from `identity`)
+4. Publisher-namespace authorization and issuer-key resolution
 5. Artifact fetch and digest computation
 6. Attestation fetch and validation
 7. Provenance evaluation
@@ -86,7 +89,7 @@ flowchart LR
         Cons --> ArtFetch[Fetch + digest artifact]
         Cons --> AttFetch[Fetch + validate attestation]
     end
-    KeyRes -->|B4| KeyEP[(Key endpoint: DID/JWKS/SPIFFE)]
+    KeyRes -->|B4| KeyEP[(Publisher did:web document)]
     ArtFetch -->|B1/B5| Art[(Artifact)]
     AttFetch -->|B4/B5| AttEP[(Attestation / provenance endpoints)]
     Reg[(OCI registry)] -. B2 alt .-> Cons
@@ -103,8 +106,8 @@ Trust boundaries:
   catalog document at rest (hosting account, CDN, object store, DNS
   control, repository). This is the boundary the substitution attack
   crosses.
-- **B3 — Publisher signing key.** The boundary between data an
-  attacker can author and data that requires the publisher's private
+- **B3 — Trust Manifest issuer signing key.** The boundary between data an
+  attacker can author and data that requires the issuer's private
   key.
 - **B4 — Third-party endpoints.** Servers whose URLs appear *inside*
   the (possibly attacker-controlled) Trust Manifest. The consumer is
@@ -117,7 +120,7 @@ Trust boundaries:
 | # | Asset | Why it matters |
 |---|-------|----------------|
 | AS1 | Integrity + authenticity of the artifact ↔ trust binding | The whole point of the Trust Manifest: that *these* claims describe *this* artifact. |
-| AS2 | Publisher signing keys | Compromise lets an attacker forge authentic-looking trust. |
+| AS2 | Trust Manifest issuer signing keys | Compromise lets an attacker forge authentic-looking trust. |
 | AS3 | The consumer's trust decision | The ultimate target — install/invoke a malicious artifact under a trusted label. |
 | AS4 | Availability of catalog resolution | Consumers depend on resolving catalogs to find tools. |
 | AS5 | Consumer privacy / telemetry | Fetches triggered by verification can leak who is evaluating what, and from where. |
@@ -127,7 +130,7 @@ Trust boundaries:
 | ID | Agent | Capability | In scope |
 |----|-------|------------|----------|
 | A1 | Network attacker | On-path, **cannot** break TLS | Yes (bounded) |
-| **A2** | **Catalog-write attacker** | Can modify the catalog document (compromised hosting account, CDN edge, object-store creds, DNS hijack, MITM of a non-TLS origin, or a malicious mirror). **Cannot** obtain the publisher's private key. | **Yes — primary** |
+| **A2** | **Catalog-write attacker** | Can modify the catalog document (compromised hosting account, CDN edge, object-store credentials, compromise of the catalog origin, or a malicious mirror). **Cannot** control the publisher's `did:web` domain or obtain an authorized issuer key. | **Yes — primary** |
 | A3 | Malicious publisher | Authors and signs manifests with a key it legitimately controls | Yes |
 | A4 | Compromised third-party endpoint | Controls an attestation/key/provenance URL referenced by a manifest | Yes |
 | A5 | Malicious nested/federated author | Authors a sub-catalog that a parent delegates to | Yes |
@@ -149,7 +152,7 @@ describe the resulting design.
 
 | ID | Threat | Boundary | Agent | Finding |
 |----|--------|----------|-------|---------|
-| S1 | **Self-asserted identity.** Key resolution derives the signer's key *from* the `identity` URI in the manifest. A catalog-write attacker substitutes both `identity` and the key endpoint, signs with their own key, and the signature verifies. Verification proves "signed by whoever owns this identity," not "signed by a publisher I trust." | B2/B3 | A2 | F3 |
+| S1 | **Self-asserted identity.** If key resolution derives the signer's key only from an unconstrained `identity` URI in the manifest, a catalog-write attacker can substitute both `identity` and the key endpoint and sign with their own key. Verification then proves only "signed by whoever owns this identity." | B2/B3 | A2 | F3 |
 | S2 | **Publisher spoofing.** `publisher.identifier`/`displayName` live on the entry, outside any signature; an attacker edits them to impersonate a reputable vendor. | B2 | A2 | F9 |
 | S3 | **Host spoofing.** `host.identifier` is attacker-controllable when the catalog is compromised; DID-service-endpoint checks only prove internal consistency of attacker-chosen data. | B2 | A2 | — |
 
@@ -193,10 +196,9 @@ describe the resulting design.
 ## 5. Attack Scenarios
 
 **SC-1 — URL swap under a valid signature (primary).** Acme publishes
-`urn:acme:agent:finance` with a manifest signed by
+`urn:air:acme-corp.com:agent:finance` with a manifest signed by
 `did:web:acme-corp.com`. An attacker who compromises Acme's CDN leaves
-the manifest byte-for-byte intact (so the signature and
-`identity == identifier` checks pass) and changes only `entry.url` to a
+the manifest byte-for-byte intact and changes only `entry.url` to a
 look-alike host serving a trojaned agent. A Layer-2 consumer "verifies
 the signature," sees green, and installs malware. *Closed by F1
 mitigation: the signed manifest MUST commit to the artifact digest.*
@@ -206,20 +208,26 @@ unsigned manifests. A consumer treats "Trusted Catalog" as
 cryptographic assurance and accepts attacker-rewritten attestations.
 *Closed by F2 mitigation: signatures REQUIRED at Level 3.*
 
-**SC-3 — Self-signed substitution.** Attacker replaces `identity` with
-`did:web:attacker.example`, repoints the key endpoint to their own
-JWKS, and signs the whole (malicious) manifest. Every internal check
-passes. *Closed by F3 mitigation: out-of-band trust anchoring —
-verified signature ≠ trusted publisher.*
+**SC-3 — Self-signed substitution.** An attacker replaces `identity` with
+`did:web:attacker.example` and signs a malicious manifest with their own key.
+The attacker cannot retain the original `urn:air:example.com:...` identifier:
+the `did:web` profile requires `did:web:example.com`, and the signed subject
+binds the complete identifier. The attacker can publish a separately named
+artifact under `urn:air:attacker.example:...`, but cannot impersonate the
+original publisher namespace. *Closed for standard `urn:air` identifiers by
+F3.*
 
-**SC-4 — alg:none forgery.** Attacker sets the JWS header `alg` to
-`none` (or `HS256` keyed with the publisher's public key) and forges a
-manifest with no private key. *Closed by F4 mitigation: algorithm
-allowlist.*
+**SC-4 — alg:none forgery.** An attacker sets the JWS header `alg` to `none`
+(or `HS256` keyed with the publisher's public key) and forges a manifest with
+no private key. *Closed by F4: the interoperable profile accepts only ES256 and
+requires a matching P-256 public key from the DID document.*
 
 **SC-5 — Downgrade.** A patched v2.1 exists, but the attacker re-serves
-the still-validly-signed v2.0 manifest + artifact. *Closed by F5
-mitigation: `issuedAt`/`expiresAt` + anti-rollback guidance.*
+the still-validly-signed v2.0 manifest and artifact. `issuedAt` and an optional
+`expiresAt` can inform consumer policy, but they do not prove that v2.0 is the
+publisher's current release. Preventing rollback requires a trusted source of
+current release information or consumer state recording a newer accepted
+release. *Residual risk described by F5.*
 
 **SC-6 — Verification SSRF.** A manifest sets
 `attestation.uri = http://169.254.169.254/latest/meta-data/…`; the
@@ -244,13 +252,13 @@ when one is present.*
 |---------|---------|------------------|-------------------------------|--------------|
 | F1 | T1 | Detached JWS over manifest; OPTIONAL `sourceDigest` | Signed `subject` committing to the served artifact type and digest; REQUIRED whenever signed | Trust Manifest → Subject Binding |
 | F2 | T2 | Level 3 requires manifest presence | Level 3 MUST carry a signed manifest with subject binding + `issuedAt` | Conformance Level 3 |
-| F3 | S1 | Key resolution from `identity` | Trust Anchoring subsection: verified signature ≠ trusted publisher; anchor identity to an out-of-band root | Verification → Trust Anchoring |
-| F4 | E1 | "detached JWS" | Algorithm allowlist; reject `alg:none` + symmetric; validate `alg`, pin `kid` | Verification → Signature Algorithms |
-| F5 | R1, E2 | none | `issuedAt` (REQUIRED when signed) + `expiresAt`; anti-rollback + revocation guidance | Trust Manifest + Verification |
-| F6 | T3 | OCI Layer 3 (informative) | OPTIONAL catalog-level `signature` (RECOMMENDED at L3) + OCI reference | Catalog signature + Security Considerations |
+| F3 | S1 | Unconstrained key resolution from `identity` | Require a signed `urn:air` identifier, the exactly corresponding root `did:web` issuer, and an assertion-authorized key resolved through the publisher domain | Verification → `did:web` Publisher Profile |
+| F4 | E1 | "detached JWS" | Require ES256 with a P-256 `publicKeyJwk`; require protected `alg` and `kid`; prohibit attacker-selected key-source headers | Verification → `did:web` Publisher Profile |
+| F5 | R1, E2 | `issuedAt` is REQUIRED when signed; `expiresAt` is OPTIONAL; the `did:web` profile checks current key authorization | No complete base mitigation: trusted current-release information or consumer state is required to prevent rollback | Trust Manifest + Verification |
+| F6 | T3 | OCI Layer 3 (informative) | Define the catalog-signature input but require a separate signer-authorization profile; recommend content-addressed distribution or a fully profiled catalog signature | Catalog signature + Security Considerations |
 | F7 | I1, I2, D1 | none | Safe-Fetching subsection: size caps, timeouts, no redirects to private ranges, host allowlist | Verification → Safe Fetching |
-| F8 | R2 | Fields only | Provenance-statement verification procedure | Verification → Provenance statements |
-| F9 | S2 | `identity == identifier` | Bind/flag publisher fields; advisory unless covered by attestation | Verification → Publisher identity |
+| F8 | R2 | Fields only | Delegate signer authorization and signature verification to the provenance statement's format; do not reuse the Entry Trust Manifest profile implicitly | Verification → Provenance statements |
+| F9 | S2 | Publisher fields outside the signed Trust Manifest | Treat publisher metadata as advisory unless a separately verified mechanism binds it to the authenticated issuer | Verification → Publisher metadata and attestations |
 | F10 | — | JCS | Note JCS numeric round-trip caveat for signed payloads | Verification → Signatures |
 | F11 | T4 | Signed subject contains representation type, digest, and optional URL only | Require signed `subject.identifier` and matching `entry.version` / `subject.version` presence, with exact values when present | Trust Manifest → Subject Binding |
 
@@ -283,11 +291,11 @@ proven to come from its expected source and to be untampered.
 | Sigstore property | Provides | Trust Manifest today | Gap (finding) |
 |-------------------|----------|----------------------|---------------|
 | Cosign signs the artifact **digest** | Artifact ↔ signature binding | `subject.digest` in the signed payload (this revision) | Closed (F1) |
-| **Fulcio** CA binds identity via OIDC; short-lived cert | Identity is CA-attested, not self-asserted | `identity` is self-declared; key resolved *from* it; anchoring pushed to the consumer | Partially open (F3) — anchoring is required but no CA is specified |
+| **Fulcio** CA binds identity via OIDC; short-lived cert | Identity is CA-attested, not self-asserted | A signed `urn:air` publisher domain authorizes the matching root `did:web` issuer; HTTPS and the DID document authenticate domain control | Different assurance — domain control rather than CA-attested OIDC identity |
 | **Rekor** transparency log | Non-repudiation, freshness, monitoring, rollback detection | No transparency-log equivalent; `issuedAt`/`expiresAt` give weak local freshness only | Open (F5, R1, E2) |
 | **Keyless / ephemeral keys** | No long-lived key management or revocation problem | Long-lived publisher keys (DID/JWKS); inherits key-management + revocation burden | Open (residual AS2) |
-| **TUF** root of trust | Secure distribution + rotation of verification keys | Trust-anchor bootstrapping unspecified | Open (residual) |
-| Verify expected identity + cert chain + Rekor inclusion | Full verification chain | Verify signature + `subject` + out-of-band anchor; no inclusion proof | Partially open |
+| **TUF** root of trust | Secure distribution + rotation of verification keys | The `did:web` profile inherits DNS and Web PKI roots; it defines no application-specific root distribution | Delegated infrastructure |
+| Verify expected identity + cert chain + Rekor inclusion | Full verification chain | Verify the signed namespace, matching `did:web` issuer, current assertion key, signature, and `subject`; no inclusion proof | Partially open |
 
 ### 7.2 Implications
 
@@ -296,11 +304,11 @@ proven to come from its expected source and to be untampered.
   to a specific artifact digest and additionally binds the signer's claims to
   the logical artifact release. This directly closes the representation
   substitution and release-coordinate relabeling attacks (T1, T4).
-- **What it delegates.** The Trust Manifest deliberately does not
-  operate a CA or a transparency log. It is a *format that can carry*
-  Sigstore-style evidence rather than a replacement for Sigstore
-  services. Consequently it leans on out-of-band **trust anchoring**
-  (section 4.1 / F3) to substitute for Fulcio's CA-attested identity.
+- **What it delegates.** The Trust Manifest deliberately does not operate a CA
+  or a transparency log. The `did:web` profile delegates domain authentication
+  to DNS and the Web PKI, then uses the DID document to authorize the current
+  assertion key. Consumer policy still determines whether the authenticated
+  publisher and its claims are trusted for a particular use.
 - **What is still weaker than Sigstore.** Without a Rekor-equivalent,
   the Trust Manifest cannot offer public auditability, third-party
   witnessing, or strong rollback detection; `issuedAt`/`expiresAt` are a
@@ -318,9 +326,9 @@ evidence first-class rather than reinventing it:
    signature + Rekor inclusion proof). Verifying it gives CA-attested
    identity and log inclusion "for free," and the `subject.digest`
    already aligns with what Cosign signs.
-2. **Anchor via the Sigstore/TUF root.** Permit the trust anchor
-   (section 4.1) to be Sigstore's TUF-managed root, so identity is
-   verified against Fulcio rather than a hand-maintained allowlist.
+2. **Define a separate Sigstore profile.** A future profile could use
+   Sigstore's TUF-managed root and Fulcio identity instead of the base
+   `did:web` domain-control profile.
 3. **Prefer transparency-log inclusion over local freshness.** Where a
    Rekor (or compatible) inclusion proof is available, consumers SHOULD
    prefer it to `issuedAt`/`expiresAt` for freshness, non-repudiation,
@@ -340,11 +348,11 @@ while letting trust-sensitive deployments inherit Sigstore's full chain
   protect the snapshot only after its signer and key are independently
   authorized; the catalog-signature profile does not yet define that
   authorization.
-- **Trust-anchor bootstrapping.** Anchoring shifts trust to an
-  out-of-band root (pinned allowlist, registry vetting, DID method with
-  domain control). The strength of the whole system reduces to how that
-  root is established and maintained; the spec can require anchoring but
-  cannot supply the root.
+- **Domain and policy roots.** The `did:web` profile inherits the consumer's DNS
+  and Web PKI trust roots. It authenticates control of a publisher namespace;
+  it does not decide whether that publisher is reputable or authorized by a
+  particular organization. Allowlisting, registry vetting, and other
+  application trust decisions remain consumer policy.
 - **Publisher-key compromise (AS2).** A subject-bound, signed manifest
   is only as trustworthy as the publisher's key hygiene. Short-lived
   keys, revocation checking, and OCI/Cosign counter-signatures reduce
