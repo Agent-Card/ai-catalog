@@ -71,7 +71,7 @@ Trust builds on the three conformance levels:
 
 ## Trust Manifest structure
 
-A Trust Manifest is an object on a Catalog Entry (or Host Info object). It always requires `identity` and must contain substantive trust evidence. A signed Trust Manifest also requires `subject` and `issuedAt`.
+A Trust Manifest is an object on a Catalog Entry. It always requires `identity` and must contain substantive trust evidence. A signed Trust Manifest also requires `subject` and `issuedAt`.
 
 | Field | Requirement | Description |
 |---|---|---|

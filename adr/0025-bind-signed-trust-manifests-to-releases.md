@@ -87,12 +87,12 @@ A consumer that must prevent rollback needs either a trusted source of current
 release information or local state recording the newest release it has already
 accepted.
 
-The release-coordinate comparison rules in this decision are limited to signed
-Trust Manifests attached to Catalog Entries. Requiring every Subject to include
-an `identifier` does not define what the Subject of a signed Host Trust Manifest
-represents. This decision also does not change the meaning of `identity` or
-define how an identity resolves to an authorized signing key. Those concerns
-require separate decisions.
+The release-coordinate comparison rules in this decision apply to signed
+Trust Manifests attached to Catalog Entries. Host Trust Manifests are outside
+the v1 model, as recorded in
+[ADR-0026](0026-remove-host-trust-manifests.md). This decision does not change
+the meaning of `identity` or define how an identity resolves to an authorized
+signing key. Those concerns require separate decisions.
 
 The specification's CDDL is updated to represent `subject`, `issuedAt`, and
 `expiresAt`, which were already defined in the normative prose but missing from
