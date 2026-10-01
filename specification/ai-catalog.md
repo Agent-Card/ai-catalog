@@ -492,9 +492,6 @@ MUST select its identifier by applying these rules in order:
    operator that is neither the artifact publisher nor its authorized
    delegate MUST use a non-`urn:air` identifier under its own control.
 
-A projected entry that uses `urn:air` and includes a Trust Manifest remains
-subject to the trust-domain alignment requirements in [Identity](#identity).
-
 Operating a catalog or aggregating an entry does not make its operator the
 artifact publisher. A catalog operator MUST NOT infer publisher
 authorization from the artifact's URL or an unsigned `publisher` field.
