@@ -182,10 +182,6 @@ The following members are OPTIONAL:
 `logoUrl`
 : A string containing a URL to the host's logo.
 
-`trustManifest`
-: A Trust Manifest object as defined in [Trust Manifest](#trust-manifest) providing
-  verifiable identity and trust metadata for the host itself.
-
 For example:
 
 ```json
@@ -490,9 +486,9 @@ The following members are OPTIONAL:
 
 # Trust Manifest
 
-The Trust Manifest is an OPTIONAL companion to catalog entries and
-host objects. It is a JSON object that provides verifiable identity,
-attestation, and provenance metadata for AI artifacts.
+The Trust Manifest is an OPTIONAL companion to Catalog Entries. It is a JSON
+object that provides verifiable identity, attestation, and provenance metadata
+for AI artifacts.
 Implementations that do not require trust metadata MAY ignore this
 section entirely — a conformant AI Catalog does not require Trust
 Manifests.
@@ -522,9 +518,6 @@ Consumers MUST reject a Trust Manifest whose `identity` domain does not
 align with the publisher domain in the containing entry's `identifier`.
 The `identity` is carried here so domain binding is part of the signed
 payload, rather than inferred only from unsigned entry context.
-
-When a Trust Manifest appears on a Host Info object, `identity`
-SHOULD match the host's `identifier` field when present.
 
 When multiple entries share the same `identifier` (with different `version`
 values), each entry MAY carry its own Trust Manifest. There is no
@@ -952,8 +945,6 @@ To verify the host of a catalog:
    domain.
 2. If `host.identifier` is a DID, resolve the DID Document and confirm the
    hosting domain appears in the DID Document's `service` endpoints.
-3. If `host.trustManifest` is present and signed, verify the
-   signature as described above.
 
 ### Verifying Publisher Identity
 
@@ -1328,8 +1319,7 @@ In addition to Level 1 requirements, a Discoverable Catalog:
 In addition to Level 2 requirements, a Trusted Catalog:
 
 - Includes a `trustManifest` object on every entry whose trust is to be
-  relied upon, and MAY include one on the host, as defined in
-  [Trust Manifest](#trust-manifest)
+  relied upon, as defined in [Trust Manifest](#trust-manifest)
 - Each such `trustManifest` MUST carry a `signature`, a `subject`
   binding it to the artifact ([Subject Binding](#subject-binding)), and
   an `issuedAt` timestamp
@@ -1519,7 +1509,6 @@ classDiagram
     class HostInfo {
         displayName string
         identifier string
-        trustManifest TrustManifest
     }
     class CatalogEntry {
         identifier string
@@ -1567,7 +1556,6 @@ classDiagram
     AICatalog --> "0..1" HostInfo : host
     CatalogEntry --> "0..1" Publisher : publisher
     CatalogEntry --> "0..1" TrustManifest : trustManifest
-    HostInfo --> "0..1" TrustManifest : trustManifest
     TrustManifest --> "0..1" Subject : subject
     TrustManifest --> "0..1" TrustSchema : trustSchema
     TrustManifest --> "*" Attestation : attestations
@@ -1678,8 +1666,7 @@ HostInfo = {
   displayName: text,
   ? identifier: text,
   ? documentationUrl: text,
-  ? logoUrl: text,
-  ? trustManifest: TrustManifest
+  ? logoUrl: text
 }
 
 CatalogEntry = {

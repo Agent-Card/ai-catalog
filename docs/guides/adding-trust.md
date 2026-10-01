@@ -65,7 +65,7 @@ Trust builds on the three conformance levels:
 
 ## Trust Manifest structure
 
-A Trust Manifest is an object on a Catalog Entry (or Host Info object) with one required field:
+A Trust Manifest is an object on a Catalog Entry with one required field:
 
 `identity`
 :   A globally unique URI that identifies this artifact. **Its trust domain must align with the publisher domain in the containing entry's `identifier`.** This binding ties trust claims to the authorized publisher.

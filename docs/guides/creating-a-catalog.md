@@ -50,7 +50,6 @@ The `host` object identifies who operates the catalog. Adding it upgrades you to
 | `identifier` | Verifiable identifier — a DID, domain name, or other URI |
 | `documentationUrl` | URL to your AI platform documentation |
 | `logoUrl` | URL to your logo. Use a Data URI to avoid leaking client info through image requests |
-| `trustManifest` | Trust Manifest for the host itself (see [Adding Trust](adding-trust.md)) |
 
 ## Catalog entries
 

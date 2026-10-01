@@ -16,8 +16,9 @@ version selection) are in scope only where they affect trust decisions.
 This document is the security analysis that motivates the normative
 hardening in [ai-catalog.md](ai-catalog.md) and the decisions recorded
 in [ADR-0019](../adr/0019-trust-manifest-artifact-binding.md) and
-[ADR-0009](../adr/0009-trust-manifest-substitution.md). It exists to
-answer the substitution-attack concern raised in ADR-0009: *"The
+[ADR-0009](../adr/0009-trust-manifest-substitution.md), together with the
+scope decision in [ADR-0026](../adr/0026-remove-host-trust-manifests.md). It
+exists to answer the substitution-attack concern raised in ADR-0009: *"The
 substitution attack of changing out the trust manifest is very real,
 especially if there's no tamper-proofness built in."*
 
@@ -54,7 +55,7 @@ Attacker
 ### 1.2 Data stores
 
 - Catalog document (`application/ai-catalog+json`)
-- Trust Manifest (peer element on an entry or host)
+- Trust Manifest (peer element on an entry)
 - Artifact bytes (served at `entry.url` or inlined in `entry.data`)
 - Attestation documents
 - Key material (DID documents, JWK Sets, X.509 SVIDs)
@@ -147,7 +148,7 @@ companion review and maps to a mitigation in section 6.
 |----|--------|----------|-------|---------|
 | S1 | **Self-asserted identity.** Key resolution derives the signer's key *from* the `identity` URI in the manifest. A catalog-write attacker substitutes both `identity` and the key endpoint, signs with their own key, and the signature verifies. Verification proves "signed by whoever owns this identity," not "signed by a publisher I trust." | B2/B3 | A2 | F3 |
 | S2 | **Publisher spoofing.** `publisher.identifier`/`displayName` live on the entry, outside any signature; an attacker edits them to impersonate a reputable vendor. | B2 | A2 | F9 |
-| S3 | **Host spoofing.** `host.identifier` is attacker-controllable when the catalog is compromised; DID-service-endpoint checks only prove internal consistency of attacker-chosen data. | B2 | A2 | F3 |
+| S3 | **Host spoofing.** `host.identifier` is attacker-controllable when the catalog is compromised; DID-service-endpoint checks only prove internal consistency of attacker-chosen data. | B2 | A2 | — |
 
 ### 4.2 Tampering
 
@@ -231,7 +232,7 @@ F6: catalog-level signature and/or OCI content-addressing.*
 |---------|---------|------------------|-------------------------------|--------------|
 | F1 | T1 | Detached JWS over manifest; OPTIONAL `sourceDigest` | Signed `subject` `{url?, mediaType, digest}` committing to the served artifact; REQUIRED whenever signed | Trust Manifest → Subject Binding |
 | F2 | T2 | Level 3 requires manifest presence | Level 3 MUST carry a signed manifest with subject binding + `issuedAt` | Conformance Level 3 |
-| F3 | S1, S3 | Key resolution from `identity` | Trust Anchoring subsection: verified signature ≠ trusted publisher; anchor identity to an out-of-band root | Verification → Trust Anchoring |
+| F3 | S1 | Key resolution from `identity` | Trust Anchoring subsection: verified signature ≠ trusted publisher; anchor identity to an out-of-band root | Verification → Trust Anchoring |
 | F4 | E1 | "detached JWS" | Algorithm allowlist; reject `alg:none` + symmetric; validate `alg`, pin `kid` | Verification → Signature Algorithms |
 | F5 | R1, E2 | none | `issuedAt` (REQUIRED when signed) + `expiresAt`; anti-rollback + revocation guidance | Trust Manifest + Verification |
 | F6 | T3 | OCI Layer 3 (informative) | OPTIONAL catalog-level `signature` (RECOMMENDED at L3) + OCI reference | Catalog signature + Security Considerations |
@@ -319,6 +320,12 @@ while letting trust-sensitive deployments inherit Sigstore's full chain
 
 ## 8. Residual Risks
 
+- **Catalog-operator authentication.** HTTPS from an expected domain can
+  authenticate the transport endpoint, but a DID service-endpoint check alone
+  does not authenticate attacker-selected Host Info. A catalog signature can
+  protect the snapshot only after its signer and key are independently
+  authorized; the catalog-signature profile does not yet define that
+  authorization.
 - **Trust-anchor bootstrapping.** Anchoring shifts trust to an
   out-of-band root (pinned allowlist, registry vetting, DID method with
   domain control). The strength of the whole system reduces to how that
