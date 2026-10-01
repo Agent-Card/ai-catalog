@@ -272,9 +272,6 @@ contain:</p>
 <dd>A string containing a URL to the host's documentation.</dd>
 <dt><code>logoUrl</code></dt>
 <dd>A string containing a URL to the host's logo.</dd>
-<dt><code>trustManifest</code></dt>
-<dd>A Trust Manifest object as defined in <a href="#trust-manifest">Trust Manifest</a> providing
-  verifiable identity and trust metadata for the host itself.</dd>
 </dl>
 <p>For example:</p>
 <pre><code class="language-json">{
@@ -565,9 +562,9 @@ publisher information. It MUST contain:</p>
 </section>
 <section id="trust-manifest">
 <h1>Trust Manifest</h1>
-<p>The Trust Manifest is an OPTIONAL companion to catalog entries and
-host objects. It is a JSON object that provides verifiable identity,
-attestation, and provenance metadata for AI artifacts.
+<p>The Trust Manifest is an OPTIONAL companion to Catalog Entries. It is a JSON
+object that provides verifiable identity, attestation, and provenance metadata
+for AI artifacts.
 Implementations that do not require trust metadata MAY ignore this
 section entirely — a conformant AI Catalog does not require Trust
 Manifests.</p>
@@ -595,8 +592,6 @@ Consumers MUST reject a Trust Manifest whose <code>identity</code> domain does n
 align with the publisher domain in the containing entry's <code>identifier</code>.
 The <code>identity</code> is carried here so domain binding is part of the signed
 payload, rather than inferred only from unsigned entry context.</p>
-<p>When a Trust Manifest appears on a Host Info object, <code>identity</code>
-SHOULD match the host's <code>identifier</code> field when present.</p>
 <p>When multiple entries share the same <code>identifier</code> (with different <code>version</code>
 values), each entry MAY carry its own Trust Manifest. There is no
 requirement that all versions carry identical trust metadata — trust
@@ -986,8 +981,6 @@ publisher authenticity.</p>
    domain.</li>
 <li>If <code>host.identifier</code> is a DID, resolve the DID Document and confirm the
    hosting domain appears in the DID Document's <code>service</code> endpoints.</li>
-<li>If <code>host.trustManifest</code> is present and signed, verify the
-   signature as described above.</li>
 </ol>
 </section>
 <section id="verifying-publisher-identity">
@@ -1349,8 +1342,7 @@ MUST be substantive (see <a href="#manifest-validity">Manifest Validity</a>).</p
 <p>In addition to Level 2 requirements, a Trusted Catalog:</p>
 <ul>
 <li>Includes a <code>trustManifest</code> object on every entry whose trust is to be
-  relied upon, and MAY include one on the host, as defined in
-  <a href="#trust-manifest">Trust Manifest</a></li>
+  relied upon, as defined in <a href="#trust-manifest">Trust Manifest</a></li>
 <li>Each such <code>trustManifest</code> MUST carry a <code>signature</code>, a <code>subject</code>
   binding it to the artifact (<a href="#subject-binding">Subject Binding</a>), and
   an <code>issuedAt</code> timestamp</li>
@@ -1537,7 +1529,6 @@ classDiagram
     class HostInfo {
         displayName string
         identifier string
-        trustManifest TrustManifest
     }
     class CatalogEntry {
         identifier string
@@ -1585,7 +1576,6 @@ classDiagram
     AICatalog --> "0..1" HostInfo : host
     CatalogEntry --> "0..1" Publisher : publisher
     CatalogEntry --> "0..1" TrustManifest : trustManifest
-    HostInfo --> "0..1" TrustManifest : trustManifest
     TrustManifest --> "0..1" Subject : subject
     TrustManifest --> "0..1" TrustSchema : trustSchema
     TrustManifest --> "*" Attestation : attestations
@@ -1681,8 +1671,7 @@ HostInfo = {
   displayName: text,
   ? identifier: text,
   ? documentationUrl: text,
-  ? logoUrl: text,
-  ? trustManifest: TrustManifest
+  ? logoUrl: text
 }
 
 CatalogEntry = {
