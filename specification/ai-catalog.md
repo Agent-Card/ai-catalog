@@ -576,15 +576,16 @@ A Trust Manifest MUST contain:
   DID, SPIFFE ID, or URL; these are illustrative and the set of
   identity schemes is open.
 
-When a Trust Manifest appears within a Catalog Entry, the `identity`
-field's trust domain MUST align with the publisher domain in the
-containing entry's `identifier` field. This binding ensures
-trust claims are associated with the authorized publisher namespace even
-when `identity` and `identifier` use different URI schemes.
-Consumers MUST reject a Trust Manifest whose `identity` domain does not
-align with the publisher domain in the containing entry's `identifier`.
-The `identity` is carried here so domain binding is part of the signed
-payload, rather than inferred only from unsigned entry context.
+When a Trust Manifest appears within a Catalog Entry whose
+`identifier` uses the `urn:air` naming format, consumers MUST
+extract the publisher domain from the identifier and verify that
+the `identity` field's authority or trust domain aligns with it.
+Consumers MUST reject a Trust Manifest whose identity domain does
+not align with the extracted publisher domain. For all other
+identifier formats, the identifier is opaque to the trust
+verification process; consumers MUST NOT attempt to derive a
+publisher domain from it and SHOULD rely on other verification
+instead, such as attestations or signature verification.
 
 When multiple entries share the same `identifier` (with different `version`
 values), each entry MAY carry its own Trust Manifest. There is no
