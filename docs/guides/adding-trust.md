@@ -43,7 +43,7 @@ Trust builds on the three conformance levels:
 
 === "Level 3 — Trusted"
 
-    Adds Trust Manifests with verifiable identity, attestations, and optionally signatures.
+    Adds signed, subject-bound Trust Manifests with verifiable identity, attestations, and provenance.
 
     ```json
     {
@@ -55,8 +55,14 @@ Trust builds on the three conformance levels:
           "type": "application/a2a-agent-card+json",
           "url": "...",
           "trustManifest": {
-            "identity": "urn:air:acme-corp.com:a2a:finance",
-            "attestations": [...]
+            "identity": "did:web:acme-corp.com:a2a:finance",
+            "subject": {
+              "identifier": "urn:air:acme-corp.com:a2a:finance",
+              "type": "application/a2a-agent-card+json",
+              "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+            },
+            "issuedAt": "2026-03-15T10:00:00Z",
+            "signature": "eyJhbGciOiJFUzI1NiJ9..detached-jws-signature"
           }
         }
       ]
@@ -65,23 +71,22 @@ Trust builds on the three conformance levels:
 
 ## Trust Manifest structure
 
-A Trust Manifest is an object on a Catalog Entry with one required field:
+A Trust Manifest is an object on a Catalog Entry. It always requires `identity` and must contain substantive trust evidence. A signed Trust Manifest also requires `subject` and `issuedAt`.
 
-`identity`
-:   A globally unique URI that identifies this artifact. **Its trust domain must align with the publisher domain in the containing entry's `identifier`.** This binding ties trust claims to the authorized publisher.
-
-All other fields are optional:
-
-| Field | Description |
-|---|---|
-| `identityType` | Type hint for the identity URI: `"did"`, `"spiffe"`, `"dns"` |
-| `trustSchema` | Describes the trust framework applied |
-| `attestations` | Array of compliance and identity attestation objects |
-| `provenance` | Array of provenance links (source code, OCI digests) |
-| `privacyPolicyUrl` | URL to the privacy policy |
-| `termsOfServiceUrl` | URL to the terms of service |
-| `signature` | Detached JWS signature over the Trust Manifest content |
-| `extensions` | Named extension map for custom trust data; included in the signed payload when the manifest is signed (see [Extensions](creating-a-catalog.md#extensions)) |
+| Field | Requirement | Description |
+|---|---|---|
+| `attestations` | Optional | Array of compliance and identity attestation objects |
+| `expiresAt` | Optional | Time after which a signed Trust Manifest is stale |
+| `extensions` | Optional | Named extension map for custom trust data; included in the signed payload when the manifest is signed (see [Extensions](creating-a-catalog.md#extensions)) |
+| `identity` | Required | Globally unique artifact URI. Its trust domain must align with the publisher domain in the containing entry's `identifier`. |
+| `identityType` | Optional | Type hint for the identity URI: `"did"`, `"spiffe"`, or `"dns"` |
+| `issuedAt` | Required when signed | Time at which a signed Trust Manifest was issued |
+| `privacyPolicyUrl` | Optional | URL to the privacy policy |
+| `provenance` | Optional | Array of provenance links (source code, OCI digests) |
+| `signature` | Required at Level 3 | Detached JWS signature over the Trust Manifest content |
+| `subject` | Required when signed | Logical artifact release and exact representation covered by a signature |
+| `termsOfServiceUrl` | Optional | URL to the terms of service |
+| `trustSchema` | Optional | Describes the trust framework applied |
 
 !!! tip "Attestation document format"
     Attestation documents are not restricted to any particular format — they can be human-readable (e.g., a PDF audit report) or machine-readable for automated verification (e.g., JWTs, Verifiable Credentials).
@@ -165,8 +170,14 @@ The `signature` field holds a detached JWS (RFC 7515):
 
 ```json
 "trustManifest": {
-  "identity": "urn:air:acme-corp.com:a2a:finance",
+  "identity": "did:web:acme-corp.com:a2a:finance",
   "attestations": [...],
+  "subject": {
+    "identifier": "urn:air:acme-corp.com:a2a:finance",
+    "type": "application/a2a-agent-card+json",
+    "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+  },
+  "issuedAt": "2026-03-15T10:00:00Z",
   "signature": "eyJhbGciOiJFUzI1NiJ9..detached-jws-signature"
 }
 ```
@@ -179,6 +190,8 @@ Clients verifying signatures should:
 2. Canonicalize the remaining Trust Manifest using JCS
 3. Resolve the signing key from the identity URI
 4. Verify the JWS signature
+5. Confirm `subject.identifier` and `subject.type` match the Catalog Entry; confirm the entry and subject versions are both absent or both present and exactly equal; when `subject.url` is present, confirm it matches the entry URL
+6. Verify the artifact content against `subject.digest`
 
 ## Trust layers
 
@@ -188,7 +201,7 @@ Trust is progressive — use the layer appropriate to your threat model:
 |---|---|---|
 | **0 — TLS** | Prevents eavesdropping and casual tampering | HTTPS certificate chain |
 | **1 — Provenance digests** | Detects artifact tampering in transit | Hash the fetched artifact, compare to `sourceDigest` |
-| **2 — Signed Trust Manifest** | Prevents Trust Manifest forgery | Verify JWS signature; rejects forged attestations |
+| **2 — Signed Trust Manifest** | Binds signed claims to an artifact release | Verify the JWS and confirm that the signed subject matches the entry and artifact |
 | **3 — OCI content-addressing** | Makes modification structurally impossible | All content addressed by digest in an OCI registry |
 
 For most use cases, Layer 0 (HTTPS) + Layer 2 (signed Trust Manifest) provides a strong baseline.
@@ -207,7 +220,7 @@ A Trust Manifest with identity, compliance attestation, provenance, and signatur
     "displayName": "Acme Financial Corp"
   },
   "trustManifest": {
-    "identity": "urn:air:acme-corp.com:a2a:finance",
+    "identity": "did:web:acme-corp.com:a2a:finance",
     "trustSchema": {
       "identifier": "urn:trust:acme-enterprise-v1",
       "version": "1.0",
@@ -242,6 +255,13 @@ A Trust Manifest with identity, compliance attestation, provenance, and signatur
     ],
     "privacyPolicyUrl": "https://acme-corp.com/legal/privacy",
     "termsOfServiceUrl": "https://acme-corp.com/legal/terms",
+    "subject": {
+      "identifier": "urn:air:acme-corp.com:a2a:finance",
+      "url": "https://agents.acme-corp.com/finance",
+      "type": "application/a2a-agent-card+json",
+      "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+    },
+    "issuedAt": "2026-03-15T10:00:00Z",
     "signature": "eyJhbGciOiJFUzI1NiJ9..detached-jws-signature"
   }
 }

@@ -15,7 +15,8 @@ version selection) are in scope only where they affect trust decisions.
 
 This document is the security analysis that motivates the normative
 hardening in [ai-catalog.md](ai-catalog.md) and the decisions recorded
-in [ADR-0019](../adr/0019-trust-manifest-artifact-binding.md) and
+in [ADR-0019](../adr/0019-trust-manifest-artifact-binding.md),
+[ADR-0025](../adr/0025-bind-signed-trust-manifests-to-releases.md), and
 [ADR-0009](../adr/0009-trust-manifest-substitution.md), together with the
 scope decision in [ADR-0026](../adr/0026-remove-host-trust-manifests.md). It
 exists to answer the substitution-attack concern raised in ADR-0009: *"The
@@ -139,8 +140,10 @@ manifest can only attest to what the publisher saw).
 
 ## 4. STRIDE Analysis
 
-Each threat references the finding IDs (F1–F10) carried in the
-companion review and maps to a mitigation in section 6.
+Each threat references the finding IDs carried in the companion review and
+maps to a mitigation in section 6. Pre-mitigation descriptions record the
+specification state at the time each gap was found; the corresponding controls
+describe the resulting design.
 
 ### 4.1 Spoofing
 
@@ -157,6 +160,7 @@ companion review and maps to a mitigation in section 6.
 | **T1** | **Artifact substitution under a valid signature (headline).** The `signature` covers only the Trust Manifest JSON. The artifact is referenced by `entry.url`/`data`/`mediaType`, which sit *outside* the signed bytes. The only binding is `identity == entry.identifier`. An attacker keeps the publisher's validly-signed manifest, leaves `identifier` intact, and repoints `url` to a malicious artifact. Signature still verifies. `provenance.sourceDigest` is OPTIONAL and denotes the *source* (`publishedFrom`), not the served artifact, so it does not close the gap. | B2 | A2 | F1 |
 | T2 | **Unsigned manifest tampering.** Level 3 ("Trusted Catalog") requires only that a `trustManifest` be *present*, not signed. An attacker freely rewrites every claim in an unsigned manifest. The "Trusted" label implies cryptographic assurance that is not enforced. | B2 | A2 | F2 |
 | T3 | **Catalog-level structural tampering.** Nothing signs the `entries` array or `host`. Even with per-entry signed manifests, an attacker injects new (malicious, unsigned) entries, deletes entries, or reorders/selects versions. Only OCI Layer 3 addresses this today. | B2 | A2/A5 | F6 |
+| T4 | **Release-coordinate relabeling under a valid signature.** A signed `subject` binds the exact artifact representation but not `entry.identifier` or `entry.version`. An attacker keeps the valid manifest and exact bytes while assigning them to another logical artifact in the same publisher namespace or labeling an old release with a higher version. Signature, type, URL, and digest checks still pass. | B2 | A2 | F11 |
 
 ### 4.3 Repudiation
 
@@ -226,11 +230,19 @@ consumer's verifier fetches it and exfiltrates cloud credentials.
 entry to a catalog full of legitimately signed entries. *Mitigated by
 F6: catalog-level signature and/or OCI content-addressing.*
 
+**SC-8 — Version relabeling.** A publisher releases v2.0 and signs its claims
+and artifact digest. An attacker leaves the signed manifest and exact artifact
+bytes unchanged but changes `entry.version` to v9.0. Because the entry version
+is authoritative for catalog-level sorting and selection, the old release can
+be selected as latest while every existing per-entry verification check
+passes. *Closed by F11: the signed subject MUST commit to the entry version
+when one is present.*
+
 ## 6. Controls: Existing vs. Proposed
 
 | Finding | Threats | Existing control | Proposed normative mitigation | Spec section |
 |---------|---------|------------------|-------------------------------|--------------|
-| F1 | T1 | Detached JWS over manifest; OPTIONAL `sourceDigest` | Signed `subject` `{url?, mediaType, digest}` committing to the served artifact; REQUIRED whenever signed | Trust Manifest → Subject Binding |
+| F1 | T1 | Detached JWS over manifest; OPTIONAL `sourceDigest` | Signed `subject` committing to the served artifact type and digest; REQUIRED whenever signed | Trust Manifest → Subject Binding |
 | F2 | T2 | Level 3 requires manifest presence | Level 3 MUST carry a signed manifest with subject binding + `issuedAt` | Conformance Level 3 |
 | F3 | S1 | Key resolution from `identity` | Trust Anchoring subsection: verified signature ≠ trusted publisher; anchor identity to an out-of-band root | Verification → Trust Anchoring |
 | F4 | E1 | "detached JWS" | Algorithm allowlist; reject `alg:none` + symmetric; validate `alg`, pin `kid` | Verification → Signature Algorithms |
@@ -240,6 +252,7 @@ F6: catalog-level signature and/or OCI content-addressing.*
 | F8 | R2 | Fields only | Provenance-statement verification procedure | Verification → Provenance statements |
 | F9 | S2 | `identity == identifier` | Bind/flag publisher fields; advisory unless covered by attestation | Verification → Publisher identity |
 | F10 | — | JCS | Note JCS numeric round-trip caveat for signed payloads | Verification → Signatures |
+| F11 | T4 | Signed subject contains representation type, digest, and optional URL only | Require signed `subject.identifier` and matching `entry.version` / `subject.version` presence, with exact values when present | Trust Manifest → Subject Binding |
 
 ## 7. Comparison with the Sigstore Architecture
 
@@ -279,9 +292,10 @@ proven to come from its expected source and to be untampered.
 ### 7.2 Implications
 
 - **What the Trust Manifest now matches.** With `subject` binding, the
-  Trust Manifest reproduces Cosign's core property: a signature commits
-  to a specific artifact digest. This is the single most important
-  Sigstore guarantee and directly closes the substitution attack (T1).
+  Trust Manifest reproduces Cosign's core property that a signature commits
+  to a specific artifact digest and additionally binds the signer's claims to
+  the logical artifact release. This directly closes the representation
+  substitution and release-coordinate relabeling attacks (T1, T4).
 - **What it delegates.** The Trust Manifest deliberately does not
   operate a CA or a transparency log. It is a *format that can carry*
   Sigstore-style evidence rather than a replacement for Sigstore
