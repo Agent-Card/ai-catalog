@@ -52,7 +52,7 @@ Without a common discovery standard, we see duplicative and incompatible efforts
 
 ## What are we doing?
 
-In this repo, we are defining the **AI Catalog**: a typed, nestable JSON container for discovering heterogeneous AI artifacts. Each catalog entry identifies an artifact by media type and may either reference the native artifact metadata by URL or inline it directly. The specification also defines an optional Trust Manifest extension for identity, attestations, and provenance metadata.
+In this repo, we are defining the **AI Catalog**: a typed, nestable JSON container for discovering heterogeneous AI artifacts. Each catalog entry identifies an artifact by media type and may either reference the native artifact metadata by URL or inline it directly. The specification also defines optional Trust Manifests keyed by contributor identity and signatures over selected fields for authenticating artifact metadata, attestations, and provenance.
 
 *Important Note:* The **AI Catalog** standard does not replace or redefine protocol-specific artifact formats. It provides a common discovery and trust layer around them.
 

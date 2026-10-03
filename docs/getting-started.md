@@ -69,7 +69,7 @@ AI Catalog has three conformance levels:
 |---|---|
 | **1 — Minimal** | `specVersion` + `entries` with types and URLs |
 | **2 — Discoverable** | Adds a `host` object + served at `/.well-known/` |
-| **3 — Trusted** | Adds Trust Manifests with identity, attestations, and provenance |
+| **3 — Trusted** | Adds publisher-authenticated entry signatures and trust evidence |
 
 Serving the catalog at `/.well-known/ai-catalog.json` enables automated discovery. To reach Level 2, add a `host` object identifying the catalog operator:
 

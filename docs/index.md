@@ -68,7 +68,7 @@ Serve it at `/.well-known/ai-catalog.json` and any AI client can discover everyt
 
 - **Optional trust layer**
 
-    The Trust Manifest extension adds verifiable identity, compliance attestations, and provenance tracking — without modifying the catalog structure.
+    Optional Trust Manifests group claims by contributor identity. Signatures authenticate selected catalog fields, including claims in Trust Manifests.
 
 - **Federation-ready**
 
