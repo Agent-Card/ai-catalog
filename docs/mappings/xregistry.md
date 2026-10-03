@@ -50,7 +50,7 @@ Tooling converts an AI Catalog JSON document into xRegistry resources:
    map to Versions.
 
 3. **Trust Manifests** are carried as an identity-keyed map in a Resource
-   extension attribute (for example `aicatalog_trustManifests`), or as related
+   extension attribute (for example `aicatalog_trustmanifests`), or as related
    Resources referenced from `meta.xref`, preserving each identity key. Carry
    `entry.digest` and `entry.signatures` separately, for example as
    `aicatalog_digest` and `aicatalog_signatures`. Preserve all selected field
