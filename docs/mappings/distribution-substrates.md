@@ -41,7 +41,7 @@ a pack/unpack round-trip.
 | Artifact content + `type` | The artifact bytes are retrievable together with their media type |
 | Catalog structure / nesting | Nested catalogs remain navigable as a hierarchy |
 | Trust Manifest association | An entry's Trust Manifests and their contributor identities are discoverable from that entry |
-| Content integrity | The served bytes are verifiably bound to `entry.digest` |
+| Content integrity | When `entry.digest` is present, the served bytes are verifiably bound to it |
 | Signing | The Trust Manifests' authenticity is cryptographically verifiable |
 
 ## Delegate, Don't Duplicate
