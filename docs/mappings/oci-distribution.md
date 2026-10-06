@@ -10,7 +10,7 @@ bridges the logical format and the OCI representation.
 
 Of the binding invariants, the OCI binding **delegates** identity,
 content integrity, and signing to OCI's own primitives. Consequently
-`entry.digest` is expected to equal the OCI descriptor digest of the served
+`entry.digest`, when present, is expected to equal the OCI descriptor digest of the served
 artifact, and the Trust Manifest signatures MAY be omitted from the packed
 representation because Cosign/Notation referrers carry signing instead.
 Unpacking reconstitutes (or re-signs) the logical Trust Manifests from those referrers.
@@ -78,8 +78,11 @@ Tooling converts OCI artifacts back to an AI Catalog JSON document:
 3. Query the Referrers API for each manifest to discover Trust
    Manifests and attestations.
 4. Assemble the logical AI Catalog JSON with `entries[]` and
-   `trustManifests` and `digest` fields, including signatures within the
-   Trust Manifests.
+   `trustManifests` and any original `digest` field, including signatures within
+   the Trust Manifests. Preserve any selected `subject.url` as `entry.url`.
+   Adding an entry digest or replacing a selected URL requires updating and
+   re-signing affected logical manifests; an OCI descriptor digest alone
+   does not update their signed subjects.
 
 The result is a standard `application/ai-catalog+json` document
 indistinguishable from one authored by hand.
