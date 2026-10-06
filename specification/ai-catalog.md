@@ -17,10 +17,12 @@ infrastructure.
 
 For environments that need verifiable identity, compliance evidence,
 or provenance tracking, this document also defines an optional **Trust
-Manifest** extension. A Trust Manifest accompanies an artifact as a
-peer element, carrying attestations and provenance metadata without
-wrapping or modifying the artifact's native format. Implementations
-that do not need trust metadata can ignore the Trust Manifest entirely.
+Manifest** object. An entry can carry independent Trust Manifests, each
+identifying its contributor and containing attestations and provenance without
+wrapping or modifying the artifact's native format. Each manifest can carry
+one signature over its contents and a subject identifying the artifact release.
+An optional catalog signature authenticates the catalog snapshot.
+Implementations that do not need trust metadata can ignore these features.
 
 The AI Catalog is intentionally agnostic about the artifacts it
 indexes. It does not define or constrain the schema of MCP server
@@ -48,8 +50,10 @@ Catalog Entry
   referencing or embedding an AI artifact.
 
 Trust Manifest
-: A JSON object providing verifiable identity, attestation, and
-  provenance metadata for an AI artifact.
+: A JSON object grouping one contributor's trust metadata about an AI
+  artifact. The entry stores it in the `trustManifests` array. Its
+  `contributor` identifies the party to whom the claims are attributed;
+  its optional signature authenticates that contributor's claims.
 
 Artifact
 : Any AI resource described by a catalog entry, such as an MCP server
@@ -154,16 +158,15 @@ The following members are OPTIONAL:
   official extension types.
 
 `signature`
-: A string containing a detached JWS [[RFC7515]] signature computed over
-  the JCS-canonicalized [[RFC8785]] catalog document (excluding the
-  `signature` member itself), providing catalog-level integrity over the
-  `entries` array and `host`. This specification defines the bytes covered by
-  the signature, but does not define an interoperable catalog-signer identity
-  or key-selection profile. The `did:web` profile for Entry Trust Manifests
-  does not apply to this field. A consumer MUST NOT treat a catalog signature
-  as proof of catalog authenticity unless a separate profile or configured
-  policy identifies and authorizes its signer.
-  See [Trust Manifest Substitution](#trust-manifest-substitution).
+: A [Signature object](#signature-object) authenticating this catalog
+  snapshot, as defined in [Catalog Snapshot Coverage](#catalog-snapshot-coverage).
+  Signer authentication alone does not establish authority to represent the
+  catalog operator; see [Catalog Authorization](#catalog-authorization).
+
+`additionalSignatures`
+: Reserved for future use. Producers SHOULD omit this member. Consumers MUST
+  accept and ignore it regardless of its value. It is excluded from this
+  catalog's signature payload; it establishes no endorsement in this version.
 
 ## Host Info
 
@@ -306,7 +309,8 @@ The following members are OPTIONAL:
     the referenced artifact already carries (an A2A Agent Card
     `version`, an MCP Server Card `version`), and when a single entry
     references such an artifact the entry `version` SHOULD be omitted to
-    avoid drift — the consumer can read it from the artifact. Unlike
+    avoid drift — the consumer can read it from the artifact. An entry
+    MAY include that version when it needs to be signed directly. Unlike
     `displayName` and `description`, however, `version` is not merely
     cosmetic: it is part of the entry's uniqueness key, so it is
     REQUIRED when a catalog lists multiple versions of the same
@@ -332,10 +336,24 @@ The following members are OPTIONAL:
   sole location for publisher information; it is not duplicated in
   the Trust Manifest.
 
-`trustManifest`
-: A Trust Manifest object as defined in [Trust Manifest](#trust-manifest)
-  providing verifiable identity and trust metadata for this artifact.
-  See [Trust Manifest](#trust-manifest) for details.
+`digest`
+: A string containing the artifact content digest in [Digest Format](#digest-format).
+  For `url`, hash the exact retrieved artifact bytes. For `data`, hash the
+  UTF-8 JCS-canonicalized [[RFC8785]] JSON value. Inline `data` MUST satisfy
+  JCS's input requirements for artifact verification to succeed. A digest
+  alone does not authenticate its source; see
+  [Entry Release Coverage](#entry-release-coverage).
+
+`privacyPolicyUrl`
+: A string containing a URL to the privacy policy governing this artifact.
+
+`termsOfServiceUrl`
+: A string containing a URL to the terms of service governing this artifact.
+
+`trustManifests`
+: An array of [Trust Manifest](#trust-manifest) objects. Each manifest groups
+  one contributor's claims about this artifact and can carry its own signature.
+  A contributor's identity is attribution, not proof of authorship.
 
 ### Resolving an Artifact's Display Name
 
@@ -492,9 +510,6 @@ MUST select its identifier by applying these rules in order:
    operator that is neither the artifact publisher nor its authorized
    delegate MUST use a non-`urn:air` identifier under its own control.
 
-A projected entry that uses `urn:air` and includes a Trust Manifest remains
-subject to the trust-domain alignment requirements in [Identity](#identity).
-
 Operating a catalog or aggregating an entry does not make its operator the
 artifact publisher. A catalog operator MUST NOT infer publisher
 authorization from the artifact's URL or an unsigned `publisher` field.
@@ -557,227 +572,148 @@ The following members are OPTIONAL:
 
 # Trust Manifest
 
-The Trust Manifest is an OPTIONAL companion to Catalog Entries. It is a JSON
-object that provides verifiable identity, attestation, and provenance metadata
-for AI artifacts.
-Implementations that do not require trust metadata MAY ignore this
-section entirely — a conformant AI Catalog does not require Trust
-Manifests.
+A Trust Manifest is an OPTIONAL collection of one contributor's trust metadata
+about the artifact represented by an entry. The entry's `trustManifests`
+array contains these independent contributions. Each manifest MUST contain
+`contributor` and MAY contain the optional members below.
 
-The Trust Manifest does NOT wrap the artifact. It sits alongside the
-artifact as a peer element within a Catalog Entry, keeping the native
-artifact format unmodified. Publisher information is NOT duplicated
-in the Trust Manifest — the informational publisher identity is
-carried on the Catalog Entry (see [Publisher Object](#publisher-object)).
+## Contributor Identity
 
-## Identity
+`contributor` MUST be an absolute URI [[RFC3986]] identifying the contributor
+asserting this manifest's references or claims, not necessarily the issuer
+of every referenced attestation or provenance statement. Authors SHOULD use
+their existing identity URI, such as `did:web:assessor.example`. The value
+MUST be preserved exactly when forwarding a Trust Manifest. Consumers MUST
+NOT infer authentication from its spelling or mere presence.
 
-A Trust Manifest MUST contain:
+A signed Trust Manifest's `signature.signer` MUST exactly equal `contributor`.
+Consumers MUST compare these decoded JSON strings case-sensitively, without
+URI normalization. Verifying the signature and this equality authenticates
+the contributor attribution. Accepting the claims for an entry additionally
+requires [entry release binding](#entry-release-coverage). A signature over
+one manifest does not authenticate other manifests or other entry fields.
 
-`identity`
-: A string containing a globally unique URI [[RFC3986]] that identifies the
-  issuer to which the Trust Manifest's claims are attributed. In a signed
-  Trust Manifest, the signature verification procedure authenticates this
-  issuer. The artifact described by the Trust Manifest is identified by
-  `subject`, not by `identity`.
+## Independent Contributions and Updates
 
-This specification defines interoperable issuer authentication for signed
-Entry Trust Manifests whose `identity` uses the root `did:web` form described
-in [The `did:web` Publisher Profile](#the-did-web-publisher-profile). Other
-identity URI schemes can be carried and processed through separately defined
-profiles or private agreement, but this specification does not define how they
-authorize or verify a Trust Manifest signature. Such processing does not
-satisfy the interoperable Level 3 issuer-verification requirements defined by
-this specification.
+Contributors can publish and update their manifests without modifying other
+contributors' manifests or invalidating their signatures. This version
+supports one signer per manifest and defines no references between manifests.
 
-When multiple entries share the same `identifier` (with different `version`
-values), each entry MAY carry its own Trust Manifest. There is no
-requirement that all versions carry identical trust metadata — trust
-properties may evolve across versions.
+An entry MAY contain multiple manifests from the same contributor, including
+manifests using different verification profiles. Array order does not imply
+trust or precedence. Consumers evaluate each manifest independently.
+
+A contributor MAY publish an updated Trust Manifest for the same release.
+Two registries may retrieve that manifest at different times and hold
+different signed versions. When choosing among updates for the same
+contributor and release, consumers SHOULD prefer the manifest with the most
+recent acceptable signature, comparing authenticated `issuedAt` instants.
+An issuance time is the signer's assertion, not an independently trusted clock.
+Equal issuance times with different content require local selection policy;
+consumers MUST NOT infer an ordering from array order. Registries SHOULD
+preserve the chosen manifest and its signature rather than merge separately
+signed contents.
 
 ## Manifest Validity
 
-A Trust Manifest exists to carry verifiable trust evidence; an empty one
-adds nothing and misleads consumers into believing trust metadata is
-present. Beyond the required `identity`, a Trust Manifest MUST therefore
-contain at least one *substantive* trust member:
-
-- a `signature` (with its required `subject` and `issuedAt`),
-- a non-empty `attestations` array,
-- a non-empty `provenance` array, or
-- a `trustSchema`.
-
-The members `identity` and `identityType` and the informational members
-`privacyPolicyUrl`, `termsOfServiceUrl`, and `extensions` do NOT satisfy this
-requirement.
-`subject`, `issuedAt`, and `expiresAt` are not substantive on their own:
-an unsigned `subject` digest is attacker-settable and unverifiable, so
-they count only as part of a `signature`.
-
-A Trust Manifest that would carry only non-substantive members MUST be
-omitted entirely rather than included empty — the `trustManifest` member
-is itself OPTIONAL, so no information is lost. Consumers SHOULD treat a
-Trust Manifest that violates this rule as if no Trust Manifest were
-present.
+A Trust Manifest MUST contain at least one of: a `signature`, a `trustSchema`,
+a non-empty `attestations` array, a non-empty `provenance` array, or a non-empty
+`extensions` object. A manifest containing a `signature` MUST also contain
+`subject`. A signed manifest MAY endorse only the artifact release identified
+by that subject, without additional trust evidence. These members' presence
+does not establish verification. Empty manifests MUST be omitted.
 
 ## Optional Members
 
-The following members are OPTIONAL:
-
-`identityType`
-: An optional string providing a descriptive type hint for the identity URI
-  (for example, "did"). Consumers MUST determine the identity mechanism from
-  the `identity` URI itself. When an applicable profile constrains this value,
-  a present value MUST agree with that profile.
-
-`trustSchema`
-: A Trust Schema object as defined in [Trust Schema](#trust-schema-object).
-
-`attestations`
-: An array of Attestation objects as defined in [Attestation](#attestation-object).
-  This carries references to evidence such as publisher-identity credentials,
-  compliance certifications, and other proofs. Verification semantics come
-  from the attestation's format or an applicable attestation profile.
-
-`provenance`
-: An array of Provenance Link objects as defined in
-  [Provenance Link](#provenance-link-object).
-
-`privacyPolicyUrl`
-: A string containing a URL to the privacy policy governing this
-  artifact.
-
-`termsOfServiceUrl`
-: A string containing a URL to the terms of service.
-
 `subject`
-: A Subject object as defined in [Subject Binding](#subject-binding) that
-  cryptographically binds this Trust Manifest to the specific artifact it
-  describes. A Trust Manifest that carries a `signature` MUST include a
-  `subject`.
-
-`issuedAt`
-: A string containing an ISO 8601 [[RFC3339]] timestamp indicating when
-  the Trust Manifest was created and signed. A Trust Manifest that
-  carries a `signature` MUST include `issuedAt`.
-
-`expiresAt`
-: A string containing an ISO 8601 [[RFC3339]] timestamp after which the
-  Trust Manifest MUST be considered stale. Consumers SHOULD reject a
-  Trust Manifest whose `expiresAt` is in the past.
+: A [Subject object](#subject-object) identifying the artifact release and
+  representation to which these claims apply. REQUIRED when `signature` is
+  present. It lets the signed manifest travel independently of the entry.
 
 `signature`
-: A string containing a detached JWS [[RFC7515]] signature computed over
-  the canonicalized Trust Manifest content, including the `subject` and
-  `issuedAt` members. Because the signed payload commits to the artifact
-  digest carried in `subject`, neither the trust claims nor the artifact
-  reference can be substituted without detection. See
-  [Trust Manifest Signatures](#trust-manifest-signatures).
+: A [Signature object](#signature-object) authenticating this manifest's
+  contents, including its subject and contributor identity.
+
+`additionalSignatures`
+: Reserved for future use. Producers SHOULD omit this member. Consumers MUST
+  accept and ignore it regardless of its value. It is excluded from this
+  manifest's signature payload; it establishes no endorsement in this version.
+
+`trustSchema`
+: A [Trust Schema object](#trust-schema-object) describing the framework the
+  contributor applies to its claims about this artifact. The descriptor does
+  not itself establish a trust root or override the consumer's policy.
+
+`attestations`
+: An array of [Attestation objects](#attestation-object) carrying references
+  to evidence. Their formats or applicable profiles define evidence verification.
+
+`provenance`
+: An array of [Provenance Link objects](#provenance-link-object).
 
 `extensions`
-: A JSON object (map) for extending trust metadata. When the Trust Manifest
-  carries a `signature`, this object is part of the signed payload; use it
-  for extensions that must be cryptographically bound to the manifest.
+: A JSON object containing this contributor's additional trust metadata, using
+  the namespaced keys defined in [Extensions](#extensions). Entry extensions
+  describe shared artifact metadata; manifest extensions express a particular
+  contributor's claims. A manifest signature covers only the latter.
 
-For example, a Trust Manifest with identity, attestations, and
-provenance:
+For example, this unsigned entry carries independent contributions:
 
 ```json
 {
-  "identity": "did:web:acme-corp.com",
-  "identityType": "did",
-  "trustSchema": {
-    "identifier": "urn:trust:acme-enterprise-v1",
-    "version": "1.0",
-    "governanceUri": "https://acme-corp.com/trust/governance.pdf",
-    "verificationMethods": ["did:web"]
-  },
-  "attestations": [
+  "identifier": "urn:air:acme.com:agent:finance",
+  "type": "application/a2a-agent-card+json",
+  "url": "https://acme.com/finance.json",
+  "trustManifests": [
     {
-      "type": "SOC2-Type2",
-      "uri": "https://trust.acme-corp.com/reports/soc2.pdf",
-      "digest": "sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
-    }
-  ],
-  "provenance": [
+      "contributor": "did:web:acme.com",
+      "provenance": [{
+        "relation": "publishedFrom",
+        "sourceId": "https://github.com/acme/finance"
+      }]
+    },
     {
-      "relation": "publishedFrom",
-      "sourceId": "https://github.com/acme-corp/finance-agent",
-      "sourceDigest": "sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321"
+      "contributor": "did:web:assessor.example",
+      "attestations": [{
+        "type": "SOC2-Type2",
+        "uri": "https://assessor.example/reports/acme.pdf"
+      }]
     }
-  ],
-  "privacyPolicyUrl": "https://acme-corp.com/legal/privacy",
-  "termsOfServiceUrl": "https://acme-corp.com/legal/terms",
-  "subject": {
-    "identifier": "urn:air:acme-corp.com:agent:finance",
-    "version": "2.1.0",
-    "url": "https://api.acme-corp.com/agents/finance/v2.1.json",
-    "type": "application/a2a-agent-card+json",
-    "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
-  },
-  "issuedAt": "2026-03-15T10:00:00Z",
-  "signature": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5In0..detached-jws-signature"
+  ]
 }
 ```
 
-## Subject Binding
+## Subject Object
 
-The Subject object binds a Trust Manifest to the specific artifact release it
-describes, closing substitution gaps in which an attacker who controls the
-catalog document leaves a validly-signed Trust Manifest in place but repoints
-the entry, assigns the manifest to another logical artifact, or relabels the
-artifact as another version. Because the Subject is part of the signed
-payload, the release coordinates, artifact reference when present, and content
-digest cannot be changed without invalidating the signature.
-
-A Subject object MUST contain:
+A Subject object binds a Trust Manifest to the artifact release it describes.
+It MUST contain:
 
 `identifier`
-: A string containing the logical identifier of the bound artifact. When the
-  Subject appears in a Trust Manifest on a Catalog Entry, this MUST exactly
-  equal the containing entry's `identifier`. Consumers MUST reject a signed
-  entry Trust Manifest when these values differ.
+: A string containing the artifact's logical identifier. It MUST exactly
+  equal the containing entry's `identifier`.
 
 `type`
-: A string containing the media type of the bound artifact. This MUST
-  equal the containing Catalog Entry's `type`.
+: A string containing the artifact's type identifier. It MUST exactly equal
+  the containing entry's `type`.
 
 `digest`
-: A string containing the cryptographic digest of the artifact content,
-  in the format defined in [Digest Format](#digest-format). For an
-  artifact referenced by `url`, the digest is computed over the exact
-  bytes served. For an artifact embedded in `data`, the digest is
-  computed over the JCS-canonicalized [[RFC8785]] JSON value.
+: The artifact content digest in [Digest Format](#digest-format). It MUST
+  exactly equal the containing entry's `digest`, which MUST be present when
+  an entry carries a signed Trust Manifest. For `url`, hash the exact retrieved
+  artifact bytes. For `data`, hash the UTF-8 JCS-canonicalized JSON value.
 
-The following members are OPTIONAL in the Subject data model:
+The following member is conditional:
 
 `version`
-: A string containing the version of the bound artifact release. For a signed
-  Trust Manifest on a Catalog Entry, `subject.version` and the containing
-  entry's `version` MUST either both be absent or both be present. When
-  present, the two values MUST be exactly equal. Consumers MUST reject a
-  signed entry Trust Manifest that violates these requirements.
+: A string containing the artifact release version. `subject.version` MUST
+  be present exactly when `entry.version` is present, and its value MUST
+  exactly equal `entry.version`.
 
-`url`
-: A string containing the URL of the bound artifact. When present, it
-  MUST equal the containing Catalog Entry's `url`. Consumers MUST reject
-  a Trust Manifest whose `subject.url` does not match the entry's `url`.
-
-A Trust Manifest that carries a `signature` MUST include a `subject`.
-When verifying a signed entry Trust Manifest, consumers MUST confirm that the
-entry's identifier and media type match the `subject`, that the entry and
-subject versions are either both absent or both present and exactly equal, and
-that the artifact content matches `subject.digest`, before relying on any claim
-in the Trust Manifest. See
-[Verifying Artifact Integrity](#verifying-artifact-integrity).
-
-The `subject.identifier`, `subject.type`, and optional `subject.url`
-intentionally restate values from the Catalog Entry so that they fall within
-the signed payload. When the entry declares a version, `subject.version`
-restates it for the same reason. This is deliberate duplication, not redundant
-metadata: without it, an attacker who controls the catalog document could
-change the artifact's logical identifier, release version, media type, or
-location without invalidating the signature.
+These fields deliberately repeat entry values to make the signed manifest
+self-contained. Verification of a standalone manifest authenticates its
+subject and claims; accepting those claims for an entry additionally requires
+[Entry Release Coverage](#entry-release-coverage). The subject does not include
+the retrieval URL, permitting mirrors serving identical artifact bytes.
 
 ## Trust Schema Object
 
@@ -888,16 +824,24 @@ from a specific source commit and published through an OCI registry:
 
 ## Verification Procedures
 
-This section describes how consumers verify the trust metadata
-carried by a Trust Manifest. Verification is OPTIONAL — consumers
-that do not need trust assurance can skip this entirely.
+This section describes how consumers verify Trust Manifests, catalog
+snapshots, and the evidence referenced by Trust Manifests.
+Verification is OPTIONAL — consumers that do not need trust assurance can
+skip this entirely.
+
+[The `did:web` Signer Profile](#the-did-web-signer-profile) defines an initial
+interoperable authentication mechanism. Other signer profiles can use the
+same data model. A signer profile MUST define permitted signer identities,
+key discovery and authorization, algorithms, JWS header requirements, validity
+checks, and any authority it establishes. Consumers MUST NOT authenticate an
+identity using an unsupported profile.
 
 ### Safe Fetching
 
-Verification procedures direct consumers to fetch URLs that originate in
-the Trust Manifest itself (`attestation.uri`, `statementUri`,
-`registryUri`, and identity-resolution endpoints). Because a manifest may be
-attacker-controlled before its issuer is authenticated, these fetches are a
+Verification procedures direct consumers to fetch artifact URLs, evidence
+references (`attestation.uri`, `statementUri`, and `registryUri`), and
+identity-resolution endpoints derived from signing metadata. These inputs
+may be attacker-controlled before authentication, so these fetches are a
 server-side request forgery (SSRF) and denial-of-service surface.
 Consumers performing verification MUST:
 
@@ -927,128 +871,234 @@ the lowercase hexadecimal encoding of the hash output. For example:
 Producers SHOULD use SHA-256 [[RFC6234]] or stronger. Consumers
 MUST reject digest values using algorithms shorter than SHA-256.
 
-### Trust Manifest Signatures
+### Signature Object
 
-The `signature` field carries a detached JWS [[RFC7515]] computed over the
-Trust Manifest content. The signature authenticates the issuer identified by
-`identity` and covers every claim in the Trust Manifest, including `subject`
-and `issuedAt`.
+A Trust Manifest or catalog root MAY contain one `signature` object. A
+Signature object MUST contain `signer`, `profile`, `issuedAt`, and `jws`, and
+MAY contain `expiresAt`. Unrecognized members follow
+[Version Handling](#version-handling) and remain part of the signed payload.
 
-To construct the JWS payload, remove the `signature` member from the Trust
-Manifest and canonicalize the remaining JSON object using JCS [[RFC8785]]. The
-UTF-8 encoding of the resulting JSON text is the JWS payload. The stored JWS
-MUST use compact serialization with its payload segment omitted, as described
-for detached content in Appendix F of [[RFC7515]]. Although the payload segment
-is omitted from the stored value, the base64url encoding of the payload remains
-part of the JWS Signing Input.
+`signer`
+: An absolute URI [[RFC3986]] identifying the party claimed to have issued
+  this endorsement. The applicable signer profile MUST establish that the
+  verification key is authorized to sign for this identity. Consumers MUST
+  NOT infer authentication or authority from this field alone.
 
-The protected JWS header MUST contain `alg`, identifying the signature
-algorithm.
+`profile`
+: A non-empty string identifying the signer verification procedure, as defined
+  in [Profile Selection](#profile-selection). It is authenticated as part of
+  the payload but does not itself establish trust in the signer or authority
+  to make the claims.
 
-The protected header MUST NOT contain a `b64` parameter. This specification
-uses the ordinary base64url-encoded JWS payload defined by [[RFC7515]] and does
-not use the unencoded-payload option from [[RFC7797]]. The protected header
-MAY contain additional parameters as permitted by the applicable
-issuer-authentication profile, which also defines its key-selection
-requirements.
+`issuedAt`
+: An RFC 3339 [[RFC3339]] timestamp asserting when this endorsement was issued.
+  The timestamp is authenticated as part of the payload.
 
-This construction ensures the signature is stable regardless of JSON member
-ordering or insignificant whitespace. Because the signed payload includes the
-`subject` binding, a verified Entry Trust Manifest commits its issuer's claims
-to a specific logical artifact release and representation.
+`expiresAt`
+: An OPTIONAL RFC 3339 timestamp after which this endorsement is stale.
+  If present it MUST denote an instant later than `issuedAt`.
 
-Producers SHOULD avoid placing numeric values that do not round-trip under JCS
-serialization, such as integers outside the range exactly representable as
-IEEE 754 doubles, in a signed Trust Manifest. Such values can cause a
-verifier's canonicalization to differ from the producer's. Where large
-integers are required, encode them as strings.
+`jws`
+: A detached compact JWS [[RFC7515]] over the
+  [payload](#signed-payload-and-jws-construction). The stored form is
+  `encodedProtectedHeader..encodedSignature`.
 
-### The `did:web` Publisher Profile
+#### Profile Selection
 
-The `did:web` Publisher Profile defines one interoperable way to authenticate
-the issuer of a signed Entry Trust Manifest. It deliberately supports a narrow
-combination:
+Consumers MUST select the verification procedure named by `profile`, and
+MUST require that it is both supported and permitted by local policy. They
+MUST NOT infer another profile from `signer`, JWS headers, or other metadata,
+or fall back to another procedure if the selected profile is unsupported,
+disallowed, or fails verification. Such a signature MUST NOT count as a
+verified endorsement; other manifests are evaluated independently.
 
-- the artifact has a standard `urn:air` identifier;
-- the Trust Manifest issuer is the root `did:web` DID corresponding to the
-  publisher domain in that identifier; and
-- the issuer signs with an ES256 key authorized for assertions in its current
-  DID document.
+Profiles defined by this specification use reserved names. Independently
+defined profiles MUST use absolute URI identifiers [[RFC3986]] under the
+profile author's control. Authors are encouraged to use a versioned HTTPS
+URL pointing to a human-readable definition of the profile's verification
+requirements. Consumers need an implementation of those requirements;
+retrieving the document does not supply verification behavior. Profile
+identifiers MUST be compared exactly and case-sensitively, without URI
+normalization.
 
-Other identity schemes, delegated issuers, path-based `did:web` DIDs, and
-additional signature algorithms require separate profiles. Implementations
-MAY support them by agreement, but such support is not interoperable under this
-specification.
+A profile identifier names a defined set of verification requirements. It
+MUST NOT be reused for a different set of requirements. Key rotation under
+those requirements does not change the profile. A consumer MAY impose
+stricter local acceptance requirements without defining another profile.
 
-#### Publisher Namespace Authorization
+The selected profile MUST authenticate the exact `signer` value using its
+specified key-authorization and verification rules. Consumers MUST also
+apply the coverage and authority checks required for the intended endorsement.
+The [`did:web` Publisher Profile](#the-did-web-publisher-profile), for example,
+adds publisher authorization and release coverage to the `did:web` Signer
+Profile.
 
-A Catalog Entry with a signed Trust Manifest MUST use the standard `urn:air`
-identifier syntax defined in [Catalog Entry](#catalog-entry). The `{publisher}`
-component is the text after the literal `urn:air:` prefix and before the next
-colon. The signed `subject.identifier` binds the Trust Manifest to the complete
-identifier as described in [Subject Binding](#subject-binding).
+#### Signed Payload and JWS Construction
 
-Under the `did:web` Publisher Profile, `{publisher}` MUST be valid as the domain
-component of a root `did:web` DID under [[DIDWEB]]. It MUST be serialized as
-lowercase ASCII and MUST NOT contain a port, an IP address, a trailing root dot,
-or a Unicode U-label. An internationalized domain can be used in its IDNA
-A-label form [[RFC5890]] [[RFC5891]].
+The payload is the containing Trust Manifest or catalog object, with only
+these two members omitted:
 
-The Trust Manifest's `identity` MUST be exactly the string `did:web:` followed
-by the `{publisher}` component. For example, the issuer identity for an
-artifact named `urn:air:example.com:agent:billing` is
-`did:web:example.com`. The `did:web` Publisher Profile does not support ports
-or method-specific paths. Exact equality is required; subdomain, suffix, and
-organizational-ownership heuristics MUST NOT be used.
+1. The immediate `jws` member of its immediate `signature` object.
+2. Its immediate `additionalSignatures` member, if present.
 
-When `identityType` is present, its value MUST be `did`. Consumers still select
-the `did:web` Publisher Profile from the `did:web` identity URI, not from the
-type hint.
+All other members and values MUST be retained, including `signature.signer`,
+`signature.profile`, `signature.issuedAt`, optional `signature.expiresAt`,
+and unrecognized members. Ignoring an unrecognized field's meaning MUST NOT
+remove it from the payload. The omissions are not recursive: members named
+`jws` or `additionalSignatures` elsewhere remain included. For example, a
+catalog signature includes complete nested Trust Manifests and their signatures.
 
-The equality rule connects two independently useful mechanisms. The signed
-`subject.identifier` states the namespace in which the release is published.
-Resolving the matching `did:web` DID through HTTPS authenticates control of
-that namespace's domain. Consequently, a consumer does not need a separately
-pinned DID merely to determine which issuer is authorized for a standard
-`urn:air` identifier.
+For example, a signed release-only manifest has this payload:
 
-This authorization proves control of the publisher namespace. It does not
-prove that the publisher is reputable, that its claims are accurate, or that
-the artifact is safe to use. Consumers and registries remain responsible for
-deciding which publisher domains and claims satisfy their policies.
+```json
+{
+  "contributor": "did:web:acme.com",
+  "subject": {
+    "identifier": "urn:air:acme.com:agent:finance",
+    "type": "application/a2a-agent-card+json",
+    "digest": "sha256:56bbd2ff730d81a52951fc2f58809dfb086b4be7a82766dcc18cfe32ff6acbbd"
+  },
+  "signature": {
+    "signer": "did:web:acme.com",
+    "profile": "did-web-v1",
+    "issuedAt": "2026-09-12T10:00:00Z"
+  }
+}
+```
+
+Canonicalize this payload with JCS [[RFC8785]]. Its UTF-8 bytes are the JWS
+payload. Use ordinary base64url-encoded JWS signing input, then omit only the
+payload segment from the stored compact serialization, as specified in
+Appendix F of [[RFC7515]]. Verifiers reconstruct that segment to verify the
+JWS. The payload MUST satisfy JCS's I-JSON constraints; parsers MUST reject
+duplicate JSON member names rather than silently discard one. Large integers
+that cannot round-trip as IEEE 754 doubles SHOULD be encoded as strings.
+
+The protected header MUST contain `alg` and `typ`. The `typ` value MUST
+exactly match the kind of containing object:
+
+| Containing object | Protected `typ` value |
+| --- | --- |
+| Trust Manifest | `ai-catalog-trust-manifest+jws` |
+| Catalog root | `ai-catalog+jws` |
+
+Consumers MUST reject a missing or mismatched `typ`. This authenticated marker
+prevents reusing a manifest signature as a catalog signature or vice versa.
+The `alg` value `none` MUST NOT be accepted. The protected header MUST NOT
+contain `b64`: the unencoded-payload option of [[RFC7797]] is not used. All
+other header parameters, algorithm allowlists, and key-selection rules are
+governed by the applicable signer profile and JWS requirements, including
+rejection of unsupported critical parameters. A successful cryptographic
+check alone establishes neither signer identity nor authority to make the claims.
+
+#### Signature Acceptance and Time
+
+Consumers MUST validate the Signature object's structure, profile selection,
+payload, JWS, and selected signer profile before accepting an
+endorsement. They MUST validate timestamp syntax and compare timestamps as
+instants, not strings.
+Consumers MUST NOT accept an endorsement before `issuedAt` or at or after
+`expiresAt`, when present. A deployment MAY allow a small, explicitly
+configured clock-skew tolerance. A new signature does not cryptographically
+invalidate an old one. Endorsement expiry does not replace freshness or
+validity checks defined by referenced evidence formats.
+
+An invalid, unsupported, or expired signature MUST NOT count as a verified
+endorsement. Other manifests are evaluated independently; consumers MAY
+apply local requirements such as evidence from particular contributors.
+Consumers MUST limit authentication claims based on a Trust Manifest to its
+signed contents and successfully verified subject bindings.
+
+### Entry Release Coverage
+
+Before relying on a Trust Manifest's signature as an endorsement of an entry's
+artifact release or of claims about that release, consumers MUST require:
+
+- A [verified](#signature-acceptance-and-time) Signature object whose `signer`
+  exactly equals the manifest's `contributor`.
+- A signed `subject` whose `identifier`, `type`, and `digest` exactly equal
+  the corresponding entry fields. The entry MUST contain `digest`.
+- Either both `subject.version` and `entry.version` absent, or both present
+  and exactly equal.
+
+These comparisons are between decoded JSON strings and MUST be case-sensitive,
+without URI normalization. Adding, removing, or changing an entry's version
+without the corresponding subject change makes the manifest unacceptable for
+that entry, even if the manifest's signature still verifies independently.
+Consumers MUST NOT combine fields from different manifests to establish binding.
+
+The consumer MUST also verify the artifact bytes against the matching digest
+using [Verifying Artifact Integrity](#verifying-artifact-integrity). The
+retrieval URL is not signed by the Trust Manifest, permitting mirrors serving
+identical bytes. Other entry fields, including entry extensions, are outside
+the manifest signature's scope. Referenced evidence retains its own
+verification requirements.
+
+### Catalog Snapshot Coverage
+
+A catalog signature covers the entire catalog object, omitting only its own
+`signature.jws` and its own reserved `additionalSignatures` as defined in
+[Signed Payload and JWS Construction](#signed-payload-and-jws-construction).
+This includes `specVersion`, every entry in order, Host Info, extensions, and
+all other present members, including unknown fields.
+
+Nested manifest signatures and nested `additionalSignatures` members remain
+included. Adding, removing, or changing a contribution therefore changes the
+catalog snapshot and requires a new catalog signature. Adding the catalog's
+own reserved `additionalSignatures` does not change its signed payload.
+Snapshot integrity does not replace checks on referenced artifacts or
+establish the authority of entry publishers.
+
+### The `did:web` Signer Profile
+
+This profile is selected by the exact `profile` value `did-web-v1`. It
+authenticates a signer using a root `did:web` DID and an ES256 assertion key.
+It can authenticate a publisher, assessor, registry, or other contributor.
+Authentication does not by itself grant publisher, host, or catalog authority.
+The [`did:web` Publisher Profile](#the-did-web-publisher-profile) adds publisher
+namespace authorization.
+
+The Signature object's `signer` MUST be a root `did:web` DID. Its domain
+MUST be lowercase ASCII, with no port, IP address, trailing root dot, or
+Unicode U-label; IDNA A-labels are permitted [[DIDWEB]] [[RFC5890]]
+[[RFC5891]].
+
+Other identity mechanisms, delegated controllers, path-based `did:web` DIDs,
+and algorithms require separately defined profiles. Implementations MAY
+support additional profiles by agreement; they MUST NOT silently apply these
+rules to a different mechanism.
 
 #### JWS Algorithm and Key Requirements
 
-Producers conforming to the `did:web` Publisher Profile MUST use ES256 as
-defined by [[RFC7518]]. Consumers implementing the `did:web` Publisher Profile
+Producers conforming to the `did:web` Signer Profile MUST use ES256 as
+defined by [[RFC7518]]. Consumers implementing the `did:web` Signer Profile
 MUST support ES256 and MUST reject any other `alg` value when applying that
 profile. A different algorithm can be introduced by a future signature
 profile; an implementation-specific choice does not extend the `did:web`
-Publisher Profile.
+Signer Profile.
 
 The protected JWS header MUST contain `kid`, identifying the verification
 method that authorizes the signature. It MUST NOT contain `jku`, `jwk`, `x5u`,
-or `x5c`; a verifier applying the `did:web` Publisher Profile selects key
+or `x5c`; a verifier applying the `did:web` Signer Profile selects key
 material only through the issuer's DID document, never from a key source named
 by the signature itself.
 
-The protected `kid` value MUST be an absolute DID URL consisting of the
-manifest's exact `identity` followed by a non-empty fragment. For example:
+The protected `kid` MUST be an absolute DID URL consisting of the exact
+`signer` value followed by a non-empty fragment, with no path or query.
+A mismatch MUST fail verification under this profile. It identifies a
+verification method in the signer's DID document.
 
-    did:web:example.com#release-signing-key
-
-The `kid` MUST NOT contain a path or query component. It identifies a
-verification method in the issuer's DID document; it does not identify another
-DID or an external key document.
+For example, a signature with `signer` set to `did:web:assessor.example`
+can use `kid` set to `did:web:assessor.example#assertion-key`.
 
 #### DID Document Resolution and Key Selection
 
-The verifier MUST resolve `identity` according to the `did:web` method
+The verifier MUST resolve `signer` according to the `did:web` method
 [[DIDWEB]] and process the result as a DID document according to DID Core
 [[DIDCORE]]. The resolution MUST satisfy the safe-fetching requirements in
-[Safe Fetching](#safe-fetching). Resolution fails under the `did:web` Publisher
-Profile if the DID document cannot be retrieved and validated or if its `id` is
-not exactly equal to `identity`.
+[Safe Fetching](#safe-fetching). Resolution fails under the `did:web` Signer
+Profile if the DID document cannot be retrieved and validated or if its `id`
+is not exactly equal to `signer`.
 
 The verification method selected by `kid` MUST be authorized by the DID
 document's `assertionMethod` verification relationship. An
@@ -1058,10 +1108,10 @@ resolving relative DID URLs as defined by DID Core, the verifier MUST select
 exactly one verification method whose `id` exactly equals `kid`.
 
 A key's presence in the top-level `verificationMethod` collection does not by
-itself authorize the key to sign a Trust Manifest. A key used only for another
-relationship, such as `authentication` or `keyAgreement`, MUST NOT be accepted.
-The selected verification method's `controller` MUST exactly equal `identity`;
-the `did:web` Publisher Profile does not support a verification method
+itself authorize the key to sign an AI Catalog endorsement. A key used only
+for another relationship, such as `authentication` or `keyAgreement`, MUST NOT be accepted.
+The selected verification method's `controller` MUST exactly equal
+`signer`; the `did:web` Signer Profile does not support a verification method
 controlled by another DID.
 
 The selected verification method MUST contain `publicKeyJwk` [[RFC7517]]. The
@@ -1076,7 +1126,7 @@ verification method's `id` is authoritative.
 
 This profile verifies against the DID document returned at verification time.
 If the key identified by `kid` is no longer authorized by `assertionMethod`,
-verification does not succeed. The Trust Manifest's `issuedAt` value records a
+verification does not succeed. The Signature object's `issuedAt` value records a
 claim by the issuer; it is not an independently trusted timestamp and cannot
 prove that a removed key was authorized in the past.
 
@@ -1088,82 +1138,81 @@ transparency log, or independently timestamped signature profile.
 
 #### Verification Result
 
-Verification succeeds under the `did:web` Publisher Profile only when all of
-the following have been established:
+Signer authentication succeeds only when the Signature object and detached
+JWS satisfy [Signature Object](#signature-object), the DID document resolves
+and authorizes exactly one suitable ES256 key under `assertionMethod`, and
+the signature verifies over the reconstructed payload. The authenticated
+identity is the Signature object's `signer`.
 
-1. The Trust Manifest and `subject` contain all fields required for a signed
-   Entry Trust Manifest.
-2. The entry identifier, signed subject identifier, and issuer identity satisfy
-   the publisher namespace authorization rules above.
-3. The JWS protected header and detached payload satisfy
-   [Trust Manifest Signatures](#trust-manifest-signatures).
-4. The DID document resolves successfully and authorizes exactly one suitable
-   verification method for `kid` under `assertionMethod`.
-5. The ES256 signature verifies over the reconstructed JWS Signing Input.
-6. The signed subject matches the Catalog Entry and artifact as described in
-   [Verifying Artifact Integrity](#verifying-artifact-integrity).
+Failure MUST NOT be treated as a verified endorsement. Consumers MAY retain
+or display unverified content, retry temporarily unavailable resolution, or
+reject it according to local policy. A successful signature is acceptable
+as current only after [Signature Acceptance and Time](#signature-acceptance-and-time).
 
-If any step does not succeed, the consumer MUST NOT rely on the Trust
-Manifest's claims as verified and MUST NOT count the entry as satisfying Level
-3. The consumer MAY retain or display the Catalog Entry as unverified, retry a
-temporarily unavailable resolution, or reject the entry according to local
-policy.
+### The `did:web` Publisher Profile
 
-When `expiresAt` is present and is in the past, the cryptographic signature can
-still be valid, but the consumer MUST NOT rely on the Trust Manifest's claims
-as current or count the entry as satisfying Level 3. The consumer MAY retain or
-display the manifest as expired.
+This profile applies the [`did:web` Signer Profile](#the-did-web-signer-profile)
+with two additional requirements:
 
-### Verifying Host Identity
+- **Publisher authorization:** The entry MUST use the standard `urn:air`
+  syntax. Its `{publisher}` component is the text following `urn:air:` and
+  preceding the next colon and MUST satisfy the root `did:web` domain
+  restrictions above. The authenticated signer identity MUST exactly match
+  `did:web:` followed by that component. Subdomain, suffix, and
+  organizational-ownership heuristics MUST NOT be used.
+- **Release binding:** The signature MUST satisfy
+  [Entry Release Coverage](#entry-release-coverage), including the signed subject
+  matching the entry and verification of the artifact bytes against
+  `entry.digest`.
 
-To verify the host of a catalog:
+For `urn:air:example.com:agent:billing`, the publisher signer is therefore
+`did:web:example.com`. A valid signature by an assessor can endorse claims
+about that same release, but does not satisfy publisher authorization.
+Matching the publisher domain proves namespace control, not reputation,
+claim accuracy, or artifact safety. Consumers choose which publishers and
+claims meet their trust policies. A publisher MAY issue a signed manifest
+containing only its contributor identity, subject, and signature to endorse
+the artifact release.
 
-1. Confirm the catalog was retrieved over HTTPS from the expected
-   domain.
-2. If `host.identifier` is a DID, resolve the DID Document and confirm the
-   hosting domain appears in the DID Document's `service` endpoints.
+### Catalog Authorization
 
-### Publisher Metadata
+A catalog signature includes Host Info when present. The `did:web` Signer
+Profile can authenticate catalog signers, but this specification does not
+define a universal mapping from a signer to catalog authority. A separate
+profile or configured policy MUST identify authorized operators before a
+consumer accepts a signature as a catalog endorsement. A signer-supplied
+`host.identifier` alone is not a trust anchor.
 
-The `did:web` Publisher Profile authenticates the issuer as the controller of
-the publisher domain in the signed `urn:air` identifier. It does not
-authenticate the optional `publisher` object's human-readable metadata. The
-`publisher` object resides outside the Trust Manifest signature, so consumers
-MUST treat its fields as advisory unless another verified mechanism binds them
-to the signed issuer.
+HTTPS authenticates the serving domain for transport. A DID document's
+service endpoint may describe a location, but is not by itself proof that
+the retrieved catalog was signed or authorized by that identity.
 
+### Publisher and Policy Metadata
+
+A Trust Manifest signature does not authenticate the entry's `publisher`,
+`privacyPolicyUrl`, or `termsOfServiceUrl`. These fields are outside its
+payload. Consumers MUST distinguish publisher-authenticated metadata from metadata supplied or endorsed by
+another entity. Policy URLs describe the policy governing the artifact;
+an operator's own catalog policy is not a substitute for that policy.
 This specification does not define a verification profile for a
 `publisher-identity` attestation.
 
 ### Verifying Artifact Integrity
 
-When a Trust Manifest carries a `signature`, it MUST include a `subject`
-that binds it to the artifact (see [Subject Binding](#subject-binding)).
-To verify artifact integrity:
+To verify the representation bound by an entry endorsement:
 
-1. Authenticate the issuer and verify the Trust Manifest signature using
-   [The `did:web` Publisher Profile](#the-did-web-publisher-profile).
-2. Confirm `subject.identifier` exactly equals the entry's `identifier`.
-3. Confirm that `subject.version` and the entry's `version` are either both
-   absent or both present and exactly equal.
-4. Confirm `subject.type` equals the entry's `type`, and, when
-   `subject.url` is present, that it equals the entry's `url`.
-5. Fetch the artifact content from the entry's `url`, or take it from
-   the entry's `data`, observing the limits in
+1. Authenticate the signer, verify the signature, check its time, and confirm
+   [Entry Release Coverage](#entry-release-coverage) and the authorization
+   required for the intended claim.
+2. Retrieve bytes from `entry.url`, or use `entry.data`, observing
    [Safe Fetching](#safe-fetching).
-6. Compute the digest of the fetched bytes (for `url`) or of the
-   JCS-canonicalized value (for `data`) using the algorithm named in
-   `subject.digest`.
-7. Compare the computed digest to `subject.digest`. Reject the artifact
-   if they differ.
+3. Compute the digest of the retrieved bytes or the UTF-8 JCS-canonicalized
+   `data` value using the algorithm named by `entry.digest`.
+4. Compare with `entry.digest`. A mismatch MUST fail artifact verification.
 
-Because the `subject` is part of the signed payload, this check binds
-the verified signature to the logical artifact release and its exact
-representation, defeating catalog-level substitution or relabeling of the
-artifact identifier, version, URL, media type, or content. The OPTIONAL
-`provenance[].sourceDigest` records the digest of an upstream *source*
-(e.g., a Git commit) and is complementary to — not a substitute for —
-the `subject` digest.
+An unsigned digest can detect a content mismatch but cannot authenticate the
+source. The optional `provenance[].sourceDigest` identifies an upstream source
+and MUST NOT be substituted for the digest of this entry's artifact.
 
 ### Verifying Attestations
 
@@ -1192,9 +1241,8 @@ To process such a statement:
    format's verification procedure and the consumer's trust policy.
    `signatureRef` can assist key discovery when that format defines how to use
    it, but the value is not a trust anchor by itself.
-3. Confirm the statement's subject matches the artifact's `subject`
-   digest. Treat an unverifiable statement as absent, not as a failure
-   of the artifact itself.
+3. Confirm the statement's subject matches `entry.digest`. Treat an
+   unverifiable statement as absent, not as a failure of the artifact itself.
 
 # Organizing Catalogs
 
@@ -1266,7 +1314,7 @@ The document at that URL would itself be an AI Catalog containing
 the A2A agent, MCP server, and dataset entries.
 
 A nested catalog entry is a regular catalog entry — it has an
-`identifier`, may carry a `trustManifest`, and may include a
+`identifier`, may carry `trustManifests`, and may include a
 `publisher`. An entry inside a nested catalog MAY reuse the same
 `identifier` as an entry elsewhere; this indicates the same logical
 artifact.
@@ -1482,11 +1530,9 @@ A conformant Minimal Catalog is a JSON document with media type
   minimum `identifier`, `type`, and exactly one of `url` or
   `data`
 
-All other fields (`host`, `publisher`, `trustManifest`,
-`extensions`) are OPTIONAL. This level is sufficient for use cases that
-only need a simple list of AI artifacts — for example, a catalog of
-MCP servers or A2A agents. A `trustManifest`, when present at any level,
-MUST be substantive (see [Manifest Validity](#manifest-validity)).
+All other defined members are OPTIONAL. This level supports consumers that
+only need a simple list of artifacts. Each manifest in `trustManifests`, when
+present at any level, MUST satisfy [Manifest Validity](#manifest-validity).
 
 ## Level 2: Discoverable Catalog
 
@@ -1500,28 +1546,27 @@ In addition to Level 1 requirements, a Discoverable Catalog:
 
 In addition to Level 2 requirements, a Trusted Catalog:
 
-- Includes a `trustManifest` object on every entry whose trust is to be
-  relied upon, as defined in [Trust Manifest](#trust-manifest)
-- Each such `trustManifest` MUST carry a `signature`, a `subject`
-  binding it to the artifact ([Subject Binding](#subject-binding)), and
-  an `issuedAt` timestamp
-- A signed Entry Trust Manifest MUST satisfy
-  [The `did:web` Publisher Profile](#the-did-web-publisher-profile), including
-  its `urn:air` namespace authorization and issuer-key requirements
-- Consumers MUST authenticate the issuer, verify the signature, and confirm
-  the `subject` digest before relying on any claim. For an Entry Trust
-  Manifest, consumers MUST also confirm the subject's identifier, media type,
-  and optional URL against the containing entry, and confirm that the entry and
-  subject versions are either both absent or both present and exactly equal
-- SHOULD provide catalog-level integrity, either by serving the catalog
-  through a content-addressed channel (see
-  [Security Considerations](#security-considerations)) or by using a
-  catalog-signature profile that identifies and authorizes the catalog signer.
-  The top-level `signature` field defines the signed bytes but this
-  specification does not define such a signer profile
-- MAY include `publisher` objects on entries with verifiable identifiers
-- Enables verifiable identity, compliance attestations, and provenance
-  tracking
+- Includes an acceptably signed, publisher-authorized Trust Manifest on each
+  entry whose publisher authenticity is to be relied upon, using
+  [The `did:web` Publisher Profile](#the-did-web-publisher-profile).
+- Consumers MUST authenticate signers, verify signatures and endorsement
+  times, enforce [Entry Release Coverage](#entry-release-coverage), and verify
+  artifact content against `entry.digest` before relying on signed claims.
+- Additional contributors MAY provide their own Trust Manifests. Before
+  relying on their claims, consumers MUST verify each contributor's signature
+  and the subject binding to the same entry release.
+- Consumers MUST distinguish the initial interoperable `did:web` profiles
+  from other profiles supported by private agreement. Future profiles can
+  define additional interoperable authentication and authorization mechanisms.
+- SHOULD provide catalog-level integrity through a content-addressed channel
+  or a signature satisfying [Catalog Snapshot Coverage](#catalog-snapshot-coverage)
+  and an applicable operator-authorization policy.
+- MAY include signed attestations, provenance, and manifest extensions,
+  according to consumer policy.
+
+Conformance does not imply that every optional signature is acceptable or
+that every claim is true. Unverified additional contributions do not by
+themselves invalidate an independently verified publisher endorsement.
 
 Implementations at any level are fully conformant with this
 specification. Consumers MAY ignore fields defined at higher
@@ -1542,34 +1587,20 @@ appropriate to their threat model.
   This prevents passive eavesdropping and casual tampering but does
   not protect against compromised hosting or DNS hijack.
 
-**Layer 1 — Trust Manifest with Provenance**
-: The catalog entry includes a Trust Manifest containing provenance
-  links with `sourceDigest` values. After fetching an artifact, the
-  consumer can hash the content and compare it to the digest recorded
-  in the provenance link. This detects artifact tampering in transit.
-  However, because the Trust Manifest is a peer element in the catalog
-  (not embedded in the artifact), an attacker who controls the catalog
-  document can substitute both the artifact URL and the Trust Manifest
-  with matching values. **Digest verification without signature
-  verification guards against transport-level tampering but not
-  catalog-level substitution.**
+**Layer 1 — Artifact Digest**
+: `entry.digest` allows consumers to compare fetched or embedded content
+  with the declared digest. Without an authenticated endorsement, an attacker
+  controlling the catalog can substitute both the content and the digest.
+  A provenance source digest describes the source, not the entry's
+  representation.
 
-**Layer 2 — Signed Trust Manifest**
-: The Trust Manifest includes a `signature` field (detached JWS) and a
-  `subject` that binds the signature to the artifact's logical identifier,
-  version when present, media type, and content digest (see
-  [Subject Binding](#subject-binding)). For a standard `urn:air` identifier,
-  [The `did:web` Publisher Profile](#the-did-web-publisher-profile) authorizes
-  the root `did:web` identity for the identifier's publisher domain and
-  verifies a key authorized by that DID for assertions. The consumer then
-  confirms the `subject` bindings before trusting any claim. This closes the
-  substitution gap from Layer 1: because the signed payload commits to the
-  logical release and its representation, an attacker cannot relabel or
-  repoint the entry to a different artifact or forge claims without control of
-  the publisher domain and an authorized signing key. Consumers that rely on
-  trust metadata MUST NOT treat a Trust Manifest as verified when its issuer
-  cannot be authenticated, its signature does not validate, or its `subject`
-  does not match the entry and fetched artifact.
+**Layer 2 — Trust Manifest Signatures**
+: A manifest signature binds its complete claims to the artifact identifier,
+  version when present, type, and digest through its signed subject. The consumer
+  authenticates its signer, checks release coverage, verifies artifact integrity, and
+  evaluates authority for the intended claim. Independent contributor
+  manifests can coexist. A valid signature over one contribution does not
+  authenticate another or establish completeness of the catalog.
 
 **Layer 3 — Content-Addressed Distribution (OCI)**
 : The catalog is distributed through an OCI registry where all content
@@ -1610,7 +1641,7 @@ this threat:
 - **Layer 1** enables post-fetch integrity checks but does not prevent
   whole-entry substitution.
 - **Layer 2** binds the signed Trust Manifest to the logical artifact release
-  and its representation via `subject`, preventing Trust Manifest forgery and
+  and its representation via the signed `subject`, preventing
   artifact substitution or relabeling under a valid signature.
 - **Layer 3** makes modification structurally impossible through
   content-addressing.
@@ -1623,27 +1654,23 @@ document can attempt to substitute the artifact, the Trust Manifest, or
 both. This specification defends against substitution with three
 compounding mechanisms:
 
-- **Subject binding.** A signed Trust Manifest MUST include a `subject`
-  that commits to the artifact's logical identifier, version when present,
-  media type, and content digest (see [Subject Binding](#subject-binding)).
-  The artifact release or representation therefore cannot be changed without
-  invalidating the signature.
-- **Publisher namespace authorization.** A verified Entry Trust Manifest uses
-  the signed `urn:air` identifier to select its publisher domain and requires a
-  matching root `did:web` issuer. Resolving that DID through HTTPS and
-  requiring an assertion-authorized key prevents an attacker from substituting
-  a self-selected issuer while continuing to claim the original publisher's
-  namespace.
-- **Catalog-level integrity.** Per-entry signatures do not prevent an
-  attacker from adding, removing, or reordering whole entries. Hosts
-  SHOULD additionally provide catalog-level integrity, either by serving
-  the catalog through a content-addressed channel (Layer 3) or by
-  including a top-level catalog `signature` computed over the
-  JCS-canonicalized [[RFC8785]] catalog document (excluding the
-  `signature` member itself). This specification does not define the identity
-  or authorization of the catalog signer; deployments using that field for
-  authenticity need a separate catalog-signature profile or configured
-  policy.
+- **Release binding.** Every accepted artifact endorsement jointly covers
+  subject identifier, type, digest, and version when present, plus the claims
+  relied upon. Consumers check subject-to-entry equality as well as cryptography
+  and artifact bytes.
+- **Signer and claim authority.** Contributor identities are not proof. Publisher
+  authorization requires the authenticated signer to match the publisher
+  namespace; contributor attribution requires authentication as that
+  contributor. An attacker's signature under its own identity does not
+  authenticate another publisher or contributor.
+- **Catalog-level integrity.** Manifest signatures do not prevent adding,
+  removing, or reordering complete entries. Hosts SHOULD provide a signature
+  satisfying [Catalog Snapshot Coverage](#catalog-snapshot-coverage), with
+  operator authorization, or an authenticated content-addressed channel.
+
+Signatures do not prove that a newer manifest, omitted contributor, or revoked
+evidence does not exist. Consumers requiring freshness beyond acceptable
+endorsement times need an appropriate update source and evidence policy.
 
 ## Identifier Typosquatting
 
@@ -1664,7 +1691,8 @@ year may no longer reflect current practices.
 
 Consumers SHOULD:
 
-- Check the `updatedAt` field on catalog entries to assess freshness.
+- Check acceptable contributor endorsement times; unsigned entry `updatedAt`
+  is only an advisory listing timestamp.
 - Independently verify attestation documents are current when making
   trust decisions.
 - Treat attestations as evidence, not guarantees — the attestation
@@ -1701,7 +1729,7 @@ classDiagram
         specVersion string
         entries CatalogEntry[]
         host HostInfo
-        signature string
+        signature Signature
     }
     class HostInfo {
         displayName string
@@ -1714,27 +1742,29 @@ classDiagram
         url | data
         version string
         publisher Publisher
-        trustManifest TrustManifest
+        trustManifests TrustManifest[]
+        digest string
+        privacyPolicyUrl string
+        termsOfServiceUrl string
     }
     class Publisher {
         identifier string
         displayName string
     }
     class TrustManifest {
-        identity string
+        contributor string
         subject Subject
+        signature Signature
         trustSchema TrustSchema
         attestations Attestation[]
         provenance ProvenanceLink[]
-        issuedAt string
-        signature string
+        extensions object
     }
     class Subject {
         identifier string
-        version string
-        url string
         type string
         digest string
+        version string
     }
     class TrustSchema {
         identifier string
@@ -1751,14 +1781,23 @@ classDiagram
         sourceId string
         sourceDigest string
     }
+    class Signature {
+        signer string
+        profile string
+        issuedAt string
+        expiresAt string
+        jws string
+    }
     AICatalog --> "*" CatalogEntry : entries
     AICatalog --> "0..1" HostInfo : host
     CatalogEntry --> "0..1" Publisher : publisher
-    CatalogEntry --> "0..1" TrustManifest : trustManifest
-    TrustManifest --> "0..1" Subject : subject
+    CatalogEntry --> "*" TrustManifest : trustManifests
     TrustManifest --> "0..1" TrustSchema : trustSchema
     TrustManifest --> "*" Attestation : attestations
     TrustManifest --> "*" ProvenanceLink : provenance
+    AICatalog --> "0..1" Signature : signature
+    TrustManifest --> "0..1" Signature : signature
+    TrustManifest --> "0..1" Subject : subject
     CatalogEntry --> "0..1" AICatalog : nested
 </pre>
 
@@ -1848,8 +1887,12 @@ Related Information:
 
 # CDDL Schema
 
-The following CDDL [[RFC8610]] defines the normative schema for AI
-Catalog and Trust Manifest documents.
+The following CDDL [[RFC8610]] defines the structural schema. The normative
+prose additionally constrains contributor URIs, manifest substance, subject
+binding, timestamp validity, and signature verification. The schema describes
+recognized members. Under [Version Handling](#version-handling), consumers
+MUST ignore unrecognized members when validating this structure, but MUST
+retain them when constructing signed payloads.
 
 ## AI Catalog
 
@@ -1858,6 +1901,8 @@ AICatalog = {
   specVersion: text,
   ? host: HostInfo,
   entries: [* CatalogEntry],
+  ? signature: Signature,
+  ? additionalSignatures: any,
   ? extensions: { * text => any }
 }
 
@@ -1877,7 +1922,10 @@ CatalogEntry = {
   ? description: text,
   ? tags: [* text],
   ? publisher: Publisher,
-  ? trustManifest: TrustManifest,
+  ? digest: text,
+  ? privacyPolicyUrl: text,
+  ? termsOfServiceUrl: text,
+  ? trustManifests: [* TrustManifest],
   ? updatedAt: tdate,
   ? extensions: { * text => any }
 }
@@ -1893,26 +1941,29 @@ Publisher = {
 
 ```
 TrustManifest = {
-  identity: text,
-  ? identityType: text,
+  contributor: text,
+  ? subject: Subject,
+  ? signature: Signature,
+  ? additionalSignatures: any,
   ? trustSchema: TrustSchema,
   ? attestations: [* Attestation],
   ? provenance: [* ProvenanceLink],
-  ? privacyPolicyUrl: text,
-  ? termsOfServiceUrl: text,
-  ? subject: Subject,
-  ? issuedAt: tdate,
-  ? expiresAt: tdate,
-  ? signature: text,
   ? extensions: { * text => any }
 }
 
 Subject = {
   identifier: text,
-  ? version: text,
   type: text,
   digest: text,
-  ? url: text
+  ? version: text
+}
+
+Signature = {
+  signer: text,
+  profile: text,
+  issuedAt: tdate,
+  ? expiresAt: tdate,
+  jws: text
 }
 
 TrustSchema = {
@@ -1943,7 +1994,8 @@ ProvenanceLink = {
 # Example: Multi-Artifact Catalog with Nested Catalog
 
 The following example shows an AI Catalog that contains a mix of
-artifact types including a nested catalog packaging related artifacts:
+artifact types including a nested catalog packaging related artifacts.
+Digest and JWS strings in illustrative examples are placeholders.
 
 ```json
 {
@@ -1965,20 +2017,21 @@ artifact types including a nested catalog packaging related artifacts:
         "identifier": "did:web:acme.com",
         "displayName": "Acme Financial Corp"
       },
-      "trustManifest": {
-        "identity": "did:web:acme.com",
-        "identityType": "did",
-        "attestations": [
-          {
-            "type": "SOC2-Type2",
-            "uri": "https://trust.acme.com/reports/soc2.pdf",
-            "digest": "sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
-          }
-        ],
-        "privacyPolicyUrl": "https://acme.com/legal/privacy",
-        "termsOfServiceUrl": "https://acme.com/legal/terms"
-      },
-      "updatedAt": "2026-03-15T10:00:00Z"
+      "updatedAt": "2026-03-15T10:00:00Z",
+      "privacyPolicyUrl": "https://acme.com/legal/privacy",
+      "termsOfServiceUrl": "https://acme.com/legal/terms",
+      "trustManifests": [
+        {
+          "contributor": "did:web:acme.com",
+          "attestations": [
+            {
+              "type": "SOC2-Type2",
+              "uri": "https://trust.acme.com/reports/soc2.pdf",
+              "digest": "sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
+            }
+          ]
+        }
+      ]
     },
     {
       "identifier": "urn:air:acme.com:server:finance-mcp",
@@ -1986,7 +2039,10 @@ artifact types including a nested catalog packaging related artifacts:
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/mcp/server-card",
       "description": "MCP server with finance tools.",
-      "tags": ["finance", "mcp"],
+      "tags": [
+        "finance",
+        "mcp"
+      ],
       "updatedAt": "2026-03-15T10:00:00Z"
     },
     {
@@ -1994,7 +2050,10 @@ artifact types including a nested catalog packaging related artifacts:
       "displayName": "Acme Finance Suite",
       "type": "application/ai-catalog+json",
       "description": "A2A agent + MCP server + dataset for finance workflows.",
-      "tags": ["finance", "suite"],
+      "tags": [
+        "finance",
+        "suite"
+      ],
       "data": {
         "specVersion": "1.0",
         "entries": [
@@ -2013,30 +2072,39 @@ artifact types including a nested catalog packaging related artifacts:
             "displayName": "Market Dataset Q1 2026",
             "type": "application/parquet",
             "url": "https://data.acme-corp.com/market-2026q1.parquet",
-            "trustManifest": {
-              "identity": "did:web:acme.com",
-              "provenance": [
-                {
-                  "relation": "publishedFrom",
-                  "sourceId": "oci://registry.acme.com/data/market:2026q1",
-                  "sourceDigest": "sha256:99998888..."
-                }
-              ]
-            }
+            "trustManifests": [
+              {
+                "contributor": "did:web:acme.com",
+                "provenance": [
+                  {
+                    "relation": "publishedFrom",
+                    "sourceId": "oci://registry.acme.com/data/market:2026q1",
+                    "sourceDigest": "sha256:99998888..."
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
-      "trustManifest": {
-        "identity": "did:web:acme.com",
-        "subject": {
-          "identifier": "urn:air:acme.com:plugin:finance-suite",
-          "type": "application/ai-catalog+json",
-          "digest": "sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111"
-        },
-        "issuedAt": "2026-03-20T14:00:00Z",
-        "signature": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS5jb20jcmVsZWFzZS1zaWduaW5nLWtleSJ9..detached"
-      },
-      "updatedAt": "2026-03-20T14:00:00Z"
+      "updatedAt": "2026-03-20T14:00:00Z",
+      "digest": "sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111",
+      "trustManifests": [
+        {
+          "contributor": "did:web:acme.com",
+          "subject": {
+            "identifier": "urn:air:acme.com:plugin:finance-suite",
+            "type": "application/ai-catalog+json",
+            "digest": "sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111"
+          },
+          "signature": {
+            "signer": "did:web:acme.com",
+            "profile": "did-web-v1",
+            "issuedAt": "2026-03-20T14:00:00Z",
+            "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS5jb20jcmVsZWFzZS1zaWduaW5nLWtleSIsInR5cCI6ImFpLWNhdGFsb2ctdHJ1c3QtbWFuaWZlc3QrandzIn0..detached-jws-signature"
+          }
+        }
+      ]
     }
   ]
 }
@@ -2109,7 +2177,10 @@ containing both protocol-specific entries:
   "displayName": "Acme Finance Agent",
   "type": "application/ai-catalog+json",
   "description": "Finance agent accessible via both MCP and A2A protocols.",
-  "tags": ["finance", "dual-protocol"],
+  "tags": [
+    "finance",
+    "dual-protocol"
+  ],
   "publisher": {
     "identifier": "did:web:acme.com",
     "displayName": "Acme Financial Corp"
@@ -2129,17 +2200,18 @@ containing both protocol-specific entries:
       }
     ]
   },
-  "trustManifest": {
-    "identity": "did:web:acme.com",
-    "identityType": "did",
-    "attestations": [
-      {
-        "type": "SOC2-Type2",
-        "uri": "https://trust.acme-corp.com/reports/soc2.pdf",
-        "digest": "sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
-      }
-    ]
-  }
+  "trustManifests": [
+    {
+      "contributor": "did:web:acme.com",
+      "attestations": [
+        {
+          "type": "SOC2-Type2",
+          "uri": "https://trust.acme-corp.com/reports/soc2.pdf",
+          "digest": "sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
+        }
+      ]
+    }
+  ]
 }
 ```
 

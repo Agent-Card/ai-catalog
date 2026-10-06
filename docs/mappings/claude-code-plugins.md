@@ -53,7 +53,7 @@ documents, and supplies any verifiable host or publisher identifiers.
 | Plugin component fields and `strict` | Plugin artifact content and projection policy | They determine the effective Claude component definition. Publishing a component in another artifact format requires a separately defined conversion. |
 | *(not in marketplace metadata)* | Entry `type` | The catalog operator selects a type that describes the representation carried by `url` or `data`. |
 | *(not established by marketplace metadata)* | Entry, host, or publisher `identifier` | The responsible catalog operator or artifact publisher supplies the identifier. |
-| *(not in marketplace metadata)* | `trustManifest` | Add only independently established identity, attestation, or provenance information. Trust cannot be inferred from marketplace metadata. |
+| *(not in marketplace metadata)* | `trustManifests` | Add only independently established identity, attestation, or provenance information. Trust cannot be inferred from marketplace metadata. |
 
 ## Resolving Plugin Sources
 
