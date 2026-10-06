@@ -105,6 +105,10 @@ The `relation` field is an open string. Three common values:
 
 To endorse an artifact release, add a `subject` and a `signature` object to the contributor's Trust Manifest. Set `signature.signer` to the same absolute identity URI as `contributor`, and `signature.profile` to the identifier of the signer verification procedure. The `did:web` Signer Profile uses `profile: "did-web-v1"`.
 
+### Choose an artifact binding
+
+Copy the entry's `identifier` and `type` into `subject`. For each of `digest` and `version`, include the entry's value when present and omit it otherwise. The subject must contain at least one of `digest` or `url`; selecting `url` requires copying the entry's absolute HTTPS URL exactly. An entry containing inline `data` therefore needs a digest to carry a signed manifest. Consumers must check every selected artifact binding before accepting the manifest's claims for the entry. The following JWS values are illustrative placeholders.
+
 For example, Acme can sign a manifest that endorses the artifact release without adding other trust claims:
 
 ```json
@@ -123,8 +127,6 @@ For example, Acme can sign a manifest that endorses the artifact release without
   }
 }
 ```
-
-The JWS here is an illustrative placeholder. Copy the entry's `identifier` and `type` into `subject`. For each of `digest` and `version`, include the entry's value when present and omit it otherwise. The subject must contain at least one of `digest` or `url`; when selecting `url`, copy the entry's absolute HTTPS URL exactly. An entry containing inline `data` therefore needs a digest to carry a signed manifest. Consumers must check every selected binding before accepting the manifest's claims for the entry.
 
 For an entry without `digest` or `version` whose `url` is `https://acme-corp.com/agents/finance.json`, a URL-only manifest can instead be:
 
@@ -145,13 +147,17 @@ For an entry without `digest` or `version` whose `url` is `https://acme-corp.com
 }
 ```
 
-This JWS is also a placeholder. URL-only binding is available for every artifact type. Adding a digest to the entry later requires updating and re-signing this manifest with the same digest.
+URL-only binding is available for every artifact type. Adding a digest to the entry later requires updating and re-signing this manifest with the same digest.
+
+Digest-only binding permits retrieval from mirrors whose bytes match the digest. A selected URL must exactly match `entry.url`. URL-only binding endorses the live resource at that location; it does not authenticate the representation currently served or establish a fresh assessment of it. Fetch the artifact using the specification's safe-fetching rules, including redirect checks. When both bindings are present, both must succeed; a matching URL cannot excuse a failed digest.
+
+### Construct the signature
 
 Record the endorsement time in `signature.issuedAt` and, optionally, an expiry time in `signature.expiresAt`. To produce `signature.jws`, take the whole Trust Manifest and omit only its top-level `additionalSignatures` field and `signature.jws`. JCS (RFC 8785) canonicalizes the remaining object before detached JWS signing. All other fields, including `contributor`, `subject`, the signature's metadata, and unfamiliar fields, participate in the signed payload. Follow the full specification for the exact payload and verification algorithm.
 
 The protected JWS header includes `typ: "ai-catalog-trust-manifest+jws"` to identify the signed object as a Trust Manifest. The manifest carries its own release binding, so its signature can be verified independently of the containing entry; accepting it for a particular entry additionally requires the subject and artifact checks.
 
-Adding another contributor's manifest does not invalidate this manifest's signature. Changing any signed content inside this manifest does. Entry metadata outside the manifest, including policy URLs and entry extensions, is not authenticated by this signature. When the subject contains a digest without a URL, an artifact may be retrieved from a mirror as long as its bytes match that digest. A selected URL must match `entry.url` exactly. A URL-only subject endorses that live resource, not the exact representation currently served or a fresh assessment of it. Fetch it using the specification’s existing safe-fetching rules, including its redirect checks. When both bindings are present, both must succeed; a matching URL cannot excuse a failed digest.
+Adding another contributor's manifest leaves this manifest's signature valid. Changing its signed contents requires a new signature. Entry metadata participates in this endorsement only through a defined binding. Selected entry extensions can be authenticated through `subject.extensionDigests`, as described below.
 
 ## Verifying a Trust Manifest
 
@@ -173,6 +179,22 @@ Consumers should:
 
 If a check fails, do not treat the affected claims as verified. Consumers can retain an unverified entry, retry temporary resolution failures, or reject it according to local policy. A valid signature proves an endorsement, not that the artifact is safe or every claim is true.
 
+## Authenticating entry extensions
+
+To authenticate an entry extension, JCS-canonicalize its entire value, hash the UTF-8 bytes, and place the digest under the same extension key in `subject.extensionDigests` before signing the manifest. For example, this subject excerpt selects one extension (the digest is a placeholder):
+
+```json
+{
+  "extensionDigests": {
+    "com.example.capabilities": "sha256:..."
+  }
+}
+```
+
+After verifying the manifest and its artifact binding, check each extension you want to authenticate against its recorded digest. Report whether the value matches, its binding could not be verified, or the manifest did not select it. Missing or changed values are not authenticated by that binding, but they do not invalidate the artifact endorsement or other matching extensions. Keep the complete digest map when verifying the manifest signature.
+
+The digest covers the whole extension value, including nested fields. Changing an unselected extension has no effect; changing any member of a selected extension changes that extension's binding. You can check an unfamiliar extension's digest without interpreting its contents. No current profile requires selecting any extension.
+
 ## Catalog signatures
 
 The catalog root can carry one `signature` object authenticating the complete catalog snapshot, including Host Info, entries, and all nested Trust Manifests. Its payload omits only the root's `additionalSignatures` field and the root's `signature.jws`. The catalog signature also covers the signatures and reserved `additionalSignatures` fields inside its Trust Manifests.
@@ -183,7 +205,7 @@ To attribute the snapshot to its declared operator, the `did:web` Catalog Profil
 
 ## Complete example
 
-An entry with a contributor manifest, artifact digest, policy links, and a signature. The manifest signature endorses the artifact but does not authenticate the policy links in the entry extension. The digest and JWS values are illustrative placeholders:
+An entry with a contributor manifest that endorses the artifact and authenticates its policy-link values through `subject.extensionDigests`. The artifact digest and JWS values are illustrative placeholders:
 
 ```json
 {
@@ -207,7 +229,10 @@ An entry with a contributor manifest, artifact digest, policy links, and a signa
       "subject": {
         "identifier": "urn:air:acme-corp.com:a2a:finance",
         "type": "application/a2a-agent-card+json",
-        "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "extensionDigests": {
+          "https://ai-catalog.org/extensions/policy-urls": "sha256:d2d43cb6efb27c583476d8bd09f485a210c5fa373a5e5708d793e34331cec555"
+        }
       },
       "trustSchema": {
         "identifier": "urn:trust:acme-enterprise-v1",

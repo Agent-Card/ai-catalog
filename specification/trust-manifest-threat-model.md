@@ -284,7 +284,7 @@ signer authority.
 | F6 | T3 | OCI Layer 3 (informative) | Sign the whole catalog except the root `signature.jws` and reserved root `additionalSignatures`; retain nested manifests and signatures in the signed content, and apply the Catalog Profile or another operator-authorization policy for snapshot acceptance | Verification Procedures → Catalog Snapshot Coverage and Catalog Authorization; Security Considerations |
 | F7 | I1, I2, D1 | none | Safe-Fetching subsection: size caps, timeouts, no redirects to private ranges, host allowlist | Verification → Safe Fetching |
 | F8 | R2 | Fields only | Delegate signer authorization and signature verification to the provenance statement's format; a signed manifest's endorsement of its reference does not verify the statement itself | Verification → Provenance Statements |
-| F9 | S2 | Publisher fields outside the signed Trust Manifest | A Trust Manifest signature does not authenticate entry publisher metadata, entry extensions (including policy URLs), or retrieval URLs not selected by `subject.url`; a catalog signature authenticates them only as part of its signer's snapshot | Verification → Publisher and Policy Metadata |
+| F9 | S2 | Publisher fields outside the signed Trust Manifest | A Trust Manifest signature does not authenticate entry publisher metadata or entry extensions (including policy URLs) not selected by `subject.extensionDigests`, or retrieval URLs not selected by `subject.url`; a catalog signature authenticates them only as part of its signer's snapshot | Verification → Publisher and Policy Metadata |
 | F10 | — | JCS | JCS-canonicalize the signed object after excluding only its immediate `signature.jws` and reserved `additionalSignatures`; retain signer, profile, and signature times. Require the protected JWS `typ` for that object kind, and enforce I-JSON constraints, including numeric round-trip limits | Verification → Signature Object |
 | F11 | T4 | Signed subject contains representation type, digest, and optional URL only | Require signed subject `identifier` to match the entry and `version` to match both its presence and value; reject mismatches before accepting the manifest as an endorsement of that entry | Verification Procedures → Entry Release Coverage |
 
@@ -371,13 +371,21 @@ while letting trust-sensitive deployments inherit Sigstore's full chain
 
 ## 8. Residual Risks
 
-- **Policy-URL attribution.** A publisher or catalog operator can populate
-  the official policy-URL extension, but a Trust Manifest signature does not
-  authenticate it. A verified publisher artifact endorsement can therefore
-  coexist with policy links that the publisher has not authenticated.
-  A catalog signature covers those links as part of its signer's snapshot,
-  subject to applicable signer authorization; it does not by itself establish publisher
-  endorsement of the links or authenticate mutable documents served there.
+- **Optional policy-URL authentication.** A publisher or catalog operator can
+  populate the official policy-URL extension. No current profile requires its
+  authentication, so a verified publisher artifact endorsement can coexist
+  with policy links that the publisher has not authenticated. Consumers must
+  distinguish those assurances. A verified extension digest authenticates the
+  URLs as the contributor's claims, not mutable documents served there.
+- **Independent extension bindings.** A manifest signature authenticates its
+  `subject.extensionDigests` map, including each key-to-digest association.
+  Hashing the complete JCS value detects changes within that extension.
+  Missing or mismatching extensions are not authenticated by that binding;
+  their failure does not invalidate the artifact endorsement or other
+  matching extensions. Consumers must not confuse an accepted artifact
+  endorsement with authentication of every entry extension, or infer that
+  an authenticated claim about an older value applies to a replacement.
+
 - **Catalog-operator authentication.** The `did:web` Catalog Profile verifies
   the complete snapshot and requires its authenticated signer to exactly match
   the signed `host.identifier`. This establishes attribution to the declared

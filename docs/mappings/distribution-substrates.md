@@ -43,6 +43,7 @@ a pack/unpack round-trip.
 | Trust Manifest association | An entry's Trust Manifests and their contributor identities are discoverable from that entry |
 | Content integrity | When `entry.digest` is present, the served bytes are verifiably bound to it |
 | Signing | The Trust Manifests' authenticity is cryptographically verifiable |
+| Selected extensions | Preserve entry extension keys and values so their manifest digest bindings can be checked independently |
 
 ## Delegate, Don't Duplicate
 
