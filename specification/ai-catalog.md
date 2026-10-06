@@ -688,8 +688,9 @@ For example, this unsigned entry carries independent contributions:
 
 ## Subject Object
 
-A Subject object binds a Trust Manifest to the artifact release it describes.
-It MUST contain:
+A Subject object binds a Trust Manifest to the artifact it describes.
+It MUST contain `identifier`, `type`, and at least one of `digest` or `url`.
+It MAY contain both `digest` and `url`.
 
 `identifier`
 : A string containing the artifact's logical identifier. It MUST exactly
@@ -700,23 +701,30 @@ It MUST contain:
   the containing entry's `type`.
 
 `digest`
-: The artifact content digest in [Digest Format](#digest-format). It MUST
-  exactly equal the containing entry's `digest`, which MUST be present when
-  an entry carries a signed Trust Manifest. For `url`, hash the exact retrieved
-  artifact bytes. For `data`, hash the UTF-8 JCS-canonicalized JSON value.
+: The artifact content digest in [Digest Format](#digest-format).
+  `subject.digest` MUST be present exactly when `entry.digest` is present,
+  and its value MUST exactly equal `entry.digest`. For `url`, hash the exact
+  retrieved artifact bytes. For `data`, hash the UTF-8 JCS-canonicalized
+  JSON value.
 
-The following member is conditional:
+`url`
+: An absolute HTTPS URL identifying the artifact resource. When present,
+  it MUST exactly equal the containing entry's `url`. It is REQUIRED when
+  `digest` is absent. A URL binding identifies the resource at that location;
+  it does not bind its current representation to particular bytes.
 
 `version`
 : A string containing the artifact release version. `subject.version` MUST
   be present exactly when `entry.version` is present, and its value MUST
   exactly equal `entry.version`.
 
-These fields deliberately repeat entry values to make the signed manifest
-self-contained. Verification of a standalone manifest authenticates its
-subject and claims; accepting those claims for an entry additionally requires
-[Entry Release Coverage](#entry-release-coverage). The subject does not include
-the retrieval URL, permitting mirrors serving identical artifact bytes.
+These fields repeat entry values to make the signed manifest self-contained.
+Accepting its claims for an entry
+requires [Entry Release Coverage](#entry-release-coverage). Digest-only
+binding permits mirrors serving identical bytes. When `subject.url` is
+present, changing the entry's URL requires updating the signed subject too.
+An inline `data` entry has no URL and therefore requires a digest to carry a
+signed Trust Manifest. These rules apply to every artifact type.
 
 ## Trust Schema Object
 
@@ -1015,27 +1023,40 @@ signed contents and successfully verified subject bindings.
 ### Entry Release Coverage
 
 Before relying on a Trust Manifest's signature as an endorsement of an entry's
-artifact release or of claims about that release, consumers MUST require:
+artifact or of claims about that artifact, consumers MUST require:
 
 - A [verified](#signature-acceptance-and-time) Signature object whose `signer`
   exactly equals the manifest's `contributor`.
-- A signed `subject` whose `identifier`, `type`, and `digest` exactly equal
-  the corresponding entry fields. The entry MUST contain `digest`.
+- A signed `subject` whose `identifier` and `type` exactly equal the
+  corresponding entry fields.
 - Either both `subject.version` and `entry.version` absent, or both present
   and exactly equal.
+- Either both `subject.digest` and `entry.digest` absent, or both present
+  and exactly equal. When present, the consumer MUST verify artifact bytes
+  against that digest using [Verifying Artifact Integrity](#verifying-artifact-integrity).
+- When `subject.url` is present, an absolute HTTPS URL exactly equal to
+  `entry.url`.
+- At least one of `subject.digest` or `subject.url` present. When both are
+  present, both bindings MUST succeed; URL binding MUST NOT excuse a failed
+  digest check.
 
 These comparisons are between decoded JSON strings and MUST be case-sensitive,
 without URI normalization. Adding, removing, or changing an entry's version
-without the corresponding subject change makes the manifest unacceptable for
-that entry, even if the manifest's signature still verifies independently.
+or digest without the corresponding subject change makes the manifest
+unacceptable for that entry, even if its signature still verifies independently.
 Consumers MUST NOT combine fields from different manifests to establish binding.
 
-The consumer MUST also verify the artifact bytes against the matching digest
-using [Verifying Artifact Integrity](#verifying-artifact-integrity). The
-retrieval URL is not signed by the Trust Manifest, permitting mirrors serving
-identical bytes. Other entry fields, including entry extensions, are outside
-the manifest signature's scope. Referenced evidence retains its own
-verification requirements.
+A digest binding authenticates exact artifact content. A URL-only binding
+identifies the resource selected by the signer, whose representation can
+change without a new manifest. Consumers MUST NOT treat URL-only binding as
+proof that the signer examined or approved the resource's current bytes.
+Consumers requiring that assurance MUST require a verified digest binding.
+When fetching a signed URL, consumers MUST apply [Safe Fetching](#safe-fetching),
+including the existing checks on redirects. The signature binds the starting
+URL, not a fixed final destination after redirects.
+
+Other entry fields, including entry extensions, are outside the manifest
+signature's scope. Referenced evidence retains its own verification requirements.
 
 ### Catalog Snapshot Coverage
 
@@ -1166,8 +1187,7 @@ with two additional requirements:
   organizational-ownership heuristics MUST NOT be used.
 - **Release binding:** The signature MUST satisfy
   [Entry Release Coverage](#entry-release-coverage), including the signed subject
-  matching the entry and verification of the artifact bytes against
-  `entry.digest`.
+  matching the entry and verification of every present digest or URL binding.
 
 For `urn:air:example.com:agent:billing`, the publisher signer is therefore
 `did:web:example.com`. A valid signature by an assessor can endorse claims
@@ -1233,20 +1253,19 @@ policy extension, not the contents of documents served at those URLs.
 
 ### Verifying Artifact Integrity
 
-To verify the representation bound by an entry endorsement:
+When an entry contains `digest`, verify its artifact representation as follows:
 
-1. Authenticate the signer, verify the signature, check its time, and confirm
-   [Entry Release Coverage](#entry-release-coverage) and the authorization
-   required for the intended claim.
-2. Retrieve bytes from `entry.url`, or use `entry.data`, observing
+1. Retrieve bytes from `entry.url`, or use `entry.data`, observing
    [Safe Fetching](#safe-fetching).
-3. Compute the digest of the retrieved bytes or the UTF-8 JCS-canonicalized
+2. Compute the digest of the retrieved bytes or the UTF-8 JCS-canonicalized
    `data` value using the algorithm named by `entry.digest`.
-4. Compare with `entry.digest`. A mismatch MUST fail artifact verification.
+3. Compare with `entry.digest`. A mismatch MUST fail artifact verification.
 
-An unsigned digest can detect a content mismatch but cannot authenticate the
-source. The optional `provenance[].sourceDigest` identifies an upstream source
-and MUST NOT be substituted for the digest of this entry's artifact.
+A matching digest alone does not authenticate its source. Accepting an
+endorsement additionally requires the signature, subject matching, and
+applicable authority checks in [Entry Release Coverage](#entry-release-coverage).
+The optional `provenance[].sourceDigest` identifies an upstream source and
+MUST NOT be substituted for the digest of this entry's artifact.
 
 ### Verifying Attestations
 
@@ -1275,8 +1294,11 @@ To process such a statement:
    format's verification procedure and the consumer's trust policy.
    `signatureRef` can assist key discovery when that format defines how to use
    it, but the value is not a trust anchor by itself.
-3. Confirm the statement's subject matches `entry.digest`. Treat an
-   unverifiable statement as absent, not as a failure of the artifact itself.
+3. Confirm the statement's subject matches `entry.digest`, when present.
+   Without an entry digest, content binding requires the evidence format's
+   own verification procedure; a matching URL alone does not establish it.
+   Treat an unverifiable statement as absent, not as a failure of the artifact
+   itself.
 
 # Organizing Catalogs
 
@@ -1623,8 +1645,9 @@ In addition to Level 2 requirements, a Trusted Catalog:
   entry whose publisher authenticity is to be relied upon, using
   [The `did:web` Publisher Profile](#the-did-web-publisher-profile).
 - Consumers MUST authenticate signers, verify signatures and endorsement
-  times, enforce [Entry Release Coverage](#entry-release-coverage), and verify
-  artifact content against `entry.digest` before relying on signed claims.
+  times, and enforce [Entry Release Coverage](#entry-release-coverage), including
+  artifact content verification when a digest is present, before relying on
+  signed claims. URL-only binding does not establish exact-content endorsement.
 - Additional contributors MAY provide their own Trust Manifests. Before
   relying on their claims, consumers MUST verify each contributor's signature
   and the subject binding to the same entry release.
@@ -1670,9 +1693,11 @@ appropriate to their threat model.
 
 **Layer 2 — Trust Manifest Signatures**
 : A manifest signature binds its complete claims to the artifact identifier,
-  version when present, type, and digest through its signed subject. The consumer
-  authenticates its signer, checks release coverage, verifies artifact integrity, and
-  evaluates authority for the intended claim. Independent contributor
+  version when present, type, and a digest or HTTPS URL through its signed
+  subject. The consumer authenticates its signer, checks every present artifact
+  binding, and evaluates authority for the intended claim. A digest binds exact
+  content; a URL-only endorsement permits the resource's representation to change.
+  Independent contributor
   manifests can coexist. A valid signature over one contribution does not
   authenticate another or establish completeness of the catalog.
 
@@ -1714,9 +1739,11 @@ this threat:
   unauthorized modification.
 - **Layer 1** enables post-fetch integrity checks but does not prevent
   whole-entry substitution.
-- **Layer 2** binds the signed Trust Manifest to the logical artifact release
-  and its representation via the signed `subject`, preventing
-  artifact substitution or relabeling under a valid signature.
+- **Layer 2** binds the signed Trust Manifest to the logical artifact and
+  its exact content or HTTPS resource through the signed `subject`. It prevents
+  catalog intermediaries from substituting a different representation under
+  a digest binding or a different URL under URL binding, and prevents release
+  relabeling. URL-only binding does not prevent changes at the selected origin.
 - **Layer 3** makes modification structurally impossible through
   content-addressing.
 
@@ -1729,9 +1756,10 @@ both. This specification defends against substitution with three
 compounding mechanisms:
 
 - **Release binding.** Every accepted artifact endorsement jointly covers
-  subject identifier, type, digest, and version when present, plus the claims
-  relied upon. Consumers check subject-to-entry equality as well as cryptography
-  and artifact bytes.
+  subject identifier, type, version when present, and a digest or HTTPS URL,
+  plus the claims relied upon. Consumers check subject-to-entry equality and
+  every present artifact binding. URL-only binding authenticates a resource
+  location, not immutable content.
 - **Signer and claim authority.** Contributor identities are not proof. Publisher
   authorization requires the authenticated signer to match the publisher
   namespace; contributor attribution requires authentication as that
@@ -1836,6 +1864,7 @@ classDiagram
         identifier string
         type string
         digest string
+        url string
         version string
     }
     class TrustSchema {
@@ -2024,7 +2053,7 @@ TrustManifest = {
 Subject = {
   identifier: text,
   type: text,
-  digest: text,
+  (digest: text, ? url: text // url: text),
   ? version: text
 }
 

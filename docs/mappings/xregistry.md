@@ -52,9 +52,11 @@ Tooling converts an AI Catalog JSON document into xRegistry resources:
 3. **Trust Manifests** are carried as an array in a Resource
    extension attribute (for example `aicatalog_trustmanifests`), or as related
    Resources referenced from `meta.xref`, preserving each manifest, including
-   its contributor, subject, and signature. Carry `entry.digest` separately,
+   its contributor, subject, and signature. Carry `entry.digest`, when present, separately,
    for example as `aicatalog_digest`. Preserve the signed manifest contents
-   so signature payloads can be reconstructed unchanged.
+   so signature payloads can be reconstructed unchanged. Preserve any selected
+   `subject.url` as the reconstructed `entry.url`; URL-only binding does not
+   authenticate the bytes of the Resource document.
 
 4. **Nested catalog entries** become nested Groups; the parent entry's
    Resource references the nested Group through `meta.xref`.
@@ -74,7 +76,7 @@ Tooling converts xRegistry resources back to an AI Catalog JSON document:
 3. Restore `trustManifests` and `digest`
    from their extension attributes or related Resources, then verify the
    signatures and signed artifact bindings against the reconstructed entry
-   and served bytes.
+   and, when a digest is present, served bytes.
 4. Resolve `xref`'d nested Groups into nested catalog entries.
 5. Assemble the logical `application/ai-catalog+json` document.
 
