@@ -80,7 +80,7 @@ Attacker
 2. Entry / nested-catalog resolution
 3. Signature verification and signed-subject matching
 4. Signer-key resolution and contributor, publisher, or catalog authorization
-5. Artifact fetch and digest computation
+5. Artifact fetch and digest computation (all catalog data must be valid input to JCS, even when unsigned)
 6. Attestation fetch and validation
 7. Provenance evaluation
 
