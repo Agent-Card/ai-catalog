@@ -1059,7 +1059,8 @@ authenticates a signer using a root `did:web` DID and an ES256 assertion key.
 It can authenticate a publisher, assessor, registry, or other contributor.
 Authentication does not by itself grant publisher, host, or catalog authority.
 The [`did:web` Publisher Profile](#the-did-web-publisher-profile) adds publisher
-namespace authorization.
+namespace authorization. The [`did:web` Catalog Profile](#the-did-web-catalog-profile)
+establishes attribution to the declared catalog operator.
 
 The Signature object's `signer` MUST be a root `did:web` DID. Its domain
 MUST be lowercase ASCII, with no port, IP address, trailing root dot, or
@@ -1179,16 +1180,40 @@ the artifact release.
 
 ### Catalog Authorization
 
-A catalog signature includes Host Info when present. The `did:web` Signer
-Profile can authenticate catalog signers, but this specification does not
-define a universal mapping from a signer to catalog authority. A separate
-profile or configured policy MUST identify authorized operators before a
-consumer accepts a signature as a catalog endorsement. A signer-supplied
-`host.identifier` alone is not a trust anchor.
+Consumers accepting a signature as a catalog endorsement MUST establish its
+signer's authority for the catalog using a catalog-authorization profile or
+configured policy. The following profile establishes attribution to the
+operator identified in the signed Host Info.
+
+#### The `did:web` Catalog Profile
+
+This profile applies the [`did:web` Signer Profile](#the-did-web-signer-profile)
+with two additional requirements:
+
+- **Catalog coverage:** The root signature MUST satisfy
+  [Catalog Snapshot Coverage](#catalog-snapshot-coverage), including the
+  protected JWS `typ` value `ai-catalog+jws`.
+- **Operator attribution:** The catalog MUST contain `host.identifier`, and
+  its value MUST exactly equal the authenticated root `signature.signer`.
+  Consumers MUST compare the decoded JSON strings case-sensitively, without
+  URI normalization. The Signer Profile's root `did:web` restrictions apply.
+
+The Catalog Profile uses the Signer Profile's `profile: "did-web-v1"` and
+adds the checks above for accepting a catalog endorsement. A matching unsigned
+`host.identifier` alone does not establish operator attribution.
+
+For example, a catalog with `host.identifier` set to `did:web:registry.example`
+and a valid root signature from that DID satisfies operator attribution.
+This authenticates the snapshot as that declared operator's endorsement.
+It does not establish the operator's reputation, legal identity, or that
+this is the catalog expected by a particular application. Consumers determine
+whether the authenticated operator meets their trust policy. The profile
+neither binds the catalog to its retrieval URL nor establishes publisher
+authority for its entries.
 
 HTTPS authenticates the serving domain for transport. A DID document's
 service endpoint may describe a location, but is not by itself proof that
-the retrieved catalog was signed or authorized by that identity.
+the retrieved catalog was signed by that identity.
 
 ### Publisher and Policy Metadata
 
@@ -1608,7 +1633,8 @@ In addition to Level 2 requirements, a Trusted Catalog:
   define additional interoperable authentication and authorization mechanisms.
 - SHOULD provide catalog-level integrity through a content-addressed channel
   or a signature satisfying [Catalog Snapshot Coverage](#catalog-snapshot-coverage)
-  and an applicable operator-authorization policy.
+  and [the `did:web` Catalog Profile](#the-did-web-catalog-profile) or another
+  applicable operator-authorization profile or configured policy.
 - MAY include signed attestations, provenance, and manifest extensions,
   according to consumer policy.
 
