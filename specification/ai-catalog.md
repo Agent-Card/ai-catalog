@@ -662,9 +662,13 @@ The following members are OPTIONAL:
   carries a `signature` MUST include `issuedAt`.
 
 `expiresAt`
-: A string containing an ISO 8601 [[RFC3339]] timestamp after which the
-  Trust Manifest MUST be considered stale. Consumers SHOULD reject a
-  Trust Manifest whose `expiresAt` is in the past.
+: A string containing an ISO 8601 [[RFC3339]] timestamp indicating when
+  the Trust Manifest expires. When determining whether
+  `expiresAt` has passed, consumers MAY allow clock-skew leeway determined
+  by the implementation or local policy. This specification does not
+  prescribe a leeway amount. Consumers MUST consider a Trust Manifest
+  stale when its `expiresAt` has passed after applying any such leeway,
+  and SHOULD reject it.
 
 `signature`
 : A string containing a detached JWS [[RFC7515]] signature computed over
@@ -1109,10 +1113,11 @@ Manifest's claims as verified and MUST NOT count the entry as satisfying Level
 temporarily unavailable resolution, or reject the entry according to local
 policy.
 
-When `expiresAt` is present and is in the past, the cryptographic signature can
-still be valid, but the consumer MUST NOT rely on the Trust Manifest's claims
-as current or count the entry as satisfying Level 3. The consumer MAY retain or
-display the manifest as expired.
+When `expiresAt` is present and has passed after applying any permitted
+clock-skew leeway, the cryptographic signature can still be valid, but the
+consumer MUST NOT rely on the Trust Manifest's claims as current or count the
+entry as satisfying Level 3. The consumer MAY retain or display the manifest
+as expired.
 
 ### Verifying Host Identity
 
