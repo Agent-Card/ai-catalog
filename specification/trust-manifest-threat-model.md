@@ -282,7 +282,7 @@ signer authority.
 | F6 | T3 | OCI Layer 3 (informative) | Sign the whole catalog except the root `signature.jws` and reserved root `additionalSignatures`; retain nested manifests and signatures in the signed content, and require separate operator authorization for snapshot acceptance | Verification Procedures → Catalog Snapshot Coverage and Catalog Authorization; Security Considerations |
 | F7 | I1, I2, D1 | none | Safe-Fetching subsection: size caps, timeouts, no redirects to private ranges, host allowlist | Verification → Safe Fetching |
 | F8 | R2 | Fields only | Delegate signer authorization and signature verification to the provenance statement's format; a signed manifest's endorsement of its reference does not verify the statement itself | Verification → Provenance Statements |
-| F9 | S2 | Publisher fields outside the signed Trust Manifest | A Trust Manifest signature does not authenticate entry publisher metadata, policy URLs, extensions, or retrieval URLs outside the manifest; a catalog signature authenticates them only as part of its signer's snapshot | Verification → Publisher and Policy Metadata |
+| F9 | S2 | Publisher fields outside the signed Trust Manifest | A Trust Manifest signature does not authenticate entry publisher metadata, entry extensions (including policy URLs), or retrieval URLs outside the manifest; a catalog signature authenticates them only as part of its signer's snapshot | Verification → Publisher and Policy Metadata |
 | F10 | — | JCS | JCS-canonicalize the signed object after excluding only its immediate `signature.jws` and reserved `additionalSignatures`; retain signer, profile, and signature times. Require the protected JWS `typ` for that object kind, and enforce I-JSON constraints, including numeric round-trip limits | Verification → Signature Object |
 | F11 | T4 | Signed subject contains representation type, digest, and optional URL only | Require signed subject `identifier` to match the entry and `version` to match both its presence and value; reject mismatches before accepting the manifest as an endorsement of that entry | Verification Procedures → Entry Release Coverage |
 
@@ -366,6 +366,13 @@ while letting trust-sensitive deployments inherit Sigstore's full chain
 
 ## 8. Residual Risks
 
+- **Policy-URL attribution.** A publisher or catalog operator can populate
+  the official policy-URL extension, but a Trust Manifest signature does not
+  authenticate it. A verified publisher artifact endorsement can therefore
+  coexist with policy links that the publisher has not authenticated.
+  A catalog signature covers those links as part of its signer's snapshot,
+  subject to applicable signer authorization; it does not by itself establish publisher
+  endorsement of the links or authenticate mutable documents served there.
 - **Catalog-operator authentication.** HTTPS from an expected domain can
   authenticate the transport endpoint, but a DID service-endpoint check alone
   does not authenticate attacker-selected Host Info. A catalog signature can
