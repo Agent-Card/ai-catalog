@@ -992,10 +992,10 @@ payload, JWS, and selected signer profile before accepting an
 endorsement. They MUST validate timestamp syntax and compare timestamps as
 instants, not strings.
 Consumers MUST NOT accept an endorsement before `issuedAt` or at or after
-`expiresAt`, when present. A deployment MAY allow a small, explicitly
-configured clock-skew tolerance. A new signature does not cryptographically
-invalidate an old one. Endorsement expiry does not replace freshness or
-validity checks defined by referenced evidence formats.
+`expiresAt`, when present. Consumers MAY allow a small clock-skew tolerance
+determined by implementation defaults or local policy. A new signature does
+not cryptographically invalidate an old one. Endorsement expiry does not
+replace freshness or validity checks defined by referenced evidence formats.
 
 An invalid, unsupported, or expired signature MUST NOT count as a verified
 endorsement. Other manifests are evaluated independently; consumers MAY
