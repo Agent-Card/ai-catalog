@@ -21,6 +21,7 @@ Community-built tools, libraries, and integrations. Listed here to help discover
 - [tomevault-io/ai-catalog-reference](https://github.com/tomevault-io/ai-catalog-reference) (Python, Trust Manifest signer/verifier)
 - [AI Catalog](https://ai-catalog.outshift.io/) (testbed service)
 - [Apicurio Registry](https://github.com/Apicurio/apicurio-registry) (Java/Quarkus API and schema registry with experimental AI Catalog publishing for registered agent and tool metadata)
+- [AgentAvow](https://github.com/AgentAvow/AgentAvow) (Python; publishes a signed `/.well-known/ai-catalog.json` for its MCP server, ES256 under `did:web:agentavow.com` per the did:web Publisher Profile, with a build, sign and strict-verify script at `scripts/ai_catalog_wellknown.py`; live at https://agentavow.com/.well-known/ai-catalog.json)
 
 !!! tip "Add your project"
     Have an implementation to share? Open a pull request to add it here.
