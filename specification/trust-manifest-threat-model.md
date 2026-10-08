@@ -80,7 +80,7 @@ Attacker
 2. Entry / nested-catalog resolution
 3. Signature verification and signed-subject matching
 4. Signer-key resolution and contributor, publisher, or catalog authorization
-5. Artifact fetch and digest computation
+5. Artifact fetch and digest computation (all catalog data must be valid input to JCS, even when unsigned)
 6. Attestation fetch and validation
 7. Provenance evaluation
 
@@ -279,7 +279,7 @@ signer authority.
 | F3 | S1 | Unconstrained key resolution from `identity` | Authenticate the signed `signer` identity through an assertion-authorized key whose protected `kid` has that exact DID portion; require that signer to exactly match the manifest's `contributor` for contributor attribution, and the signed `urn:air` publisher domain for publisher authorization | Verification → `did:web` Signer and Publisher Profiles |
 | F4 | E1 | "detached JWS" | Require ES256 with a P-256 `publicKeyJwk` in the initial Signer Profile; require protected `alg` and `kid`; prohibit attacker-selected key-source headers | Verification → `did:web` Signer Profile |
 | F5 | R1, E2 | Signature times and current key authorization | Check current key authorization and each signature's authenticated `issuedAt` and optional `expiresAt`; compare acceptable signed manifests from the same contributor for observed updates. Trusted current-release information or consumer state is still required to prevent rollback | Trust Manifest → Independent Contributions and Updates; Verification → Signature Acceptance and Time |
-| F6 | T3 | OCI Layer 3 (informative) | Sign the whole catalog except the root `signature.jws` and reserved root `additionalSignatures`; retain nested manifests and signatures in the signed content, and require separate operator authorization for snapshot acceptance | Verification Procedures → Catalog Snapshot Coverage and Catalog Authorization; Security Considerations |
+| F6 | T3 | OCI Layer 3 (informative) | Sign the whole catalog except the root `signature.jws` and reserved root `additionalSignatures`; retain nested manifests and signatures in the signed content, and apply the Catalog Profile or another operator-authorization policy for snapshot acceptance | Verification Procedures → Catalog Snapshot Coverage and Catalog Authorization; Security Considerations |
 | F7 | I1, I2, D1 | none | Safe-Fetching subsection: size caps, timeouts, no redirects to private ranges, host allowlist | Verification → Safe Fetching |
 | F8 | R2 | Fields only | Delegate signer authorization and signature verification to the provenance statement's format; a signed manifest's endorsement of its reference does not verify the statement itself | Verification → Provenance Statements |
 | F9 | S2 | Publisher fields outside the signed Trust Manifest | A Trust Manifest signature does not authenticate entry publisher metadata, entry extensions (including policy URLs), or retrieval URLs outside the manifest; a catalog signature authenticates them only as part of its signer's snapshot | Verification → Publisher and Policy Metadata |
@@ -373,13 +373,13 @@ while letting trust-sensitive deployments inherit Sigstore's full chain
   A catalog signature covers those links as part of its signer's snapshot,
   subject to applicable signer authorization; it does not by itself establish publisher
   endorsement of the links or authenticate mutable documents served there.
-- **Catalog-operator authentication.** HTTPS from an expected domain can
-  authenticate the transport endpoint, but a DID service-endpoint check alone
-  does not authenticate attacker-selected Host Info. A catalog signature can
-  protect the snapshot only after its signer and key are independently
-  authorized and the signature covers the complete snapshot. The base
-  specification leaves operator authorization to a separate profile or
-  configured policy; signed Host Info alone does not supply it.
+- **Catalog-operator authentication.** The `did:web` Catalog Profile verifies
+  the complete snapshot and requires its authenticated signer to exactly match
+  the signed `host.identifier`. This establishes attribution to the declared
+  operator, not that the operator is the one an application expected or trusts.
+  A malicious operator can sign its own catalog; consumer trust decisions
+  remain necessary. Neither HTTPS nor a DID service-endpoint check alone
+  establishes this signed attribution.
 - **Domain and policy roots.** The `did:web` profile inherits the consumer's DNS
   and Web PKI trust roots. The Signer Profile authenticates domain control;
   the Publisher Profile additionally binds that domain to the publisher

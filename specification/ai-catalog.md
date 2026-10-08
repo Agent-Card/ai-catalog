@@ -100,6 +100,13 @@ An AI Catalog document is identified by the media type:
 
 ## Top-Level Structure
 
+Producers MUST ensure that each complete AI Catalog document is valid input
+to JCS [[RFC8785]], including all nested values, whether or not the catalog is
+signed. Consumers MAY reject documents that do not satisfy this requirement.
+This requirement does not mandate validation during ingestion. Producers need
+not serialize the JSON in canonical form. JCS-based signing and verification
+require the input checks defined in their respective procedures.
+
 An AI Catalog document is a JSON object that MUST contain the following
 members:
 
@@ -165,8 +172,9 @@ The following members are OPTIONAL:
 
 `additionalSignatures`
 : Reserved for future use. Producers SHOULD omit this member. Consumers MUST
-  accept and ignore it regardless of its value. It is excluded from this
-  catalog's signature payload; it establishes no endorsement in this version.
+  accept and ignore any value permitted by the catalog's JCS input
+  requirements. It is excluded from this catalog's signature payload; it
+  establishes no endorsement in this version.
 
 ## Host Info
 
@@ -257,7 +265,8 @@ provide the artifact content:
 `data`
 : A JSON value containing the complete artifact document inline. The
   structure of this value is determined by the `type` field and
-  is opaque to this specification.
+  is opaque to this specification. Like all catalog data, it is subject to
+  the JCS input requirements in [Top-Level Structure](#top-level-structure).
 
 The following members are OPTIONAL:
 
@@ -339,9 +348,8 @@ The following members are OPTIONAL:
 `digest`
 : A string containing the artifact content digest in [Digest Format](#digest-format).
   For `url`, hash the exact retrieved artifact bytes. For `data`, hash the
-  UTF-8 JCS-canonicalized [[RFC8785]] JSON value. Inline `data` MUST satisfy
-  JCS's input requirements for artifact verification to succeed. A digest
-  alone does not authenticate its source; see
+  UTF-8 JCS-canonicalized [[RFC8785]] JSON value. A digest alone does not
+  authenticate its source; see
   [Entry Release Coverage](#entry-release-coverage).
 
 `trustManifests`
@@ -630,8 +638,9 @@ does not establish verification. Empty manifests MUST be omitted.
 
 `additionalSignatures`
 : Reserved for future use. Producers SHOULD omit this member. Consumers MUST
-  accept and ignore it regardless of its value. It is excluded from this
-  manifest's signature payload; it establishes no endorsement in this version.
+  accept and ignore any value permitted by the catalog's JCS input
+  requirements. It is excluded from this manifest's signature payload; it
+  establishes no endorsement in this version.
 
 `trustSchema`
 : A [Trust Schema object](#trust-schema-object) describing the framework the
@@ -1050,7 +1059,8 @@ authenticates a signer using a root `did:web` DID and an ES256 assertion key.
 It can authenticate a publisher, assessor, registry, or other contributor.
 Authentication does not by itself grant publisher, host, or catalog authority.
 The [`did:web` Publisher Profile](#the-did-web-publisher-profile) adds publisher
-namespace authorization.
+namespace authorization. The [`did:web` Catalog Profile](#the-did-web-catalog-profile)
+establishes attribution to the declared catalog operator.
 
 The Signature object's `signer` MUST be a root `did:web` DID. Its domain
 MUST be lowercase ASCII, with no port, IP address, trailing root dot, or
@@ -1170,16 +1180,40 @@ the artifact release.
 
 ### Catalog Authorization
 
-A catalog signature includes Host Info when present. The `did:web` Signer
-Profile can authenticate catalog signers, but this specification does not
-define a universal mapping from a signer to catalog authority. A separate
-profile or configured policy MUST identify authorized operators before a
-consumer accepts a signature as a catalog endorsement. A signer-supplied
-`host.identifier` alone is not a trust anchor.
+Consumers accepting a signature as a catalog endorsement MUST establish its
+signer's authority for the catalog using a catalog-authorization profile or
+configured policy. The following profile establishes attribution to the
+operator identified in the signed Host Info.
+
+#### The `did:web` Catalog Profile
+
+This profile applies the [`did:web` Signer Profile](#the-did-web-signer-profile)
+with two additional requirements:
+
+- **Catalog coverage:** The root signature MUST satisfy
+  [Catalog Snapshot Coverage](#catalog-snapshot-coverage), including the
+  protected JWS `typ` value `ai-catalog+jws`.
+- **Operator attribution:** The catalog MUST contain `host.identifier`, and
+  its value MUST exactly equal the authenticated root `signature.signer`.
+  Consumers MUST compare the decoded JSON strings case-sensitively, without
+  URI normalization. The Signer Profile's root `did:web` restrictions apply.
+
+The Catalog Profile uses the Signer Profile's `profile: "did-web-v1"` and
+adds the checks above for accepting a catalog endorsement. A matching unsigned
+`host.identifier` alone does not establish operator attribution.
+
+For example, a catalog with `host.identifier` set to `did:web:registry.example`
+and a valid root signature from that DID satisfies operator attribution.
+This authenticates the snapshot as that declared operator's endorsement.
+It does not establish the operator's reputation, legal identity, or that
+this is the catalog expected by a particular application. Consumers determine
+whether the authenticated operator meets their trust policy. The profile
+neither binds the catalog to its retrieval URL nor establishes publisher
+authority for its entries.
 
 HTTPS authenticates the serving domain for transport. A DID document's
 service endpoint may describe a location, but is not by itself proof that
-the retrieved catalog was signed or authorized by that identity.
+the retrieved catalog was signed by that identity.
 
 ### Publisher and Policy Metadata
 
@@ -1599,7 +1633,8 @@ In addition to Level 2 requirements, a Trusted Catalog:
   define additional interoperable authentication and authorization mechanisms.
 - SHOULD provide catalog-level integrity through a content-addressed channel
   or a signature satisfying [Catalog Snapshot Coverage](#catalog-snapshot-coverage)
-  and an applicable operator-authorization policy.
+  and [the `did:web` Catalog Profile](#the-did-web-catalog-profile) or another
+  applicable operator-authorization profile or configured policy.
 - MAY include signed attestations, provenance, and manifest extensions,
   according to consumer policy.
 
