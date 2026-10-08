@@ -223,4 +223,4 @@ Be defensive when consuming catalogs from unknown sources:
 
 ## Trust verification
 
-If an entry has a `trustManifest`, you can verify its claims before trusting the artifact. See [Adding Trust](adding-trust.md) for details on the trust model and verification steps.
+If an entry has `trustManifests`, treat each `contributor` as a claimed identity until verified. Check each manifest's signature, subject binding to the entry and artifact, signer authority, and any referenced evidence before accepting its claims. See [Adding Trust](adding-trust.md) for details on the trust model and verification steps.

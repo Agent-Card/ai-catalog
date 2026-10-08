@@ -108,7 +108,8 @@ Enrich your entries with additional metadata:
 | `version` | string | Artifact version. Semantic versioning recommended |
 | `updatedAt` | string | ISO 8601 timestamp of last modification |
 | `publisher` | object | Who publishes this artifact (see [Publisher object](#publisher-object)) |
-| `trustManifest` | object | Trust and identity metadata (see [Adding Trust](adding-trust.md)) |
+| `trustManifests` | object[] | Contributor Trust Manifests, each optionally signed (see [Adding Trust](adding-trust.md)) |
+| `digest` | string | Digest of the artifact content |
 | `extensions` | object | Named extensions (see [Extensions](#extensions)) |
 
 ### When to set `displayName`
@@ -237,6 +238,23 @@ For generic key/value properties, use the official `https://ai-catalog.org/exten
 ```
 
 The value of this official extension is a schemaless object for generic key/value properties.
+
+### Policy links
+
+Use the official `https://ai-catalog.org/extensions/policy-urls` entry extension for links to the artifact's privacy policy and terms of service:
+
+```json
+{
+  "extensions": {
+    "https://ai-catalog.org/extensions/policy-urls": {
+      "privacyPolicyUrl": "https://example.com/privacy",
+      "termsOfServiceUrl": "https://example.com/terms"
+    }
+  }
+}
+```
+
+Both fields are optional. The publisher or catalog operator can supply these links; they describe the artifact's governing policies, not the operator's own catalog policy. A Trust Manifest signature does not authenticate the extension. A catalog signature covers it as part of its signer's snapshot, with signer authorization checked separately. Signing the URLs does not authenticate the documents served there.
 
 ## Complete example
 
