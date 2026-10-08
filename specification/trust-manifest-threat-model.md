@@ -80,7 +80,7 @@ Attacker
 2. Entry / nested-catalog resolution
 3. Signature verification and signed-subject matching
 4. Signer-key resolution and contributor, publisher, or catalog authorization
-5. Artifact fetch and digest computation
+5. Artifact fetch and digest computation (all catalog data must be valid input to JCS, even when unsigned)
 6. Attestation fetch and validation
 7. Provenance evaluation
 
@@ -214,8 +214,10 @@ the manifest byte-for-byte intact and changes only `entry.url` to a
 look-alike host serving a trojaned agent. A Layer-2 consumer "verifies
 the signature," sees green, and installs malware. *Closed by F1
 mitigation: the signed manifest includes its claims and release `subject`;
-the subject must match the entry, including `entry.digest`, and the consumer
-must verify the artifact bytes against that digest.*
+the subject must match the entry and include a digest or HTTPS URL binding.
+A selected URL prevents changing `entry.url`; a selected digest requires
+verification of the artifact bytes. URL-only binding does not prevent the
+signed location from serving changed or compromised content.*
 
 **SC-2 — False trust at Level 3.** A catalog advertises Level 3 with
 unsigned manifests. A consumer treats "Trusted Catalog" as
@@ -274,15 +276,15 @@ signer authority.
 
 | Finding | Threats | Earlier control | Current control or limitation | Spec section |
 |---------|---------|------------------|-------------------------------|--------------|
-| F1 | T1 | Detached JWS over manifest; OPTIONAL `sourceDigest` | Require a signed manifest with a subject matching entry `identifier`, `type`, `digest`, and the presence and value of `version`; verify the artifact against that digest | Verification Procedures → Entry Release Coverage |
+| F1 | T1 | Detached JWS over manifest; OPTIONAL `sourceDigest` | Require a signed subject matching entry `identifier`, `type`, and the presence and value of `digest` and `version`, with at least a digest or exact HTTPS `entry.url` binding; verify every present binding. URL-only binding prevents location substitution but does not pin the served representation | Verification Procedures → Entry Release Coverage |
 | F2 | T2 | Level 3 requires manifest presence | Level 3 requires an acceptable publisher-authorized signed manifest where publisher authenticity is relied upon; named-contributor claims require that contributor's acceptable signature over the manifest and its matching release subject | Conformance Level 3 |
 | F3 | S1 | Unconstrained key resolution from `identity` | Authenticate the signed `signer` identity through an assertion-authorized key whose protected `kid` has that exact DID portion; require that signer to exactly match the manifest's `contributor` for contributor attribution, and the signed `urn:air` publisher domain for publisher authorization | Verification → `did:web` Signer and Publisher Profiles |
 | F4 | E1 | "detached JWS" | Require ES256 with a P-256 `publicKeyJwk` in the initial Signer Profile; require protected `alg` and `kid`; prohibit attacker-selected key-source headers | Verification → `did:web` Signer Profile |
 | F5 | R1, E2 | Signature times and current key authorization | Check current key authorization and each signature's authenticated `issuedAt` and optional `expiresAt`; compare acceptable signed manifests from the same contributor for observed updates. Trusted current-release information or consumer state is still required to prevent rollback | Trust Manifest → Independent Contributions and Updates; Verification → Signature Acceptance and Time |
-| F6 | T3 | OCI Layer 3 (informative) | Sign the whole catalog except the root `signature.jws` and reserved root `additionalSignatures`; retain nested manifests and signatures in the signed content, and require separate operator authorization for snapshot acceptance | Verification Procedures → Catalog Snapshot Coverage and Catalog Authorization; Security Considerations |
+| F6 | T3 | OCI Layer 3 (informative) | Sign the whole catalog except the root `signature.jws` and reserved root `additionalSignatures`; retain nested manifests and signatures in the signed content, and apply the Catalog Profile or another operator-authorization policy for snapshot acceptance | Verification Procedures → Catalog Snapshot Coverage and Catalog Authorization; Security Considerations |
 | F7 | I1, I2, D1 | none | Safe-Fetching subsection: size caps, timeouts, no redirects to private ranges, host allowlist | Verification → Safe Fetching |
 | F8 | R2 | Fields only | Delegate signer authorization and signature verification to the provenance statement's format; a signed manifest's endorsement of its reference does not verify the statement itself | Verification → Provenance Statements |
-| F9 | S2 | Publisher fields outside the signed Trust Manifest | A Trust Manifest signature does not authenticate entry publisher metadata, entry extensions (including policy URLs), or retrieval URLs outside the manifest; a catalog signature authenticates them only as part of its signer's snapshot | Verification → Publisher and Policy Metadata |
+| F9 | S2 | Publisher fields outside the signed Trust Manifest | A Trust Manifest signature does not authenticate entry publisher metadata or entry extensions (including policy URLs) not selected by `subject.extensionDigests`, or retrieval URLs not selected by `subject.url`; a catalog signature authenticates them only as part of its signer's snapshot | Verification → Publisher and Policy Metadata |
 | F10 | — | JCS | JCS-canonicalize the signed object after excluding only its immediate `signature.jws` and reserved `additionalSignatures`; retain signer, profile, and signature times. Require the protected JWS `typ` for that object kind, and enforce I-JSON constraints, including numeric round-trip limits | Verification → Signature Object |
 | F11 | T4 | Signed subject contains representation type, digest, and optional URL only | Require signed subject `identifier` to match the entry and `version` to match both its presence and value; reject mismatches before accepting the manifest as an endorsement of that entry | Verification Procedures → Entry Release Coverage |
 
@@ -314,20 +316,23 @@ proven to come from its expected source and to be untampered.
 
 | Sigstore property | Provides | AI Catalog trust model | Gap (finding) |
 |-------------------|----------|----------------------|---------------|
-| Cosign signs the artifact **digest** | Artifact ↔ signature binding | Signed `subject.digest` matching `entry.digest`, with verified artifact bytes | Closed (F1) |
+| Cosign signs the artifact **digest** | Artifact ↔ signature binding | When present, signed `subject.digest` matches `entry.digest`, with verified artifact bytes; URL-only subjects bind a live location | Closed for digest-bound representations; URL-only binding offers different assurance (F1) |
 | **Fulcio** CA binds identity via OIDC; short-lived cert | Identity is CA-attested, not self-asserted | The Publisher Profile requires the signed `urn:air` publisher domain to match the authenticated root `did:web` signer; the Signer Profile also authenticates independent contributors | Different assurance — domain control rather than CA-attested OIDC identity |
 | **Rekor** transparency log | Non-repudiation, freshness, monitoring, rollback detection | No transparency-log equivalent; `issuedAt`/`expiresAt` give weak local freshness only | Open (F5, R1, E2) |
 | **Keyless / ephemeral keys** | No long-lived key management or revocation problem | Long-lived signer keys (DID/JWK); inherits key-management + revocation burden | Open (residual AS2) |
 | **TUF** root of trust | Secure distribution + rotation of verification keys | The `did:web` profile inherits DNS and Web PKI roots; it defines no application-specific root distribution | Delegated infrastructure |
-| Verify expected identity + cert chain + Rekor inclusion | Full verification chain | Verify signer identity and current assertion key, manifest signature, matching release subject, artifact digest, and authority for the claimed role; no inclusion proof | Partially open |
+| Verify expected identity + cert chain + Rekor inclusion | Full verification chain | Verify signer identity and current assertion key, manifest signature, matching release subject, every selected digest or URL binding, and authority for the claimed role; no inclusion proof | Partially open |
 
 ### 7.2 Implications
 
-- **What the Trust Manifest now matches.** With a matching signed subject,
-  an accepted endorsement reproduces Cosign's core property that a signature
-  commits to a specific artifact digest and additionally binds the manifest's
-  claims to the logical artifact release. This directly closes the representation
-  substitution and release-coordinate relabeling attacks (T1, T4).
+- **What a digest-bound Trust Manifest matches.** With a matching signed
+  `subject.digest` and verified artifact bytes, an accepted endorsement
+  reproduces Cosign's core property that a signature commits to a specific
+  artifact digest. It also binds the manifest's claims to the logical artifact
+  release, closing representation substitution and release-coordinate
+  relabeling attacks (T1, T4). A URL-only subject still binds the release
+  coordinates and retrieval location, but does not prevent changes to the
+  representation served there or establish that the signer assessed those changes.
 - **What it delegates.** The Trust Manifest deliberately does not operate a CA
   or a transparency log. The `did:web` profile delegates domain authentication
   to DNS and the Web PKI, then uses the DID document to authorize the current
@@ -366,20 +371,28 @@ while letting trust-sensitive deployments inherit Sigstore's full chain
 
 ## 8. Residual Risks
 
-- **Policy-URL attribution.** A publisher or catalog operator can populate
-  the official policy-URL extension, but a Trust Manifest signature does not
-  authenticate it. A verified publisher artifact endorsement can therefore
-  coexist with policy links that the publisher has not authenticated.
-  A catalog signature covers those links as part of its signer's snapshot,
-  subject to applicable signer authorization; it does not by itself establish publisher
-  endorsement of the links or authenticate mutable documents served there.
-- **Catalog-operator authentication.** HTTPS from an expected domain can
-  authenticate the transport endpoint, but a DID service-endpoint check alone
-  does not authenticate attacker-selected Host Info. A catalog signature can
-  protect the snapshot only after its signer and key are independently
-  authorized and the signature covers the complete snapshot. The base
-  specification leaves operator authorization to a separate profile or
-  configured policy; signed Host Info alone does not supply it.
+- **Optional policy-URL authentication.** A publisher or catalog operator can
+  populate the official policy-URL extension. No current profile requires its
+  authentication, so a verified publisher artifact endorsement can coexist
+  with policy links that the publisher has not authenticated. Consumers must
+  distinguish those assurances. A verified extension digest authenticates the
+  URLs as the contributor's claims, not mutable documents served there.
+- **Independent extension bindings.** A manifest signature authenticates its
+  `subject.extensionDigests` map, including each key-to-digest association.
+  Hashing the complete JCS value detects changes within that extension.
+  Missing or mismatching extensions are not authenticated by that binding;
+  their failure does not invalidate the artifact endorsement or other
+  matching extensions. Consumers must not confuse an accepted artifact
+  endorsement with authentication of every entry extension, or infer that
+  an authenticated claim about an older value applies to a replacement.
+
+- **Catalog-operator authentication.** The `did:web` Catalog Profile verifies
+  the complete snapshot and requires its authenticated signer to exactly match
+  the signed `host.identifier`. This establishes attribution to the declared
+  operator, not that the operator is the one an application expected or trusts.
+  A malicious operator can sign its own catalog; consumer trust decisions
+  remain necessary. Neither HTTPS nor a DID service-endpoint check alone
+  establishes this signed attribution.
 - **Domain and policy roots.** The `did:web` profile inherits the consumer's DNS
   and Web PKI trust roots. The Signer Profile authenticates domain control;
   the Publisher Profile additionally binds that domain to the publisher

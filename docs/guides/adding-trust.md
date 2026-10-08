@@ -4,7 +4,7 @@ An entry can carry optional `trustManifests`, each identifying a contributor and
 
 ## Choosing what to publish
 
-Add a digest when consumers need to check the artifact's content. Add a Trust Manifest when a contributor has attestations, provenance, or a trust-framework declaration to share. Sign the manifest to authenticate its claims and bind them to that artifact release. A signed manifest can also contain only the contributor, release subject, and signature object, without additional trust claims.
+Add a digest when consumers need to check the artifact's content. Add a Trust Manifest when a contributor has attestations, provenance, or a trust-framework declaration to share. Sign the manifest to authenticate its claims and bind them to the artifact by content digest, HTTPS retrieval URL, or both. A signed manifest can also contain only the contributor, release subject, and signature object, without additional trust claims.
 
 A minimal catalog needs only entries. Discoverable catalogs add Host Info and may use the well-known discovery location. Trusted catalogs additionally satisfy the specification's publisher-signature and evidence requirements; the presence of an arbitrary signature does not establish that conformance level.
 
@@ -33,7 +33,7 @@ This is an excerpt, not a complete entry. The `contributor` value is a claim abo
 | Manifest field | Description |
 |---|---|
 | `contributor` | Absolute identity URI of the contributor |
-| `subject` | Artifact release identified by `identifier`, `type`, `digest`, and optional `version`; required for signed manifests |
+| `subject` | Artifact identified by `identifier`, `type`, optional `version`, and at least one of `digest` or HTTPS `url`; required for signed manifests |
 | `signature` | Optional signature object authenticating the manifest and its subject |
 | `trustSchema` | Identifies an external trust framework and its version |
 | `attestations` | Array of compliance and identity evidence references |
@@ -105,6 +105,10 @@ The `relation` field is an open string. Three common values:
 
 To endorse an artifact release, add a `subject` and a `signature` object to the contributor's Trust Manifest. Set `signature.signer` to the same absolute identity URI as `contributor`, and `signature.profile` to the identifier of the signer verification procedure. The `did:web` Signer Profile uses `profile: "did-web-v1"`.
 
+### Choose an artifact binding
+
+Copy the entry's `identifier` and `type` into `subject`. For each of `digest` and `version`, include the entry's value when present and omit it otherwise. The subject must contain at least one of `digest` or `url`; selecting `url` requires copying the entry's absolute HTTPS URL exactly. An entry containing inline `data` therefore needs a digest to carry a signed manifest. Consumers must check every selected artifact binding before accepting the manifest's claims for the entry. The following JWS values are illustrative placeholders.
+
 For example, Acme can sign a manifest that endorses the artifact release without adding other trust claims:
 
 ```json
@@ -124,13 +128,36 @@ For example, Acme can sign a manifest that endorses the artifact release without
 }
 ```
 
-The JWS here is an illustrative placeholder. Copy the entry's `identifier`, `type`, and `digest` into `subject`. If the entry declares `version`, include that same value in `subject.version`; otherwise omit it from the subject too. Consumers must check that these fields match before accepting the manifest's claims for the entry.
+For an entry without `digest` or `version` whose `url` is `https://acme-corp.com/agents/finance.json`, a URL-only manifest can instead be:
+
+```json
+{
+  "contributor": "did:web:acme-corp.com",
+  "subject": {
+    "identifier": "urn:air:acme-corp.com:a2a:finance",
+    "type": "application/a2a-agent-card+json",
+    "url": "https://acme-corp.com/agents/finance.json"
+  },
+  "signature": {
+    "signer": "did:web:acme-corp.com",
+    "profile": "did-web-v1",
+    "issuedAt": "2026-03-15T10:00:00Z",
+    "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5IiwidHlwIjoiYWktY2F0YWxvZy10cnVzdC1tYW5pZmVzdCtqd3MifQ..detached-jws-signature"
+  }
+}
+```
+
+URL-only binding is available for every artifact type. Adding a digest to the entry later requires updating and re-signing this manifest with the same digest.
+
+Digest-only binding permits retrieval from mirrors whose bytes match the digest. A selected URL must exactly match `entry.url`. URL-only binding endorses the live resource at that location; it does not authenticate the representation currently served or establish a fresh assessment of it. Fetch the artifact using the specification's safe-fetching rules, including redirect checks. When both bindings are present, both must succeed; a matching URL cannot excuse a failed digest.
+
+### Construct the signature
 
 Record the endorsement time in `signature.issuedAt` and, optionally, an expiry time in `signature.expiresAt`. To produce `signature.jws`, take the whole Trust Manifest and omit only its top-level `additionalSignatures` field and `signature.jws`. JCS (RFC 8785) canonicalizes the remaining object before detached JWS signing. All other fields, including `contributor`, `subject`, the signature's metadata, and unfamiliar fields, participate in the signed payload. Follow the full specification for the exact payload and verification algorithm.
 
 The protected JWS header includes `typ: "ai-catalog-trust-manifest+jws"` to identify the signed object as a Trust Manifest. The manifest carries its own release binding, so its signature can be verified independently of the containing entry; accepting it for a particular entry additionally requires the subject and artifact checks.
 
-Adding another contributor's manifest does not invalidate this manifest's signature. Changing any signed content inside this manifest does. Entry metadata outside the manifest, including policy URLs and entry extensions, is not authenticated by this signature. An artifact may be retrieved from a mirror as long as its bytes match the signed digest.
+Adding another contributor's manifest leaves this manifest's signature valid. Changing its signed contents requires a new signature. Entry metadata participates in this endorsement only through a defined binding. Selected entry extensions can be authenticated through `subject.extensionDigests`, as described below.
 
 ## Verifying a Trust Manifest
 
@@ -144,13 +171,29 @@ For the manifest to count as Acme's claims, its `contributor` must exactly match
 
 Consumers should:
 
-1. Select the named, supported, and locally permitted profile (`did-web-v1` here). Check that `subject.identifier`, `subject.type`, and `subject.digest` match the entry and that `subject.version` has the same presence and value as `entry.version`.
+1. Select the named, supported, and locally permitted profile (`did-web-v1` here). Check that `subject.identifier` and `subject.type` match the entry, and that `digest` and `version` each have the same presence and value in the subject and entry. Require at least one of `subject.digest` or `subject.url`; any selected URL must be absolute HTTPS and exactly match `entry.url`.
 2. Construct and canonicalize the manifest payload, omitting only its top-level `additionalSignatures` and `signature.jws`.
 3. Check the protected `typ`, check that the DID in the protected `kid` exactly matches `signature.signer`, resolve the key, check assertion authorization, and verify the ES256 JWS.
 4. Check freshness, exact equality of `contributor` and the authenticated `signature.signer`, and the authority needed for the intended endorsement.
-5. Verify the artifact bytes against `subject.digest`, and evaluate referenced evidence according to its format and local policy.
+5. When `subject.digest` is present, verify the artifact bytes against it. A URL-only binding authenticates the retrieval location without pinning its contents. Evaluate referenced evidence according to its format and local policy.
 
 If a check fails, do not treat the affected claims as verified. Consumers can retain an unverified entry, retry temporary resolution failures, or reject it according to local policy. A valid signature proves an endorsement, not that the artifact is safe or every claim is true.
+
+## Authenticating entry extensions
+
+To authenticate an entry extension, JCS-canonicalize its entire value, hash the UTF-8 bytes, and place the digest under the same extension key in `subject.extensionDigests` before signing the manifest. For example, this subject excerpt selects one extension (the digest is a placeholder):
+
+```json
+{
+  "extensionDigests": {
+    "com.example.capabilities": "sha256:..."
+  }
+}
+```
+
+After verifying the manifest and its artifact binding, check each extension you want to authenticate against its recorded digest. Report whether the value matches, its binding could not be verified, or the manifest did not select it. Missing or changed values are not authenticated by that binding, but they do not invalidate the artifact endorsement or other matching extensions. Keep the complete digest map when verifying the manifest signature.
+
+The digest covers the whole extension value, including nested fields. Changing an unselected extension has no effect; changing any member of a selected extension changes that extension's binding. You can check an unfamiliar extension's digest without interpreting its contents. No current profile requires selecting any extension.
 
 ## Catalog signatures
 
@@ -158,9 +201,11 @@ The catalog root can carry one `signature` object authenticating the complete ca
 
 The protected JWS header uses `typ: "ai-catalog+jws"`. Adding or changing a nested manifest or signature changes the snapshot and requires a new catalog signature.
 
+To attribute the snapshot to its declared operator, the `did:web` Catalog Profile applies the Signer Profile and requires the authenticated root `signature.signer` to exactly equal `host.identifier`. Use the same `did-web-v1` selector. This identifies the operator endorsing the snapshot; consumers still decide whether to trust that operator. It does not authenticate the publishers of individual entries.
+
 ## Complete example
 
-An entry with a contributor manifest, artifact digest, policy links, and a signature. The manifest signature endorses the artifact but does not authenticate the policy links in the entry extension. The digest and JWS values are illustrative placeholders:
+An entry with a contributor manifest that endorses the artifact and authenticates its policy-link values through `subject.extensionDigests`. The artifact digest and JWS values are illustrative placeholders:
 
 ```json
 {
@@ -184,7 +229,10 @@ An entry with a contributor manifest, artifact digest, policy links, and a signa
       "subject": {
         "identifier": "urn:air:acme-corp.com:a2a:finance",
         "type": "application/a2a-agent-card+json",
-        "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "extensionDigests": {
+          "https://ai-catalog.org/extensions/policy-urls": "sha256:d2d43cb6efb27c583476d8bd09f485a210c5fa373a5e5708d793e34331cec555"
+        }
       },
       "trustSchema": {
         "identifier": "urn:trust:acme-enterprise-v1",
