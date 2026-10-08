@@ -2,86 +2,86 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://agent-card.github.io/ai-catalog/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/getting-started/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/implementations/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/specification/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/community/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/examples/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/examples/minimal-catalog/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/examples/multi-protocol-agent/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/examples/nested-catalogs/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/guides/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/guides/adding-trust/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/guides/consuming-catalogs/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/guides/creating-a-catalog/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/guides/organizing-catalogs/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/guides/serving-your-catalog/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/mappings/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/mappings/claude-code-plugins/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/mappings/distribution-substrates/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/mappings/mcp-servers/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/mappings/oci-distribution/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
     <url>
          <loc>https://agent-card.github.io/ai-catalog/mappings/xregistry/</loc>
-         <lastmod>2026-10-01</lastmod>
+         <lastmod>2026-10-08</lastmod>
     </url>
 </urlset>
