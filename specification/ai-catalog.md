@@ -219,11 +219,13 @@ It MUST contain the following members:
 
   For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.
 
-  See [Multi-Version Entries](#multi-version-entries) for uniqueness rules when multiple versions are present, and [Catalog Projection](#catalog-projection) for identifiers assigned while projecting an existing Catalog Entry or source-system record.
+  Uniqueness rules:
+  - Composite key consists of: `(identifier, type, {version})`
+  - See [Multi-Version Entries](#multi-version-entries) for uniqueness rules when multiple versions are present, and [Catalog Projection](#catalog-projection) for identifiers assigned while projecting an existing Catalog Entry or source-system record.
 
 `type`
 : A string containing the identifier that specifies the type of the
-  referenced artifact. This field is an open text format, so any string value is accepted. However, to ensure interoperability, it is RECOMMENDED to use one of the following recognized "known types" in the ecosystem when applicable, partitioned by their respective governance boundaries:
+  referenced artifact. The type is part of the entry's uniqueness key. This field is an open text format, so any string value is accepted. However, to ensure interoperability, it is RECOMMENDED to use one of the following recognized "known types" in the ecosystem when applicable, partitioned by their respective governance boundaries:
 
   **Core Protocol Types (Governed by the AI Catalog WG):**
 
@@ -431,9 +433,9 @@ A catalog MAY contain multiple entries with the same `identifier` and
 different `version` values, representing a version history for a
 single artifact — similar to a package registry.
 
-When `version` is present, the combination of `identifier` and `version`
-MUST be unique within the catalog. When `version` is absent, `identifier`
-alone MUST be unique. The `identifier` SHOULD be stable across versions.
+When `version` is present, the combination of `identifier` and `type` and `version`
+MUST be unique within the catalog. When `version` is absent, `identifier` and `type`
+MUST be unique. The `identifier` SHOULD be stable across versions.
 Only publisher-authorized `urn:air` identifiers receive a cross-catalog
 preservation requirement, as defined in [Catalog Projection](#catalog-projection).
 
@@ -466,7 +468,7 @@ For example, a catalog listing two versions of the same agent:
 }
 ```
 
-Both entries share the same `identifier` but have distinct `version`
+Both entries share the same `identifier` and `type` but have distinct `version`
 values, so the combination is unique.
 
 ## Catalog Projection
