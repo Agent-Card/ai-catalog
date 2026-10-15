@@ -23,7 +23,7 @@ are the catalog entries; each entry's artifact is the Resource document.
 |:---|:---|
 | AI Catalog document | A Group instance (e.g. in a `aicatalogs` Group type), or the Registry root when serving a single catalog |
 | Catalog Entry | A Resource within that Group |
-| Entry `identifier` | Resource-local `<SINGULAR>id` and `xid`, with the complete URI preserved in the `ai-catalog.identifier` label |
+| Entry `identifier` + `type` | Resource-local `<SINGULAR>id` and `xid`, one Resource per `(identifier, type)` pair, with the complete identifier URI preserved in the `ai-catalog.identifier` label |
 | Entry `type` | Version `contenttype` (with `format` when a named format applies) |
 | Entry artifact content | Resource document — inline (`<RESOURCE>` / `<RESOURCE>base64`) or external (`<RESOURCE>url`) |
 | Entry metadata (displayName, description, tags) | `name`, `description`, `labels` |
@@ -41,13 +41,16 @@ Tooling converts an AI Catalog JSON document into xRegistry resources:
    to Group attributes: `displayName` to `name`, host identity and other
    metadata to `labels` or extension attributes.
 
-2. **Each catalog entry** becomes a Resource in that Group. The entry's
-   artifact content is stored as the Resource document — inline via
-   `<RESOURCE>` / `<RESOURCE>base64`, or by reference via `<RESOURCE>url`.
-   `type` maps to `contenttype`; entry metadata maps to `name`,
-   `description`, and `labels`. The complete entry `identifier` URI is
-   preserved in the `ai-catalog.identifier` label. Multiple entry versions
-   map to Versions.
+2. **Each distinct `(identifier, type)` pair** becomes a Resource in that
+   Group. The entry's artifact content is stored as the Resource document —
+   inline via `<RESOURCE>` / `<RESOURCE>base64`, or by reference via
+   `<RESOURCE>url`. `type` maps to `contenttype`; entry metadata maps to
+   `name`, `description`, and `labels`. The complete entry `identifier` URI
+   is preserved in the `ai-catalog.identifier` label. Multiple entry
+   versions of the same `(identifier, type)` pair map to Versions of that
+   Resource. When entries share an `identifier` but differ in `type`, each
+   gets its own Resource with a distinct `<SINGULAR>id`, so the
+   `ai-catalog.identifier` label is not unique across Resources in a Group.
 
 3. **Trust Manifests** are carried as an extension attribute on the
    Resource (for example `aicatalog_trustmanifest`), or as a related

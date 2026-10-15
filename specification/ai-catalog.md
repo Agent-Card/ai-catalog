@@ -203,7 +203,7 @@ A Catalog Entry object describes a single AI artifact in the catalog.
 It MUST contain the following members:
 
 `identifier`
-: A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific `urn:air` naming structure with its own domain in the `{publisher}` segment. A catalog operator incorporating an entry for the first time with a publisher-authorized `urn:air` identifier MUST preserve that identifier exactly.
+: A string identifying the logical artifact this entry describes. Together with `type` and, when present, `version`, it forms the entry's uniqueness key, so entries that describe the same artifact in different formats MAY share an `identifier`. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific `urn:air` naming structure with its own domain in the `{publisher}` segment. A catalog operator incorporating an entry for the first time with a publisher-authorized `urn:air` identifier MUST preserve that identifier exactly.
 
   **`urn:air` Identifier Format:**
   `urn:air:{publisher}:{namespace}:{name}`
@@ -312,7 +312,7 @@ The following members are OPTIONAL:
   `displayName` and `description`, however, `version` is not merely
   cosmetic: it is part of the entry's uniqueness key, so it is
   REQUIRED when a catalog lists multiple versions of the same
-  `identifier` (see [Multi-Version Entries](#multi-version-entries)).
+  `identifier` and `type` (see [Multi-Version Entries](#multi-version-entries)).
   A present `version` is used for catalog-level sorting and selection
   rather than as a free-form display override, so it SHOULD equal the
   version the referenced artifact reports; an entry `version` that
@@ -404,7 +404,7 @@ order:
    `description`, a present `version` is not a free-form display
    override: it is authoritative for catalog-level sorting and version
    selection. Within a multi-version listing it is REQUIRED and, combined
-   with `identifier`, uniquely addresses the entry.
+   with `identifier` and `type`, uniquely addresses the entry.
 2. **The referenced artifact's own version**, if the consumer has already
    fetched or cached the artifact — for example the `version` field of an
    A2A Agent Card, an MCP Server Card, or an MCP Registry `server.json`.
@@ -430,8 +430,8 @@ artifacts on the rendering path.
 ## Multi-Version Entries
 
 A catalog MAY contain multiple entries with the same `identifier` and
-different `version` values, representing a version history for a
-single artifact — similar to a package registry.
+`type` and different `version` values, representing a version history
+for a single artifact — similar to a package registry.
 
 When `version` is present, the combination of `identifier` and `type` and `version`
 MUST be unique within the catalog. When `version` is absent, `identifier` and `type`
@@ -440,9 +440,10 @@ Only publisher-authorized `urn:air` identifiers receive a cross-catalog
 preservation requirement, as defined in [Catalog Projection](#catalog-projection).
 
 Clients that need only the latest version SHOULD sort entries
-sharing the same `identifier` by `version` (when parseable as a semantic
-version) or by `updatedAt`, and select the most recent. Clients
-that need a specific version SHOULD match on both `identifier` and `version`.
+sharing the same `identifier` and `type` by `version` (when parseable as
+a semantic version) or by `updatedAt`, and select the most recent.
+Clients that need a specific version SHOULD match on `identifier`,
+`type`, and `version`.
 
 For example, a catalog listing two versions of the same agent:
 
@@ -592,8 +593,8 @@ authorize or verify a Trust Manifest signature. Such processing does not
 satisfy the interoperable Level 3 issuer-verification requirements defined by
 this specification.
 
-When multiple entries share the same `identifier` (with different `version`
-values), each entry MAY carry its own Trust Manifest. There is no
+When multiple entries share the same `identifier` (with different `type` or
+`version` values), each entry MAY carry its own Trust Manifest. There is no
 requirement that all versions carry identical trust metadata — trust
 properties may evolve across versions.
 

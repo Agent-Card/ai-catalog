@@ -180,7 +180,7 @@ Keep identifiers stable across catalog locations and versions. Anchoring to a do
 
 ## Multi-version entries
 
-A catalog may contain multiple entries with the same `identifier` but different `version` values, representing a version history:
+A catalog may contain multiple entries with the same `identifier` and `type` but different `version` values, representing a version history:
 
 ```json
 {
@@ -204,7 +204,7 @@ A catalog may contain multiple entries with the same `identifier` but different 
 }
 ```
 
-When `version` is present, the combination of `identifier` + `version` must be unique. Clients looking for the latest version should sort by `version` (semver) or `updatedAt` and take the most recent.
+An entry's uniqueness key is `identifier` + `type` + `version`. When `version` is present, that combination must be unique; when `version` is absent, `identifier` + `type` must be unique. This lets you list the same artifact in more than one format, such as an MCP Server Card and an A2A Agent Card, under one `identifier`. Clients looking for the latest version should sort entries sharing the same `identifier` and `type` by `version` (semver) or `updatedAt` and take the most recent.
 
 ## Publisher object
 

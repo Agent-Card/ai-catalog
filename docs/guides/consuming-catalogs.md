@@ -144,31 +144,31 @@ def collect_all_entries(catalog_url, max_depth=4, _visited=None, _depth=0):
 
 ## Multi-version resolution
 
-When multiple entries share the same `identifier`, they represent different versions of the same artifact. To get the latest:
+An entry's uniqueness key is `identifier` + `type` + `version`. Entries that share an `identifier` can be different versions of the artifact, the same artifact in different formats (for example an MCP Server Card and an A2A Agent Card), or both. Group by `identifier` and `type` before picking the latest, otherwise one format can hide another:
 
 ```python
 from packaging.version import Version
 
 def latest_entries(entries):
-    """Return only the latest version of each unique identifier."""
-    by_id = {}
+    """Return only the latest version of each (identifier, type) pair."""
+    by_key = {}
 
     for entry in entries:
-        eid = entry["identifier"]
-        if eid not in by_id:
-            by_id[eid] = entry
+        key = (entry["identifier"], entry["type"])
+        if key not in by_key:
+            by_key[key] = entry
             continue
 
-        existing = by_id[eid]
+        existing = by_key[key]
         # Prefer by semver version, fall back to updatedAt
         try:
             if Version(entry.get("version", "0")) > Version(existing.get("version", "0")):
-                by_id[eid] = entry
+                by_key[key] = entry
         except Exception:
             if entry.get("updatedAt", "") > existing.get("updatedAt", ""):
-                by_id[eid] = entry
+                by_key[key] = entry
 
-    return list(by_id.values())
+    return list(by_key.values())
 ```
 
 ## TypeScript example
