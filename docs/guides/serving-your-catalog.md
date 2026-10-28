@@ -65,12 +65,12 @@ Authoring                    Distribution              Consumption
 ─────────                    ────────────              ───────────
 ai-catalog.json  ─ pack ─►  OCI Registry  ─ unpack ─► ai-catalog.json
   entries[]                  Index/Manifests             entries[]
-  trustManifest              Referrers                   trustManifest
+  trustManifests             Referrers                   trustManifests
 ```
 
 Clients that fetch from `/.well-known/ai-catalog.json` or a registry API always receive the logical JSON format — they never parse OCI structures directly.
 
-OCI distribution provides Layer 3 trust: all content is addressed by cryptographic digest, making substitution structurally impossible. See [Adding Trust](adding-trust.md#trust-layers) for how this fits into the progressive trust model.
+OCI distribution provides Layer 3 trust: all content is addressed by cryptographic digest, making substitution structurally impossible. See [Trust Layers](https://agent-card.github.io/ai-catalog/spec/#trust-layers) for how this fits into the progressive trust model.
 
 For the full OCI mapping specification including the Image Index structure and Referrers API usage, refer to the [Full Specification](../specification.md).
 

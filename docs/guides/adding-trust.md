@@ -1,116 +1,51 @@
 # Adding Trust
 
-The Trust Manifest is an optional extension to AI Catalog entries that enables verifiable identity, compliance attestations, and provenance tracking. You don't need it to publish a catalog — but it's valuable for regulated environments, enterprise deployments, and public registries.
+An entry can carry optional `trustManifests`, each identifying a contributor and optionally carrying one signature. Each signed manifest binds its claims to an artifact release through a `subject`. Neither a manifest nor a signature is needed for a minimal catalog.
 
-## When do you need trust?
+## Choosing what to publish
 
-| Use case | Level needed |
-|---|---|
-| Internal tooling, quick prototyping | No trust metadata needed |
-| Public tools, developer marketplace | Consider publisher identity |
-| Enterprise deployments, compliance-sensitive | Attestations (SOC2, ISO, HIPAA) |
-| High-assurance environments | Signed Trust Manifests + provenance |
+Add a digest when consumers need to check the artifact's content. Add a Trust Manifest when a contributor has attestations, provenance, or a trust-framework declaration to share. Sign the manifest to authenticate its claims and bind them to that artifact release. A signed manifest can also contain only the contributor, release subject, and signature object, without additional trust claims.
 
-## Conformance levels
-
-Trust builds on the three conformance levels:
-
-=== "Level 1 — Minimal"
-
-    Just entries with types and URLs. No host, no trust metadata.
-
-    ```json
-    {
-      "specVersion": "1.0",
-      "entries": [...]
-    }
-    ```
-
-=== "Level 2 — Discoverable"
-
-    Adds a `host` object and is served at `/.well-known/ai-catalog.json`.
-
-    ```json
-    {
-      "specVersion": "1.0",
-      "host": {
-        "displayName": "Acme Corp",
-        "identifier": "did:web:acme-corp.com"
-      },
-      "entries": [...]
-    }
-    ```
-
-=== "Level 3 — Trusted"
-
-    Adds signed, subject-bound Trust Manifests with verifiable identity, attestations, and provenance.
-
-    ```json
-    {
-      "specVersion": "1.0",
-      "host": { ... },
-      "entries": [
-        {
-          "identifier": "urn:air:acme-corp.com:a2a:finance",
-          "type": "application/a2a-agent-card+json",
-          "url": "...",
-          "trustManifest": {
-            "identity": "did:web:acme-corp.com",
-            "subject": {
-              "identifier": "urn:air:acme-corp.com:a2a:finance",
-              "type": "application/a2a-agent-card+json",
-              "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
-            },
-            "issuedAt": "2026-03-15T10:00:00Z",
-            "signature": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5In0..detached-jws-signature"
-          }
-        }
-      ]
-    }
-    ```
+A minimal catalog needs only entries. Discoverable catalogs add Host Info and may use the well-known discovery location. Trusted catalogs additionally satisfy the specification's publisher-signature and evidence requirements; the presence of an arbitrary signature does not establish that conformance level.
 
 ## Trust Manifest structure
 
-A Trust Manifest is an object on a Catalog Entry. It always requires `identity` and must contain substantive trust evidence. A signed Trust Manifest also requires `subject` and `issuedAt`.
-
-| Field | Requirement | Description |
-|---|---|---|
-| `attestations` | Optional | Array of compliance and identity attestation objects |
-| `expiresAt` | Optional | Time after which a signed Trust Manifest is stale |
-| `extensions` | Optional | Named extension map for custom trust data; included in the signed payload when the manifest is signed (see [Extensions](creating-a-catalog.md#extensions)) |
-| `identity` | Required | Globally unique URI identifying the issuer to which the Trust Manifest's claims are attributed |
-| `identityType` | Optional | Descriptive type hint for the identity URI; consumers determine the mechanism from `identity` itself, and a present value must agree with the applicable profile |
-| `issuedAt` | Required when signed | Time at which a signed Trust Manifest was issued |
-| `privacyPolicyUrl` | Optional | URL to the privacy policy |
-| `provenance` | Optional | Array of provenance links (source code, OCI digests) |
-| `signature` | Required at Level 3 | Detached JWS signature over the Trust Manifest content |
-| `subject` | Required when signed | Logical artifact release and exact representation covered by a signature |
-| `termsOfServiceUrl` | Optional | URL to the terms of service |
-| `trustSchema` | Optional | Describes the trust framework applied |
-
-!!! tip "Attestation document format"
-    Attestation documents are not restricted to any particular format — they can be human-readable (e.g., a PDF audit report) or machine-readable for automated verification (e.g., JWTs, Verifiable Credentials).
-
-## Identifying the issuer
-
-`trustManifest.identity` identifies the party to which the Trust Manifest's claims are attributed. The artifact release is identified by the signed `subject`.
-
-For a signed Entry Trust Manifest, AI Catalog defines one interoperable issuer profile. The entry uses a standard `urn:air` identifier and the issuer uses the root `did:web` DID for the identifier's publisher domain:
-
-The following excerpt shows only that relationship; a complete Catalog Entry and substantive Trust Manifest require the additional fields shown elsewhere in this guide.
+`entry.trustManifests` is an array. Each manifest identifies its `contributor` by an absolute identity URI and contains that contributor's trust metadata:
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:a2a:finance",
-  "trustManifest": {
-    "identity": "did:web:acme-corp.com"
-  }
+  "trustManifests": [
+    {
+      "contributor": "did:web:acme-corp.com",
+      "provenance": [
+        {
+          "relation": "publishedFrom",
+          "sourceId": "https://github.com/acme-corp/finance-agent"
+        }
+      ]
+    }
+  ]
 }
 ```
 
-This relationship allows a verifier to authenticate control of the `acme-corp.com` publisher namespace through the domain's DID document. It does not establish that Acme is reputable, that every claim is accurate, or that the artifact is safe. Those decisions remain consumer or registry policy.
+This is an excerpt, not a complete entry. The `contributor` value is a claim about authorship, not proof that the contributor supplied the metadata. Authenticate it through the manifest's signature, whose verified `signer` must exactly match `contributor`.
 
-Other identity mechanisms can be used through separately defined profiles or private agreement, but they do not satisfy the interoperable Level 3 issuer-verification requirements defined by AI Catalog.
+| Manifest field | Description |
+|---|---|
+| `contributor` | Absolute identity URI of the contributor |
+| `subject` | Artifact release identified by `identifier`, `type`, `digest`, and optional `version`; required for signed manifests |
+| `signature` | Optional signature object authenticating the manifest and its subject |
+| `trustSchema` | Identifies an external trust framework and its version |
+| `attestations` | Array of compliance and identity evidence references |
+| `provenance` | Array of lineage links |
+| `extensions` | Namespaced custom trust metadata |
+
+An unsigned manifest must include a trust schema or a non-empty attestations array, provenance array, or extensions map. A signed manifest may instead endorse only its artifact release.
+
+A `trustSchema` names a trust framework; it does not by itself prove compliance or supply an executable verification policy. Consumers need to understand the referenced framework before using it in a trust decision.
+
+!!! tip "Attestation document format"
+    Evidence may be human-readable, such as a PDF audit report, or machine-readable, such as a signed credential. Verification depends on that evidence's format and the consumer's policy.
 
 ## Adding compliance attestations
 
@@ -166,58 +101,66 @@ The `relation` field is an open string. Three common values:
 
 `sourceId` is a URI identifying the source. `sourceDigest` is a cryptographic hash (`sha256:...`) for integrity verification.
 
-## Signing the Trust Manifest
+## Signing a Trust Manifest
 
-A signature turns the Trust Manifest from advisory metadata into tamper-evident assertions. Without a signature, an attacker who can modify the catalog can also substitute the Trust Manifest with forged claims.
+To endorse an artifact release, add a `subject` and a `signature` object to the contributor's Trust Manifest. Set `signature.signer` to the same absolute identity URI as `contributor`, and `signature.profile` to the identifier of the signer verification procedure. The `did:web` Signer Profile uses `profile: "did-web-v1"`.
 
-The `signature` field holds a detached JWS (RFC 7515):
+For example, Acme can sign a manifest that endorses the artifact release without adding other trust claims:
 
 ```json
-"trustManifest": {
-  "identity": "did:web:acme-corp.com",
-  "attestations": [...],
+{
+  "contributor": "did:web:acme-corp.com",
   "subject": {
     "identifier": "urn:air:acme-corp.com:a2a:finance",
     "type": "application/a2a-agent-card+json",
     "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
   },
-  "issuedAt": "2026-03-15T10:00:00Z",
-  "signature": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5In0..detached-jws-signature"
+  "signature": {
+    "signer": "did:web:acme-corp.com",
+    "profile": "did-web-v1",
+    "issuedAt": "2026-03-15T10:00:00Z",
+    "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5IiwidHlwIjoiYWktY2F0YWxvZy10cnVzdC1tYW5pZmVzdCtqd3MifQ..detached-jws-signature"
+  }
 }
 ```
 
-The signature is computed over the Trust Manifest content using JCS (RFC 8785) canonicalization. The stored value is a detached compact JWS with a protected `alg` header of `ES256` and an absolute DID URL in `kid`, such as `did:web:acme-corp.com#release-signing-key`.
+The JWS here is an illustrative placeholder. Copy the entry's `identifier`, `type`, and `digest` into `subject`. If the entry declares `version`, include that same value in `subject.version`; otherwise omit it from the subject too. Consumers must check that these fields match before accepting the manifest's claims for the entry.
 
-The verifier retrieves the current DID document from `https://acme-corp.com/.well-known/did.json`. The key selected by `kid` must be an ES256 P-256 JWK authorized by the DID document's `assertionMethod` relationship. A key listed only for authentication or key agreement cannot sign an AI Catalog Trust Manifest.
+Record the endorsement time in `signature.issuedAt` and, optionally, an expiry time in `signature.expiresAt`. To produce `signature.jws`, take the whole Trust Manifest and omit only its top-level `additionalSignatures` field and `signature.jws`. JCS (RFC 8785) canonicalizes the remaining object before detached JWS signing. All other fields, including `contributor`, `subject`, the signature's metadata, and unfamiliar fields, participate in the signed payload. Follow the full specification for the exact payload and verification algorithm.
 
-Clients verifying signatures should:
+The protected JWS header includes `typ: "ai-catalog-trust-manifest+jws"` to identify the signed object as a Trust Manifest. The manifest carries its own release binding, so its signature can be verified independently of the containing entry; accepting it for a particular entry additionally requires the subject and artifact checks.
 
-1. Extract the `signature` field and remove it from the object
-2. Canonicalize the remaining Trust Manifest using JCS
-3. Confirm the signed `urn:air` publisher domain exactly matches the root `did:web` identity
-4. Resolve the DID document and select the `kid` verification method authorized by `assertionMethod`
-5. Verify the ES256 JWS signature
-6. Confirm `subject.identifier` and `subject.type` match the Catalog Entry; confirm the entry and subject versions are both absent or both present and exactly equal; when `subject.url` is present, confirm it matches the entry URL
-7. Verify the artifact content against `subject.digest`
+Adding another contributor's manifest does not invalidate this manifest's signature. Changing any signed content inside this manifest does. Entry metadata outside the manifest, including policy URLs and entry extensions, is not authenticated by this signature. An artifact may be retrieved from a mirror as long as its bytes match the signed digest.
 
-If any step does not succeed, clients must not treat the Trust Manifest's claims as verified. They may still retain or display the Catalog Entry as unverified, retry a temporarily unavailable DID resolution, or reject the entry according to local policy.
+## Verifying a Trust Manifest
 
-## Trust layers
+First select the procedure named by `profile`, checking that it is supported and permitted by local policy. Other manifests can be evaluated independently.
 
-Trust is progressive — use the layer appropriate to your threat model:
+For the example above, `profile: "did-web-v1"` selects the `did:web` Signer Profile, which verifies Acme's endorsement using `signer: "did:web:acme-corp.com"` and the protected JWS header's `kid: "did:web:acme-corp.com#release-signing-key"`. The DID in `kid` must exactly match `signer`, and the header's `alg` must be `ES256`.
 
-| Layer | What it provides | How it works |
-|---|---|---|
-| **0 — TLS** | Prevents eavesdropping and casual tampering | HTTPS certificate chain |
-| **1 — Provenance digests** | Detects artifact tampering in transit | Hash the fetched artifact, compare to `sourceDigest` |
-| **2 — Signed Trust Manifest** | Binds signed claims to an artifact release | Verify the JWS and confirm that the signed subject matches the entry and artifact |
-| **3 — OCI content-addressing** | Makes modification structurally impossible | All content addressed by digest in an OCI registry |
+The verifier retrieves Acme's root DID document from `https://acme-corp.com/.well-known/did.json` and checks that it authorizes the selected P-256 key through `assertionMethod`. A key listed only for authentication or key agreement does not satisfy this profile. The verifier uses the authorized key to check the JWS against the canonicalized manifest payload, including its exact `signature.signer` and `signature.profile` values. Changing the profile label therefore invalidates the signature. The identity becomes authenticated only after these checks succeed.
 
-For most use cases, Layer 0 (HTTPS) + Layer 2 (signed Trust Manifest) provides a strong baseline.
+For the manifest to count as Acme's claims, its `contributor` must exactly match the authenticated `signature.signer`. Publisher authority requires an additional check: Acme's root `did:web` domain must match the publisher domain of the entry's standard `urn:air` identifier. An independent contributor can authenticate with its own DID without thereby becoming the artifact's publisher.
+
+Consumers should:
+
+1. Select the named, supported, and locally permitted profile (`did-web-v1` here). Check that `subject.identifier`, `subject.type`, and `subject.digest` match the entry and that `subject.version` has the same presence and value as `entry.version`.
+2. Construct and canonicalize the manifest payload, omitting only its top-level `additionalSignatures` and `signature.jws`.
+3. Check the protected `typ`, check that the DID in the protected `kid` exactly matches `signature.signer`, resolve the key, check assertion authorization, and verify the ES256 JWS.
+4. Check freshness, exact equality of `contributor` and the authenticated `signature.signer`, and the authority needed for the intended endorsement.
+5. Verify the artifact bytes against `subject.digest`, and evaluate referenced evidence according to its format and local policy.
+
+If a check fails, do not treat the affected claims as verified. Consumers can retain an unverified entry, retry temporary resolution failures, or reject it according to local policy. A valid signature proves an endorsement, not that the artifact is safe or every claim is true.
+
+## Catalog signatures
+
+The catalog root can carry one `signature` object authenticating the complete catalog snapshot, including Host Info, entries, and all nested Trust Manifests. Its payload omits only the root's `additionalSignatures` field and the root's `signature.jws`. The catalog signature also covers the signatures and reserved `additionalSignatures` fields inside its Trust Manifests.
+
+The protected JWS header uses `typ: "ai-catalog+jws"`. Adding or changing a nested manifest or signature changes the snapshot and requires a new catalog signature.
 
 ## Complete example
 
-A Trust Manifest with identity, compliance attestation, provenance, and signature:
+An entry with a contributor manifest, artifact digest, policy links, and a signature. The manifest signature endorses the artifact but does not authenticate the policy links in the entry extension. The digest and JWS values are illustrative placeholders:
 
 ```json
 {
@@ -228,49 +171,59 @@ A Trust Manifest with identity, compliance attestation, provenance, and signatur
     "identifier": "did:web:acme-corp.com",
     "displayName": "Acme Financial Corp"
   },
-  "trustManifest": {
-    "identity": "did:web:acme-corp.com",
-    "trustSchema": {
-      "identifier": "urn:trust:acme-enterprise-v1",
-      "version": "1.0",
-      "governanceUri": "https://acme-corp.com/trust/governance.pdf",
-      "verificationMethods": ["did:web"]
-    },
-    "attestations": [
-      {
-        "type": "SOC2-Type2",
-        "uri": "https://trust.acme-corp.com/reports/soc2.pdf",
-        "digest": "sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890",
-        "description": "SOC 2 Type 2 report, valid through 2026"
+  "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+  "extensions": {
+    "https://ai-catalog.org/extensions/policy-urls": {
+      "privacyPolicyUrl": "https://acme-corp.com/legal/privacy",
+      "termsOfServiceUrl": "https://acme-corp.com/legal/terms"
+    }
+  },
+  "trustManifests": [
+    {
+      "contributor": "did:web:acme-corp.com",
+      "subject": {
+        "identifier": "urn:air:acme-corp.com:a2a:finance",
+        "type": "application/a2a-agent-card+json",
+        "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
       },
-      {
-        "type": "ISO27701",
-        "uri": "https://trust.acme-corp.com/credentials/iso27701.sd-jwt",
-        "digest": "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-        "description": "ISO/IEC 27701 privacy management certification (IETF SD-JWT VC) issued by did:web:auditor.example"
+      "trustSchema": {
+        "identifier": "urn:trust:acme-enterprise-v1",
+        "version": "1.0",
+        "governanceUri": "https://acme-corp.com/trust/governance.pdf",
+        "verificationMethods": ["did:web"]
+      },
+      "attestations": [
+        {
+          "type": "SOC2-Type2",
+          "uri": "https://trust.acme-corp.com/reports/soc2.pdf",
+          "digest": "sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890",
+          "description": "SOC 2 Type 2 report, valid through 2026"
+        },
+        {
+          "type": "ISO27701",
+          "uri": "https://trust.acme-corp.com/credentials/iso27701.sd-jwt",
+          "digest": "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+          "description": "ISO/IEC 27701 privacy management certification (IETF SD-JWT VC) issued by did:web:auditor.example"
+        }
+      ],
+      "provenance": [
+        {
+          "relation": "publishedFrom",
+          "sourceId": "https://github.com/acme-corp/finance-agent",
+          "sourceDigest": "sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321"
+        }
+      ],
+      "signature": {
+        "signer": "did:web:acme-corp.com",
+        "profile": "did-web-v1",
+        "issuedAt": "2026-03-15T10:00:00Z",
+        "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5IiwidHlwIjoiYWktY2F0YWxvZy10cnVzdC1tYW5pZmVzdCtqd3MifQ..detached-jws-signature"
       }
-    ],
-    "provenance": [
-      {
-        "relation": "publishedFrom",
-        "sourceId": "https://github.com/acme-corp/finance-agent",
-        "sourceDigest": "sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321"
-      }
-    ],
-    "privacyPolicyUrl": "https://acme-corp.com/legal/privacy",
-    "termsOfServiceUrl": "https://acme-corp.com/legal/terms",
-    "subject": {
-      "identifier": "urn:air:acme-corp.com:a2a:finance",
-      "url": "https://agents.acme-corp.com/finance",
-      "type": "application/a2a-agent-card+json",
-      "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
-    },
-    "issuedAt": "2026-03-15T10:00:00Z",
-    "signature": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5In0..detached-jws-signature"
-  }
+    }
+  ]
 }
 ```
 
 ## Next steps
 
-For the full normative requirements on Trust Manifests — including the `did:web` publisher profile, JCS canonicalization, JWS construction, and verification procedure — see the [Full Specification](../specification.md).
+See the [Full Specification](../specification.md) for subject matching, payload construction, the `did:web` profile, publisher authority, and conformance requirements.
