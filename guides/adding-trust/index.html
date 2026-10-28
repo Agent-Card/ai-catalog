@@ -604,21 +604,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#when-do-you-need-trust" class="md-nav__link">
+  <a href="#choosing-what-to-publish" class="md-nav__link">
     <span class="md-ellipsis">
       
-        When do you need trust?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conformance-levels" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Conformance levels
+        Choosing what to publish
       
     </span>
   </a>
@@ -630,17 +619,6 @@
     <span class="md-ellipsis">
       
         Trust Manifest structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#identifying-the-issuer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Identifying the issuer
       
     </span>
   </a>
@@ -670,10 +648,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#signing-the-trust-manifest" class="md-nav__link">
+  <a href="#signing-a-trust-manifest" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Signing the Trust Manifest
+        Signing a Trust Manifest
       
     </span>
   </a>
@@ -681,10 +659,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#trust-layers" class="md-nav__link">
+  <a href="#verifying-a-trust-manifest" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Trust layers
+        Verifying a Trust Manifest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#catalog-signatures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catalog signatures
       
     </span>
   </a>
@@ -1210,21 +1199,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#when-do-you-need-trust" class="md-nav__link">
+  <a href="#choosing-what-to-publish" class="md-nav__link">
     <span class="md-ellipsis">
       
-        When do you need trust?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conformance-levels" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Conformance levels
+        Choosing what to publish
       
     </span>
   </a>
@@ -1236,17 +1214,6 @@
     <span class="md-ellipsis">
       
         Trust Manifest structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#identifying-the-issuer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Identifying the issuer
       
     </span>
   </a>
@@ -1276,10 +1243,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#signing-the-trust-manifest" class="md-nav__link">
+  <a href="#signing-a-trust-manifest" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Signing the Trust Manifest
+        Signing a Trust Manifest
       
     </span>
   </a>
@@ -1287,10 +1254,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#trust-layers" class="md-nav__link">
+  <a href="#verifying-a-trust-manifest" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Trust layers
+        Verifying a Trust Manifest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#catalog-signatures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catalog signatures
       
     </span>
   </a>
@@ -1340,195 +1318,91 @@
 
 
 <h1 id="adding-trust">Adding Trust<a class="headerlink" href="#adding-trust" title="Permanent link">&para;</a></h1>
-<p>The Trust Manifest is an optional extension to AI Catalog entries that enables verifiable identity, compliance attestations, and provenance tracking. You don't need it to publish a catalog — but it's valuable for regulated environments, enterprise deployments, and public registries.</p>
-<h2 id="when-do-you-need-trust">When do you need trust?<a class="headerlink" href="#when-do-you-need-trust" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Use case</th>
-<th>Level needed</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Internal tooling, quick prototyping</td>
-<td>No trust metadata needed</td>
-</tr>
-<tr>
-<td>Public tools, developer marketplace</td>
-<td>Consider publisher identity</td>
-</tr>
-<tr>
-<td>Enterprise deployments, compliance-sensitive</td>
-<td>Attestations (SOC2, ISO, HIPAA)</td>
-</tr>
-<tr>
-<td>High-assurance environments</td>
-<td>Signed Trust Manifests + provenance</td>
-</tr>
-</tbody>
-</table>
-<h2 id="conformance-levels">Conformance levels<a class="headerlink" href="#conformance-levels" title="Permanent link">&para;</a></h2>
-<p>Trust builds on the three conformance levels:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Level 1 — Minimal</label><label for="__tabbed_1_2">Level 2 — Discoverable</label><label for="__tabbed_1_3">Level 3 — Trusted</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<p>Just entries with types and URLs. No host, no trust metadata.</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;specVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;entries&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
-</span></code></pre></div>
-</div>
-<div class="tabbed-block">
-<p>Adds a <code>host</code> object and is served at <code>/.well-known/ai-catalog.json</code>.</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;specVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Acme Corp&quot;</span><span class="p">,</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">&quot;entries&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">}</span>
-</span></code></pre></div>
-</div>
-<div class="tabbed-block">
-<p>Adds signed, subject-bound Trust Manifests with verifiable identity, attestations, and provenance.</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;specVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;entries&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">      </span><span class="nt">&quot;trustManifest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">        </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">          </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">          </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08&quot;</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">        </span><span class="nt">&quot;issuedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-15T10:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">        </span><span class="nt">&quot;signature&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5In0..detached-jws-signature&quot;</span>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">      </span><span class="p">}</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">  </span><span class="p">]</span>
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="p">}</span>
-</span></code></pre></div>
-</div>
-</div>
-</div>
+<p>An entry can carry optional <code>trustManifests</code>, each identifying a contributor and optionally carrying one signature. Each signed manifest binds its claims to an artifact release through a <code>subject</code>. Neither a manifest nor a signature is needed for a minimal catalog.</p>
+<h2 id="choosing-what-to-publish">Choosing what to publish<a class="headerlink" href="#choosing-what-to-publish" title="Permanent link">&para;</a></h2>
+<p>Add a digest when consumers need to check the artifact's content. Add a Trust Manifest when a contributor has attestations, provenance, or a trust-framework declaration to share. Sign the manifest to authenticate its claims and bind them to that artifact release. A signed manifest can also contain only the contributor, release subject, and signature object, without additional trust claims.</p>
+<p>A minimal catalog needs only entries. Discoverable catalogs add Host Info and may use the well-known discovery location. Trusted catalogs additionally satisfy the specification's publisher-signature and evidence requirements; the presence of an arbitrary signature does not establish that conformance level.</p>
 <h2 id="trust-manifest-structure">Trust Manifest structure<a class="headerlink" href="#trust-manifest-structure" title="Permanent link">&para;</a></h2>
-<p>A Trust Manifest is an object on a Catalog Entry. It always requires <code>identity</code> and must contain substantive trust evidence. A signed Trust Manifest also requires <code>subject</code> and <code>issuedAt</code>.</p>
+<p><code>entry.trustManifests</code> is an array. Each manifest identifies its <code>contributor</code> by an absolute identity URI and contains that contributor's trust metadata:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;trustManifests&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">&quot;contributor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">&quot;provenance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">          </span><span class="nt">&quot;relation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;publishedFrom&quot;</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">          </span><span class="nt">&quot;sourceId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/acme-corp/finance-agent&quot;</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="p">]</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>This is an excerpt, not a complete entry. The <code>contributor</code> value is a claim about authorship, not proof that the contributor supplied the metadata. Authenticate it through the manifest's signature, whose verified <code>signer</code> must exactly match <code>contributor</code>.</p>
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Requirement</th>
+<th>Manifest field</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>attestations</code></td>
-<td>Optional</td>
-<td>Array of compliance and identity attestation objects</td>
-</tr>
-<tr>
-<td><code>expiresAt</code></td>
-<td>Optional</td>
-<td>Time after which a signed Trust Manifest is stale</td>
-</tr>
-<tr>
-<td><code>extensions</code></td>
-<td>Optional</td>
-<td>Named extension map for custom trust data; included in the signed payload when the manifest is signed (see <a href="../creating-a-catalog/#extensions">Extensions</a>)</td>
-</tr>
-<tr>
-<td><code>identity</code></td>
-<td>Required</td>
-<td>Globally unique URI identifying the issuer to which the Trust Manifest's claims are attributed</td>
-</tr>
-<tr>
-<td><code>identityType</code></td>
-<td>Optional</td>
-<td>Descriptive type hint for the identity URI; consumers determine the mechanism from <code>identity</code> itself, and a present value must agree with the applicable profile</td>
-</tr>
-<tr>
-<td><code>issuedAt</code></td>
-<td>Required when signed</td>
-<td>Time at which a signed Trust Manifest was issued</td>
-</tr>
-<tr>
-<td><code>privacyPolicyUrl</code></td>
-<td>Optional</td>
-<td>URL to the privacy policy</td>
-</tr>
-<tr>
-<td><code>provenance</code></td>
-<td>Optional</td>
-<td>Array of provenance links (source code, OCI digests)</td>
-</tr>
-<tr>
-<td><code>signature</code></td>
-<td>Required at Level 3</td>
-<td>Detached JWS signature over the Trust Manifest content</td>
+<td><code>contributor</code></td>
+<td>Absolute identity URI of the contributor</td>
 </tr>
 <tr>
 <td><code>subject</code></td>
-<td>Required when signed</td>
-<td>Logical artifact release and exact representation covered by a signature</td>
+<td>Artifact release identified by <code>identifier</code>, <code>type</code>, <code>digest</code>, and optional <code>version</code>; required for signed manifests</td>
 </tr>
 <tr>
-<td><code>termsOfServiceUrl</code></td>
-<td>Optional</td>
-<td>URL to the terms of service</td>
+<td><code>signature</code></td>
+<td>Optional signature object authenticating the manifest and its subject</td>
 </tr>
 <tr>
 <td><code>trustSchema</code></td>
-<td>Optional</td>
-<td>Describes the trust framework applied</td>
+<td>Identifies an external trust framework and its version</td>
+</tr>
+<tr>
+<td><code>attestations</code></td>
+<td>Array of compliance and identity evidence references</td>
+</tr>
+<tr>
+<td><code>provenance</code></td>
+<td>Array of lineage links</td>
+</tr>
+<tr>
+<td><code>extensions</code></td>
+<td>Namespaced custom trust metadata</td>
 </tr>
 </tbody>
 </table>
+<p>An unsigned manifest must include a trust schema or a non-empty attestations array, provenance array, or extensions map. A signed manifest may instead endorse only its artifact release.</p>
+<p>A <code>trustSchema</code> names a trust framework; it does not by itself prove compliance or supply an executable verification policy. Consumers need to understand the referenced framework before using it in a trust decision.</p>
 <div class="admonition tip">
 <p class="admonition-title">Attestation document format</p>
-<p>Attestation documents are not restricted to any particular format — they can be human-readable (e.g., a PDF audit report) or machine-readable for automated verification (e.g., JWTs, Verifiable Credentials).</p>
+<p>Evidence may be human-readable, such as a PDF audit report, or machine-readable, such as a signed credential. Verification depends on that evidence's format and the consumer's policy.</p>
 </div>
-<h2 id="identifying-the-issuer">Identifying the issuer<a class="headerlink" href="#identifying-the-issuer" title="Permanent link">&para;</a></h2>
-<p><code>trustManifest.identity</code> identifies the party to which the Trust Manifest's claims are attributed. The artifact release is identified by the signed <code>subject</code>.</p>
-<p>For a signed Entry Trust Manifest, AI Catalog defines one interoperable issuer profile. The entry uses a standard <code>urn:air</code> identifier and the issuer uses the root <code>did:web</code> DID for the identifier's publisher domain:</p>
-<p>The following excerpt shows only that relationship; a complete Catalog Entry and substantive Trust Manifest require the additional fields shown elsewhere in this guide.</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;trustManifest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>This relationship allows a verifier to authenticate control of the <code>acme-corp.com</code> publisher namespace through the domain's DID document. It does not establish that Acme is reputable, that every claim is accurate, or that the artifact is safe. Those decisions remain consumer or registry policy.</p>
-<p>Other identity mechanisms can be used through separately defined profiles or private agreement, but they do not satisfy the interoperable Level 3 issuer-verification requirements defined by AI Catalog.</p>
 <h2 id="adding-compliance-attestations">Adding compliance attestations<a class="headerlink" href="#adding-compliance-attestations" title="Permanent link">&para;</a></h2>
 <p>For regulated environments, add compliance evidence:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">&quot;attestations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="p">{</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SOC2-Type2&quot;</span><span class="p">,</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/reports/soc2.pdf&quot;</span><span class="p">,</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890&quot;</span><span class="p">,</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SOC 2 Type 2 report, valid through 2026&quot;</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="p">{</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO27701&quot;</span><span class="p">,</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/credentials/iso27701.sd-jwt&quot;</span><span class="p">,</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890&quot;</span><span class="p">,</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO/IEC 27701 privacy management certification (IETF SD-JWT VC) issued by did:web:auditor.example&quot;</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">  </span><span class="p">{</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO27001&quot;</span><span class="p">,</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/certs/iso27001.pdf&quot;</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="p">]</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">&quot;attestations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p">{</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SOC2-Type2&quot;</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/reports/soc2.pdf&quot;</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890&quot;</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SOC 2 Type 2 report, valid through 2026&quot;</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="p">{</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO27701&quot;</span><span class="p">,</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/credentials/iso27701.sd-jwt&quot;</span><span class="p">,</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890&quot;</span><span class="p">,</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO/IEC 27701 privacy management certification (IETF SD-JWT VC) issued by did:web:auditor.example&quot;</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span><span class="p">{</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO27001&quot;</span><span class="p">,</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/certs/iso27001.pdf&quot;</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="p">]</span>
 </span></code></pre></div>
 <p>The <code>digest</code> field allows clients to verify the attestation document hasn't been tampered with after being referenced in the catalog.</p>
 <div class="admonition tip">
@@ -1537,13 +1411,13 @@
 </div>
 <h2 id="adding-provenance">Adding provenance<a class="headerlink" href="#adding-provenance" title="Permanent link">&para;</a></h2>
 <p>Provenance links trace where an artifact came from:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">&quot;provenance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="p">{</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">&quot;relation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;publishedFrom&quot;</span><span class="p">,</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">&quot;sourceId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/acme-corp/finance-agent&quot;</span><span class="p">,</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="nt">&quot;sourceDigest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321&quot;</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">]</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&quot;provenance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="p">{</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">&quot;relation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;publishedFrom&quot;</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">&quot;sourceId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/acme-corp/finance-agent&quot;</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">&quot;sourceDigest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321&quot;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">]</span>
 </span></code></pre></div>
 <p>The <code>relation</code> field is an open string. Three common values:</p>
 <table>
@@ -1569,122 +1443,109 @@
 </tbody>
 </table>
 <p><code>sourceId</code> is a URI identifying the source. <code>sourceDigest</code> is a cryptographic hash (<code>sha256:...</code>) for integrity verification.</p>
-<h2 id="signing-the-trust-manifest">Signing the Trust Manifest<a class="headerlink" href="#signing-the-trust-manifest" title="Permanent link">&para;</a></h2>
-<p>A signature turns the Trust Manifest from advisory metadata into tamper-evident assertions. Without a signature, an attacker who can modify the catalog can also substitute the Trust Manifest with forged claims.</p>
-<p>The <code>signature</code> field holds a detached JWS (RFC 7515):</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">&quot;trustManifest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;attestations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08&quot;</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span><span class="nt">&quot;issuedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-15T10:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">  </span><span class="nt">&quot;signature&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5In0..detached-jws-signature&quot;</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="p">}</span>
+<h2 id="signing-a-trust-manifest">Signing a Trust Manifest<a class="headerlink" href="#signing-a-trust-manifest" title="Permanent link">&para;</a></h2>
+<p>To endorse an artifact release, add a <code>subject</code> and a <code>signature</code> object to the contributor's Trust Manifest. Set <code>signature.signer</code> to the same absolute identity URI as <code>contributor</code>, and <code>signature.profile</code> to the identifier of the signer verification procedure. The <code>did:web</code> Signer Profile uses <code>profile: "did-web-v1"</code>.</p>
+<p>For example, Acme can sign a manifest that endorses the artifact release without adding other trust claims:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;contributor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08&quot;</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="nt">&quot;signature&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="nt">&quot;signer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="nt">&quot;profile&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did-web-v1&quot;</span><span class="p">,</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nt">&quot;issuedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-15T10:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nt">&quot;jws&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5IiwidHlwIjoiYWktY2F0YWxvZy10cnVzdC1tYW5pZmVzdCtqd3MifQ..detached-jws-signature&quot;</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>The signature is computed over the Trust Manifest content using JCS (RFC 8785) canonicalization. The stored value is a detached compact JWS with a protected <code>alg</code> header of <code>ES256</code> and an absolute DID URL in <code>kid</code>, such as <code>did:web:acme-corp.com#release-signing-key</code>.</p>
-<p>The verifier retrieves the current DID document from <code>https://acme-corp.com/.well-known/did.json</code>. The key selected by <code>kid</code> must be an ES256 P-256 JWK authorized by the DID document's <code>assertionMethod</code> relationship. A key listed only for authentication or key agreement cannot sign an AI Catalog Trust Manifest.</p>
-<p>Clients verifying signatures should:</p>
+<p>The JWS here is an illustrative placeholder. Copy the entry's <code>identifier</code>, <code>type</code>, and <code>digest</code> into <code>subject</code>. If the entry declares <code>version</code>, include that same value in <code>subject.version</code>; otherwise omit it from the subject too. Consumers must check that these fields match before accepting the manifest's claims for the entry.</p>
+<p>Record the endorsement time in <code>signature.issuedAt</code> and, optionally, an expiry time in <code>signature.expiresAt</code>. To produce <code>signature.jws</code>, take the whole Trust Manifest and omit only its top-level <code>additionalSignatures</code> field and <code>signature.jws</code>. JCS (RFC 8785) canonicalizes the remaining object before detached JWS signing. All other fields, including <code>contributor</code>, <code>subject</code>, the signature's metadata, and unfamiliar fields, participate in the signed payload. Follow the full specification for the exact payload and verification algorithm.</p>
+<p>The protected JWS header includes <code>typ: "ai-catalog-trust-manifest+jws"</code> to identify the signed object as a Trust Manifest. The manifest carries its own release binding, so its signature can be verified independently of the containing entry; accepting it for a particular entry additionally requires the subject and artifact checks.</p>
+<p>Adding another contributor's manifest does not invalidate this manifest's signature. Changing any signed content inside this manifest does. Entry metadata outside the manifest, including policy URLs and entry extensions, is not authenticated by this signature. An artifact may be retrieved from a mirror as long as its bytes match the signed digest.</p>
+<h2 id="verifying-a-trust-manifest">Verifying a Trust Manifest<a class="headerlink" href="#verifying-a-trust-manifest" title="Permanent link">&para;</a></h2>
+<p>First select the procedure named by <code>profile</code>, checking that it is supported and permitted by local policy. Other manifests can be evaluated independently.</p>
+<p>For the example above, <code>profile: "did-web-v1"</code> selects the <code>did:web</code> Signer Profile, which verifies Acme's endorsement using <code>signer: "did:web:acme-corp.com"</code> and the protected JWS header's <code>kid: "did:web:acme-corp.com#release-signing-key"</code>. The DID in <code>kid</code> must exactly match <code>signer</code>, and the header's <code>alg</code> must be <code>ES256</code>.</p>
+<p>The verifier retrieves Acme's root DID document from <code>https://acme-corp.com/.well-known/did.json</code> and checks that it authorizes the selected P-256 key through <code>assertionMethod</code>. A key listed only for authentication or key agreement does not satisfy this profile. The verifier uses the authorized key to check the JWS against the canonicalized manifest payload, including its exact <code>signature.signer</code> and <code>signature.profile</code> values. Changing the profile label therefore invalidates the signature. The identity becomes authenticated only after these checks succeed.</p>
+<p>For the manifest to count as Acme's claims, its <code>contributor</code> must exactly match the authenticated <code>signature.signer</code>. Publisher authority requires an additional check: Acme's root <code>did:web</code> domain must match the publisher domain of the entry's standard <code>urn:air</code> identifier. An independent contributor can authenticate with its own DID without thereby becoming the artifact's publisher.</p>
+<p>Consumers should:</p>
 <ol>
-<li>Extract the <code>signature</code> field and remove it from the object</li>
-<li>Canonicalize the remaining Trust Manifest using JCS</li>
-<li>Confirm the signed <code>urn:air</code> publisher domain exactly matches the root <code>did:web</code> identity</li>
-<li>Resolve the DID document and select the <code>kid</code> verification method authorized by <code>assertionMethod</code></li>
-<li>Verify the ES256 JWS signature</li>
-<li>Confirm <code>subject.identifier</code> and <code>subject.type</code> match the Catalog Entry; confirm the entry and subject versions are both absent or both present and exactly equal; when <code>subject.url</code> is present, confirm it matches the entry URL</li>
-<li>Verify the artifact content against <code>subject.digest</code></li>
+<li>Select the named, supported, and locally permitted profile (<code>did-web-v1</code> here). Check that <code>subject.identifier</code>, <code>subject.type</code>, and <code>subject.digest</code> match the entry and that <code>subject.version</code> has the same presence and value as <code>entry.version</code>.</li>
+<li>Construct and canonicalize the manifest payload, omitting only its top-level <code>additionalSignatures</code> and <code>signature.jws</code>.</li>
+<li>Check the protected <code>typ</code>, check that the DID in the protected <code>kid</code> exactly matches <code>signature.signer</code>, resolve the key, check assertion authorization, and verify the ES256 JWS.</li>
+<li>Check freshness, exact equality of <code>contributor</code> and the authenticated <code>signature.signer</code>, and the authority needed for the intended endorsement.</li>
+<li>Verify the artifact bytes against <code>subject.digest</code>, and evaluate referenced evidence according to its format and local policy.</li>
 </ol>
-<p>If any step does not succeed, clients must not treat the Trust Manifest's claims as verified. They may still retain or display the Catalog Entry as unverified, retry a temporarily unavailable DID resolution, or reject the entry according to local policy.</p>
-<h2 id="trust-layers">Trust layers<a class="headerlink" href="#trust-layers" title="Permanent link">&para;</a></h2>
-<p>Trust is progressive — use the layer appropriate to your threat model:</p>
-<table>
-<thead>
-<tr>
-<th>Layer</th>
-<th>What it provides</th>
-<th>How it works</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>0 — TLS</strong></td>
-<td>Prevents eavesdropping and casual tampering</td>
-<td>HTTPS certificate chain</td>
-</tr>
-<tr>
-<td><strong>1 — Provenance digests</strong></td>
-<td>Detects artifact tampering in transit</td>
-<td>Hash the fetched artifact, compare to <code>sourceDigest</code></td>
-</tr>
-<tr>
-<td><strong>2 — Signed Trust Manifest</strong></td>
-<td>Binds signed claims to an artifact release</td>
-<td>Verify the JWS and confirm that the signed subject matches the entry and artifact</td>
-</tr>
-<tr>
-<td><strong>3 — OCI content-addressing</strong></td>
-<td>Makes modification structurally impossible</td>
-<td>All content addressed by digest in an OCI registry</td>
-</tr>
-</tbody>
-</table>
-<p>For most use cases, Layer 0 (HTTPS) + Layer 2 (signed Trust Manifest) provides a strong baseline.</p>
+<p>If a check fails, do not treat the affected claims as verified. Consumers can retain an unverified entry, retry temporary resolution failures, or reject it according to local policy. A valid signature proves an endorsement, not that the artifact is safe or every claim is true.</p>
+<h2 id="catalog-signatures">Catalog signatures<a class="headerlink" href="#catalog-signatures" title="Permanent link">&para;</a></h2>
+<p>The catalog root can carry one <code>signature</code> object authenticating the complete catalog snapshot, including Host Info, entries, and all nested Trust Manifests. Its payload omits only the root's <code>additionalSignatures</code> field and the root's <code>signature.jws</code>. The catalog signature also covers the signatures and reserved <code>additionalSignatures</code> fields inside its Trust Manifests.</p>
+<p>The protected JWS header uses <code>typ: "ai-catalog+jws"</code>. Adding or changing a nested manifest or signature changes the snapshot and requires a new catalog signature.</p>
 <h2 id="complete-example">Complete example<a class="headerlink" href="#complete-example" title="Permanent link">&para;</a></h2>
-<p>A Trust Manifest with identity, compliance attestation, provenance, and signature:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://agents.acme-corp.com/finance&quot;</span><span class="p">,</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;publisher&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Acme Financial Corp&quot;</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="nt">&quot;trustManifest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="nt">&quot;trustSchema&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:trust:acme-enterprise-v1&quot;</span><span class="p">,</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">      </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">      </span><span class="nt">&quot;governanceUri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://acme-corp.com/trust/governance.pdf&quot;</span><span class="p">,</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">      </span><span class="nt">&quot;verificationMethods&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;did:web&quot;</span><span class="p">]</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">    </span><span class="nt">&quot;attestations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">      </span><span class="p">{</span>
-</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SOC2-Type2&quot;</span><span class="p">,</span>
-</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">        </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/reports/soc2.pdf&quot;</span><span class="p">,</span>
-</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">        </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890&quot;</span><span class="p">,</span>
-</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SOC 2 Type 2 report, valid through 2026&quot;</span>
-</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">      </span><span class="p">},</span>
-</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">      </span><span class="p">{</span>
-</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO27701&quot;</span><span class="p">,</span>
-</span><span id="__span-7-26"><a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="w">        </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/credentials/iso27701.sd-jwt&quot;</span><span class="p">,</span>
-</span><span id="__span-7-27"><a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">        </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890&quot;</span><span class="p">,</span>
-</span><span id="__span-7-28"><a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO/IEC 27701 privacy management certification (IETF SD-JWT VC) issued by did:web:auditor.example&quot;</span>
-</span><span id="__span-7-29"><a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">      </span><span class="p">}</span>
-</span><span id="__span-7-30"><a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="w">    </span><span class="p">],</span>
-</span><span id="__span-7-31"><a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a><span class="w">    </span><span class="nt">&quot;provenance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-7-32"><a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a><span class="w">      </span><span class="p">{</span>
-</span><span id="__span-7-33"><a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="w">        </span><span class="nt">&quot;relation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;publishedFrom&quot;</span><span class="p">,</span>
-</span><span id="__span-7-34"><a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="w">        </span><span class="nt">&quot;sourceId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/acme-corp/finance-agent&quot;</span><span class="p">,</span>
-</span><span id="__span-7-35"><a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a><span class="w">        </span><span class="nt">&quot;sourceDigest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321&quot;</span>
-</span><span id="__span-7-36"><a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a><span class="w">      </span><span class="p">}</span>
-</span><span id="__span-7-37"><a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="w">    </span><span class="p">],</span>
-</span><span id="__span-7-38"><a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="w">    </span><span class="nt">&quot;privacyPolicyUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://acme-corp.com/legal/privacy&quot;</span><span class="p">,</span>
-</span><span id="__span-7-39"><a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a><span class="w">    </span><span class="nt">&quot;termsOfServiceUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://acme-corp.com/legal/terms&quot;</span><span class="p">,</span>
-</span><span id="__span-7-40"><a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a><span class="w">    </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-41"><a id="__codelineno-7-41" name="__codelineno-7-41" href="#__codelineno-7-41"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
-</span><span id="__span-7-42"><a id="__codelineno-7-42" name="__codelineno-7-42" href="#__codelineno-7-42"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://agents.acme-corp.com/finance&quot;</span><span class="p">,</span>
-</span><span id="__span-7-43"><a id="__codelineno-7-43" name="__codelineno-7-43" href="#__codelineno-7-43"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
-</span><span id="__span-7-44"><a id="__codelineno-7-44" name="__codelineno-7-44" href="#__codelineno-7-44"></a><span class="w">      </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08&quot;</span>
-</span><span id="__span-7-45"><a id="__codelineno-7-45" name="__codelineno-7-45" href="#__codelineno-7-45"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-7-46"><a id="__codelineno-7-46" name="__codelineno-7-46" href="#__codelineno-7-46"></a><span class="w">    </span><span class="nt">&quot;issuedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-15T10:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-7-47"><a id="__codelineno-7-47" name="__codelineno-7-47" href="#__codelineno-7-47"></a><span class="w">    </span><span class="nt">&quot;signature&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5In0..detached-jws-signature&quot;</span>
-</span><span id="__span-7-48"><a id="__codelineno-7-48" name="__codelineno-7-48" href="#__codelineno-7-48"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-7-49"><a id="__codelineno-7-49" name="__codelineno-7-49" href="#__codelineno-7-49"></a><span class="p">}</span>
+<p>An entry with a contributor manifest, artifact digest, policy links, and a signature. The manifest signature endorses the artifact but does not authenticate the policy links in the entry extension. The digest and JWS values are illustrative placeholders:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://agents.acme-corp.com/finance&quot;</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">&quot;publisher&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Acme Financial Corp&quot;</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08&quot;</span><span class="p">,</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nt">&quot;extensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="nt">&quot;https://ai-catalog.org/extensions/policy-urls&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">      </span><span class="nt">&quot;privacyPolicyUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://acme-corp.com/legal/privacy&quot;</span><span class="p">,</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="nt">&quot;termsOfServiceUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://acme-corp.com/legal/terms&quot;</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">  </span><span class="nt">&quot;trustManifests&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">      </span><span class="nt">&quot;contributor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">      </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">        </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:finance&quot;</span><span class="p">,</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">        </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08&quot;</span>
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">      </span><span class="p">},</span>
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">      </span><span class="nt">&quot;trustSchema&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">        </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:trust:acme-enterprise-v1&quot;</span><span class="p">,</span>
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">        </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">        </span><span class="nt">&quot;governanceUri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://acme-corp.com/trust/governance.pdf&quot;</span><span class="p">,</span>
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">        </span><span class="nt">&quot;verificationMethods&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;did:web&quot;</span><span class="p">]</span>
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">      </span><span class="p">},</span>
+</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">      </span><span class="nt">&quot;attestations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SOC2-Type2&quot;</span><span class="p">,</span>
+</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">          </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/reports/soc2.pdf&quot;</span><span class="p">,</span>
+</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="w">          </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890&quot;</span><span class="p">,</span>
+</span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SOC 2 Type 2 report, valid through 2026&quot;</span>
+</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-4-38"><a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO27701&quot;</span><span class="p">,</span>
+</span><span id="__span-4-39"><a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="w">          </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://trust.acme-corp.com/credentials/iso27701.sd-jwt&quot;</span><span class="p">,</span>
+</span><span id="__span-4-40"><a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">          </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890&quot;</span><span class="p">,</span>
+</span><span id="__span-4-41"><a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a><span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ISO/IEC 27701 privacy management certification (IETF SD-JWT VC) issued by did:web:auditor.example&quot;</span>
+</span><span id="__span-4-42"><a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-4-43"><a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a><span class="w">      </span><span class="p">],</span>
+</span><span id="__span-4-44"><a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a><span class="w">      </span><span class="nt">&quot;provenance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-4-45"><a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-4-46"><a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a><span class="w">          </span><span class="nt">&quot;relation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;publishedFrom&quot;</span><span class="p">,</span>
+</span><span id="__span-4-47"><a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a><span class="w">          </span><span class="nt">&quot;sourceId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/acme-corp/finance-agent&quot;</span><span class="p">,</span>
+</span><span id="__span-4-48"><a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a><span class="w">          </span><span class="nt">&quot;sourceDigest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321&quot;</span>
+</span><span id="__span-4-49"><a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-4-50"><a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a><span class="w">      </span><span class="p">],</span>
+</span><span id="__span-4-51"><a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a><span class="w">      </span><span class="nt">&quot;signature&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-52"><a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a><span class="w">        </span><span class="nt">&quot;signer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-4-53"><a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a><span class="w">        </span><span class="nt">&quot;profile&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did-web-v1&quot;</span><span class="p">,</span>
+</span><span id="__span-4-54"><a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a><span class="w">        </span><span class="nt">&quot;issuedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-15T10:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-4-55"><a id="__codelineno-4-55" name="__codelineno-4-55" href="#__codelineno-4-55"></a><span class="w">        </span><span class="nt">&quot;jws&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS1jb3JwLmNvbSNyZWxlYXNlLXNpZ25pbmcta2V5IiwidHlwIjoiYWktY2F0YWxvZy10cnVzdC1tYW5pZmVzdCtqd3MifQ..detached-jws-signature&quot;</span>
+</span><span id="__span-4-56"><a id="__codelineno-4-56" name="__codelineno-4-56" href="#__codelineno-4-56"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-4-57"><a id="__codelineno-4-57" name="__codelineno-4-57" href="#__codelineno-4-57"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-58"><a id="__codelineno-4-58" name="__codelineno-4-58" href="#__codelineno-4-58"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-4-59"><a id="__codelineno-4-59" name="__codelineno-4-59" href="#__codelineno-4-59"></a><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<p>For the full normative requirements on Trust Manifests — including the <code>did:web</code> publisher profile, JCS canonicalization, JWS construction, and verification procedure — see the <a href="../../specification/">Full Specification</a>.</p>
+<p>See the <a href="../../specification/">Full Specification</a> for subject matching, payload construction, the <code>did:web</code> profile, publisher authority, and conformance requirements.</p>
 
 
 

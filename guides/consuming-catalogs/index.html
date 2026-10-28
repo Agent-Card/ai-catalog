@@ -1533,7 +1533,7 @@
 <li><strong>Untrusted <code>data</code> content</strong>: treat inline <code>data</code> as untrusted input; don't execute content with script-capable media types</li>
 </ul>
 <h2 id="trust-verification">Trust verification<a class="headerlink" href="#trust-verification" title="Permanent link">&para;</a></h2>
-<p>If an entry has a <code>trustManifest</code>, you can verify its claims before trusting the artifact. See <a href="../adding-trust/">Adding Trust</a> for details on the trust model and verification steps.</p>
+<p>If an entry has <code>trustManifests</code>, treat each <code>contributor</code> as a claimed identity until verified. Check each manifest's signature, subject binding to the entry and artifact, signer authority, and any referenced evidence before accepting its claims. See <a href="../adding-trust/">Adding Trust</a> for details on the trust model and verification steps.</p>
 
 
 

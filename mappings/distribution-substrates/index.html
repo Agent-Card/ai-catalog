@@ -1165,7 +1165,7 @@
 
 <h1 id="mapping-to-distribution-substrates">Mapping to Distribution Substrates<a class="headerlink" href="#mapping-to-distribution-substrates" title="Permanent link">&para;</a></h1>
 <p>The AI Catalog specification defines a <strong>logical format</strong>: a JSON
-document with <code>entries</code>, <code>displayName</code>, <code>type</code>, and <code>trustManifest</code>
+document with <code>entries</code>, <code>displayName</code>, <code>type</code>, and <code>trustManifests</code>
 fields that are immediately meaningful to anyone working with AI
 artifacts. Authors write simple JSON. APIs serve simple JSON. Clients
 consume simple JSON.</p>
@@ -1181,11 +1181,11 @@ logical document.</p>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>─────────                      ────────────                    ───────────
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>ai-catalog.json   ──pack──►   OCI / xRegistry / HTTP  ──unpack──►   ai-catalog.json
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  entries[]                     substrate-native form                entries[]
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  trustManifest                                                      trustManifest
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  trustManifests                                                     trustManifests
 </span></code></pre></div>
 <p>This separation keeps authoring and consumption simple: publishers and
 clients work with domain vocabulary (<code>entries</code>, <code>displayName</code>,
-<code>type</code>, <code>trustManifest</code>), while infrastructure that wants
+<code>type</code>, <code>trustManifests</code>), while infrastructure that wants
 content-addressing, signing, replication, or registry APIs uses whichever
 binding below matches its substrate.</p>
 <h2 id="binding-invariants">Binding Invariants<a class="headerlink" href="#binding-invariants" title="Permanent link">&para;</a></h2>
@@ -1214,15 +1214,15 @@ a pack/unpack round-trip.</p>
 </tr>
 <tr>
 <td style="text-align: left;">Trust Manifest association</td>
-<td style="text-align: left;">An entry's Trust Manifest is discoverable from that entry</td>
+<td style="text-align: left;">An entry's Trust Manifests and their contributor identities are discoverable from that entry</td>
 </tr>
 <tr>
 <td style="text-align: left;">Content integrity</td>
-<td style="text-align: left;">The served bytes are verifiably bound to <code>trustManifest.subject.digest</code></td>
+<td style="text-align: left;">The served bytes are verifiably bound to <code>entry.digest</code></td>
 </tr>
 <tr>
 <td style="text-align: left;">Signing</td>
-<td style="text-align: left;">The Trust Manifest's authenticity is cryptographically verifiable</td>
+<td style="text-align: left;">The Trust Manifests' authenticity is cryptographically verifiable</td>
 </tr>
 </tbody>
 </table>
@@ -1233,7 +1233,7 @@ xRegistry is a hierarchical resource API with versioning and
 cross-referencing but no native digest or signature primitive.</p>
 <p>To avoid expressing the same guarantee twice, a binding <strong>delegates</strong> an
 invariant to a native substrate primitive when one exists, and otherwise
-<strong>carries</strong> it in the logical Trust Manifest. A binding MUST NOT restate,
+<strong>carries</strong> it in the logical document. A binding MUST NOT restate,
 in substrate vocabulary, a guarantee it has delegated, and MUST NOT drop
 a guarantee the substrate cannot express.</p>
 <table>
@@ -1268,19 +1268,19 @@ a guarantee the substrate cannot express.</p>
 <td style="text-align: left;">Manifest association</td>
 <td style="text-align: left;">Referrers API (<code>subject</code>)</td>
 <td style="text-align: left;"><code>xref</code> / extension attribute</td>
-<td style="text-align: left;">Inline <code>trustManifest</code></td>
+<td style="text-align: left;">Inline <code>trustManifests</code></td>
 </tr>
 <tr>
 <td style="text-align: left;">Content integrity</td>
 <td style="text-align: left;">Content-addressed digest</td>
 <td style="text-align: left;"><em>(none — carried)</em></td>
-<td style="text-align: left;"><code>subject.digest</code></td>
+<td style="text-align: left;"><code>entry.digest</code></td>
 </tr>
 <tr>
 <td style="text-align: left;">Signing</td>
 <td style="text-align: left;">Cosign / Notation referrer</td>
 <td style="text-align: left;"><em>(none — carried)</em></td>
-<td style="text-align: left;">Detached JWS in Trust Manifest</td>
+<td style="text-align: left;">Trust Manifest <code>signature</code></td>
 </tr>
 </tbody>
 </table>

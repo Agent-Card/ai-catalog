@@ -627,6 +627,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#policy-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy links
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1395,6 +1412,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#policy-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy links
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1613,9 +1647,14 @@
 <td>Who publishes this artifact (see <a href="#publisher-object">Publisher object</a>)</td>
 </tr>
 <tr>
-<td><code>trustManifest</code></td>
-<td>object</td>
-<td>Trust and identity metadata (see <a href="../adding-trust/">Adding Trust</a>)</td>
+<td><code>trustManifests</code></td>
+<td>object[]</td>
+<td>Contributor Trust Manifests, each optionally signed (see <a href="../adding-trust/">Adding Trust</a>)</td>
+</tr>
+<tr>
+<td><code>digest</code></td>
+<td>string</td>
+<td>Digest of the artifact content</td>
 </tr>
 <tr>
 <td><code>extensions</code></td>
@@ -1722,45 +1761,57 @@
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>The value of this official extension is a schemaless object for generic key/value properties.</p>
-<h2 id="complete-example">Complete example<a class="headerlink" href="#complete-example" title="Permanent link">&para;</a></h2>
+<h3 id="policy-links">Policy links<a class="headerlink" href="#policy-links" title="Permanent link">&para;</a></h3>
+<p>Use the official <code>https://ai-catalog.org/extensions/policy-urls</code> entry extension for links to the artifact's privacy policy and terms of service:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">&quot;specVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Acme Enterprise AI&quot;</span><span class="p">,</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="nt">&quot;documentationUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://docs.acme-corp.com/ai&quot;</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">  </span><span class="nt">&quot;entries&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:mcp:weather&quot;</span><span class="p">,</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/mcp-server-card+json&quot;</span><span class="p">,</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Real-time weather data and forecasts.&quot;</span><span class="p">,</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">      </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;weather&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;data&quot;</span><span class="p">],</span>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">      </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.2.0&quot;</span><span class="p">,</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://api.acme-corp.com/mcp/server-card&quot;</span><span class="p">,</span>
-</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">      </span><span class="nt">&quot;updatedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-01T09:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">      </span><span class="nt">&quot;publisher&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">        </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
-</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">        </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Acme Corp&quot;</span>
-</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">      </span><span class="p">}</span>
-</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:research&quot;</span><span class="p">,</span>
-</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
-</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deep-research agent with citation support.&quot;</span><span class="p">,</span>
-</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span class="w">      </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;research&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;analysis&quot;</span><span class="p">],</span>
-</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://agents.acme-corp.com/research&quot;</span>
-</span><span id="__span-8-28"><a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-8-29"><a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-8-30"><a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:data:market-2026q1&quot;</span><span class="p">,</span>
-</span><span id="__span-8-31"><a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a><span class="w">      </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Market Dataset Q1 2026&quot;</span><span class="p">,</span>
-</span><span id="__span-8-32"><a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/parquet&quot;</span><span class="p">,</span>
-</span><span id="__span-8-33"><a id="__codelineno-8-33" name="__codelineno-8-33" href="#__codelineno-8-33"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OHLCV equity data for Q1 2026.&quot;</span><span class="p">,</span>
-</span><span id="__span-8-34"><a id="__codelineno-8-34" name="__codelineno-8-34" href="#__codelineno-8-34"></a><span class="w">      </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;finance&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dataset&quot;</span><span class="p">],</span>
-</span><span id="__span-8-35"><a id="__codelineno-8-35" name="__codelineno-8-35" href="#__codelineno-8-35"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://data.acme-corp.com/market-2026q1.parquet&quot;</span>
-</span><span id="__span-8-36"><a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-8-37"><a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a><span class="w">  </span><span class="p">]</span>
-</span><span id="__span-8-38"><a id="__codelineno-8-38" name="__codelineno-8-38" href="#__codelineno-8-38"></a><span class="p">}</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">&quot;extensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="nt">&quot;https://ai-catalog.org/extensions/policy-urls&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">      </span><span class="nt">&quot;privacyPolicyUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/privacy&quot;</span><span class="p">,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">      </span><span class="nt">&quot;termsOfServiceUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/terms&quot;</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Both fields are optional. The publisher or catalog operator can supply these links; they describe the artifact's governing policies, not the operator's own catalog policy. A Trust Manifest signature does not authenticate the extension. A catalog signature covers it as part of its signer's snapshot, with signer authorization checked separately. Signing the URLs does not authenticate the documents served there.</p>
+<h2 id="complete-example">Complete example<a class="headerlink" href="#complete-example" title="Permanent link">&para;</a></h2>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;specVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Acme Enterprise AI&quot;</span><span class="p">,</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">&quot;documentationUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://docs.acme-corp.com/ai&quot;</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span><span class="nt">&quot;entries&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:mcp:weather&quot;</span><span class="p">,</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/mcp-server-card+json&quot;</span><span class="p">,</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Real-time weather data and forecasts.&quot;</span><span class="p">,</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">      </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;weather&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;data&quot;</span><span class="p">],</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">      </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.2.0&quot;</span><span class="p">,</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://api.acme-corp.com/mcp/server-card&quot;</span><span class="p">,</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">      </span><span class="nt">&quot;updatedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-01T09:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">      </span><span class="nt">&quot;publisher&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">        </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;did:web:acme-corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">        </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Acme Corp&quot;</span>
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:a2a:research&quot;</span><span class="p">,</span>
+</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/a2a-agent-card+json&quot;</span><span class="p">,</span>
+</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deep-research agent with citation support.&quot;</span><span class="p">,</span>
+</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="w">      </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;research&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;analysis&quot;</span><span class="p">],</span>
+</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://agents.acme-corp.com/research&quot;</span>
+</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-9-29"><a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-9-30"><a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a><span class="w">      </span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:air:acme-corp.com:data:market-2026q1&quot;</span><span class="p">,</span>
+</span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a><span class="w">      </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Market Dataset Q1 2026&quot;</span><span class="p">,</span>
+</span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/parquet&quot;</span><span class="p">,</span>
+</span><span id="__span-9-33"><a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OHLCV equity data for Q1 2026.&quot;</span><span class="p">,</span>
+</span><span id="__span-9-34"><a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a><span class="w">      </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;finance&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dataset&quot;</span><span class="p">],</span>
+</span><span id="__span-9-35"><a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://data.acme-corp.com/market-2026q1.parquet&quot;</span>
+</span><span id="__span-9-36"><a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-37"><a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-9-38"><a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>

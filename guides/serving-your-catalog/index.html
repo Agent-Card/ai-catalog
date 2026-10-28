@@ -1319,10 +1319,10 @@
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>─────────                    ────────────              ───────────
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>ai-catalog.json  ─ pack ─►  OCI Registry  ─ unpack ─► ai-catalog.json
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  entries[]                  Index/Manifests             entries[]
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  trustManifest              Referrers                   trustManifest
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  trustManifests             Referrers                   trustManifests
 </span></code></pre></div>
 <p>Clients that fetch from <code>/.well-known/ai-catalog.json</code> or a registry API always receive the logical JSON format — they never parse OCI structures directly.</p>
-<p>OCI distribution provides Layer 3 trust: all content is addressed by cryptographic digest, making substitution structurally impossible. See <a href="../adding-trust/#trust-layers">Adding Trust</a> for how this fits into the progressive trust model.</p>
+<p>OCI distribution provides Layer 3 trust: all content is addressed by cryptographic digest, making substitution structurally impossible. See <a href="https://agent-card.github.io/ai-catalog/spec/#trust-layers">Trust Layers</a> for how this fits into the progressive trust model.</p>
 <p>For the full OCI mapping specification including the Image Index structure and Referrers API usage, refer to the <a href="../../specification/">Full Specification</a>.</p>
 <h2 id="mcp-servers">MCP servers<a class="headerlink" href="#mcp-servers" title="Permanent link">&para;</a></h2>
 <p>Remote (HTTP-connectable) MCP servers map to AI Catalog entries by referencing each server's <a href="https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127">MCP Server Card</a>. Each MCP server becomes a catalog entry with <code>type: "application/mcp-server-card+json"</code> whose <code>url</code> points to the server's Server Card. A domain — or a registry — that hosts several MCP servers can publish them all as a single AI Catalog.</p>

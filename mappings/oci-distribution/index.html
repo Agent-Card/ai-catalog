@@ -1261,11 +1261,10 @@ that does not naturally describe a catalog of AI artifacts, so tooling
 bridges the logical format and the OCI representation.</p>
 <p>Of the binding invariants, the OCI binding <strong>delegates</strong> identity,
 content integrity, and signing to OCI's own primitives. Consequently
-<code>trustManifest.subject.digest</code> is expected to equal the OCI descriptor
-digest of the served artifact, and the detached JWS in the Trust Manifest
-MAY be omitted from the packed representation because Cosign/Notation
-referrers carry signing instead. Unpacking reconstitutes (or re-signs)
-the logical Trust Manifest from those referrers.</p>
+<code>entry.digest</code> is expected to equal the OCI descriptor digest of the served
+artifact, and the Trust Manifest signatures MAY be omitted from the packed
+representation because Cosign/Notation referrers carry signing instead.
+Unpacking reconstitutes (or re-signs) the logical Trust Manifests from those referrers.</p>
 <h2 id="conceptual-mapping">Conceptual Mapping<a class="headerlink" href="#conceptual-mapping" title="Permanent link">&para;</a></h2>
 <p>The OCI image specification (v1.1+) supports arbitrary artifact types
 through the <code>artifactType</code> field. The following table maps AI Catalog
@@ -1303,8 +1302,8 @@ concepts to their OCI physical equivalents:</p>
 <td style="text-align: left;">Nested OCI Image Index referenced from the parent index</td>
 </tr>
 <tr>
-<td style="text-align: left;">Trust Manifest</td>
-<td style="text-align: left;">OCI Referrer artifact with <code>subject</code> pointing to the entry manifest</td>
+<td style="text-align: left;">Contributor Trust Manifest</td>
+<td style="text-align: left;">OCI Referrer artifact with <code>subject</code> pointing to the entry manifest; preserve the contributor identity</td>
 </tr>
 <tr>
 <td style="text-align: left;">Trust Manifest attestations</td>
@@ -1331,8 +1330,9 @@ concepts to their OCI physical equivalents:</p>
 </li>
 <li>
 <p><strong>Trust Manifests</strong> become OCI Referrer artifacts attached to their
-   entry manifests via the <code>subject</code> field. Attestation documents
-   (JWTs, PDFs, SLSA provenance) become individual referrer layers.</p>
+   entry manifests via the OCI <code>subject</code> field, preserving their contributor
+   identities. Attestation documents (JWTs, PDFs, SLSA provenance) become
+   individual referrer layers.</p>
 </li>
 <li>
 <p><strong>Nested catalog entries</strong> become nested OCI Image Indexes.</p>
@@ -1361,7 +1361,8 @@ concepts to their OCI physical equivalents:</p>
 <li>Query the Referrers API for each manifest to discover Trust
    Manifests and attestations.</li>
 <li>Assemble the logical AI Catalog JSON with <code>entries[]</code> and
-   <code>trustManifest</code> fields.</li>
+   <code>trustManifests</code> and <code>digest</code> fields, including signatures within the
+   Trust Manifests.</li>
 </ol>
 <p>The result is a standard <code>application/ai-catalog+json</code> document
 indistinguishable from one authored by hand.</p>
@@ -1441,7 +1442,7 @@ tradeoffs are:</p>
 </tr>
 <tr>
 <td style="text-align: left;">Vocabulary</td>
-<td style="text-align: left;"><code>entries</code>, <code>displayName</code>, <code>type</code>, <code>trustManifest</code></td>
+<td style="text-align: left;"><code>entries</code>, <code>displayName</code>, <code>type</code>, <code>trustManifests</code></td>
 <td style="text-align: left;"><code>manifests</code>, <code>layers</code>, <code>config</code>, <code>annotations</code></td>
 </tr>
 <tr>
@@ -1456,7 +1457,7 @@ tradeoffs are:</p>
 </tr>
 <tr>
 <td style="text-align: left;">Content integrity</td>
-<td style="text-align: left;">Optional digests in Trust Manifest</td>
+<td style="text-align: left;">Optional entry digests</td>
 <td style="text-align: left;">Guaranteed by OCI content-addressing</td>
 </tr>
 <tr>
