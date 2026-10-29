@@ -104,8 +104,14 @@ Producers MUST ensure that each complete AI Catalog document is valid input
 to JCS [[RFC8785]], including all nested values, whether or not the catalog is
 signed. Consumers MAY reject documents that do not satisfy this requirement.
 This requirement does not mandate validation during ingestion. Producers need
-not serialize the JSON in canonical form. JCS-based signing and verification
-require the input checks defined in their respective procedures.
+not serialize the JSON in canonical form.
+
+Consumers MAY reject JSON objects containing duplicate member names.
+Otherwise, they MUST retain only the last occurrence of each name after JSON
+escape processing. This rule also applies when preparing data for JCS-based
+signing or verification; it does not require a separate duplicate-detection
+pass. Signature verification and subsequent processing of authenticated
+claims MUST use the same resulting JSON value.
 
 An AI Catalog document is a JSON object that MUST contain the following
 members:
@@ -973,9 +979,9 @@ Canonicalize this payload with JCS [[RFC8785]]. Its UTF-8 bytes are the JWS
 payload. Use ordinary base64url-encoded JWS signing input, then omit only the
 payload segment from the stored compact serialization, as specified in
 Appendix F of [[RFC7515]]. Verifiers reconstruct that segment to verify the
-JWS. The payload MUST satisfy JCS's I-JSON constraints; parsers MUST reject
-duplicate JSON member names rather than silently discard one. Large integers
-that cannot round-trip as IEEE 754 doubles SHOULD be encoded as strings.
+JWS. The JSON value supplied to JCS MUST satisfy its input requirements.
+Large integers that cannot round-trip as IEEE 754 doubles SHOULD be encoded
+as strings.
 
 The protected header MUST contain `alg` and `typ`. The `typ` value MUST
 exactly match the kind of containing object:
