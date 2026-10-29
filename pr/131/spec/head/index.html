@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Catalog</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      "specStatus": "Official",
+      "editors": [],
+      "latestVersion": null,
+      "noRecTrack": true,
+      "shortName": "ai-catalog",
+      "edDraftURI": "https://ai-catalog.io/",
+      "localBiblio": {
+            "xRegistry": {
+                  "title": "xRegistry: A Universal Registry Specification",
+                  "href": "https://github.com/xregistry/spec",
+                  "status": "Draft",
+                  "publisher": "CNCF"
+            },
+            "RFC8785": {
+                  "title": "JSON Canonicalization Scheme (JCS)",
+                  "href": "https://www.rfc-editor.org/rfc/rfc8785",
+                  "status": "RFC",
+                  "publisher": "IETF"
+            },
+            "RFC7517": {
+                  "title": "JSON Web Key (JWK)",
+                  "href": "https://www.rfc-editor.org/rfc/rfc7517",
+                  "status": "RFC",
+                  "publisher": "IETF"
+            },
+            "RFC7518": {
+                  "title": "JSON Web Algorithms (JWA)",
+                  "href": "https://www.rfc-editor.org/rfc/rfc7518",
+                  "status": "RFC",
+                  "publisher": "IETF"
+            },
+            "RFC7797": {
+                  "title": "JSON Web Signature (JWS) Unencoded Payload Option",
+                  "href": "https://www.rfc-editor.org/rfc/rfc7797",
+                  "status": "RFC",
+                  "publisher": "IETF"
+            },
+            "DIDCORE": {
+                  "title": "Decentralized Identifiers (DIDs) v1.0",
+                  "href": "https://www.w3.org/TR/did-core/",
+                  "status": "W3C Recommendation",
+                  "publisher": "W3C"
+            },
+            "DIDWEB": {
+                  "title": "did:web Method Specification (8 May 2026 snapshot)",
+                  "href": "https://github.com/w3c-ccg/did-method-web/blob/ea423c114e6f2537498ee6f94e8d794c64f60c18/index.html",
+                  "status": "W3C Community Group Draft Report",
+                  "publisher": "W3C Credentials Community Group"
+            },
+            "RFC8725": {
+                  "title": "JSON Web Token Best Current Practices",
+                  "href": "https://www.rfc-editor.org/rfc/rfc8725",
+                  "status": "BCP 225",
+                  "publisher": "IETF"
+            },
+            "RFC6234": {
+                  "title": "US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)",
+                  "href": "https://www.rfc-editor.org/rfc/rfc6234",
+                  "status": "RFC",
+                  "publisher": "IETF"
+            },
+            "RFC8288": {
+                  "title": "Web Linking",
+                  "href": "https://www.rfc-editor.org/rfc/rfc8288",
+                  "status": "RFC",
+                  "publisher": "IETF"
+            }
+      }
+};
+  </script>
+  <style>
+    pre { background: #f8f8f8; padding: 1em; overflow-x: auto; }
+    pre.mermaid { background: white; border: 1px solid #e0e0e0; text-align: center; }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: false, theme: 'default' });
+    if (document.respec) {
+      await document.respec.ready;
+    }
+    await mermaid.run({ querySelector: 'pre.mermaid' });
+  </script>
+</head>
+<body>
+
+<section id="abstract">
+  <h2>Abstract</h2>
+  <p>This document defines the AI Catalog, a JSON format for discovering heterogeneous AI artifacts such as MCP servers, A2A agents, Claude Code plugins, datasets, and model cards. Each catalog entry declares the artifact's type via a media type and references or inlines the native artifact metadata, enabling a single discovery mechanism across protocols and platforms. The specification defines three conformance levels — Minimal, Discoverable, and Trusted — allowing implementations to start with a simple list of entries and progressively add host identity, well-known URI discovery, and verifiable trust metadata as needed. Optional independent Trust Manifests group contributor claims, compliance attestations, and provenance; each can carry one signature binding its contents to an artifact release, while a catalog signature authenticates the complete catalog snapshot without wrapping or modifying the artifact's native format. Informative appendices define a substrate-neutral distribution-mapping contract and concrete bindings to OCI distribution registries and xRegistry, plus mappings to the MCP Registry server.json format and the Claude Code Plugins marketplace.</p>
+</section>
+
+<section id="sotd">
+  <h2>Status of This Document</h2>
+  <p>This is a draft document and may be updated at any time.</p>
+</section>
+
+<section id="conformance">
+  <p>
+    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+    "OPTIONAL" in this document are to be interpreted as described in BCP 14
+    [[RFC2119]] [[RFC8174]] when, and only when, they appear in all capitals,
+    as shown here.
+  </p>
+</section>
+
+<section id="introduction">
+<h1>Introduction</h1>
+<p>The AI ecosystem comprises a growing number of protocols, artifact
+formats, and service types. Model Context Protocol (MCP) servers,
+Agent-to-Agent (A2A) agents, Claude Code plugins, datasets, model cards,
+and other AI artifacts each define their own metadata and discovery
+mechanisms. This fragmentation forces clients and registries to
+implement bespoke logic for each artifact type, increasing complexity
+and reducing interoperability.</p>
+<p>This document defines the <strong>AI Catalog</strong>: a typed, nestable JSON
+container for discovering heterogeneous AI artifacts. Each entry
+declares its artifact type via a type identifier (which is an IANA media type) and may reference or
+embed the native artifact metadata. A minimal catalog is simply a
+list of entries — names, types, and URLs — requiring no additional
+infrastructure.</p>
+<p>For environments that need verifiable identity, compliance evidence,
+or provenance tracking, this document also defines an optional <strong>Trust
+Manifest</strong> object. An entry can carry independent Trust Manifests, each
+identifying its contributor and containing attestations and provenance without
+wrapping or modifying the artifact's native format. Each manifest can carry
+one signature over its contents and a subject identifying the artifact release.
+An optional catalog signature authenticates the catalog snapshot.
+Implementations that do not need trust metadata can ignore these features.</p>
+<p>The AI Catalog is intentionally agnostic about the artifacts it
+indexes. It does not define or constrain the schema of MCP server
+manifests, A2A agent cards, or any other artifact format. Instead, it
+relies on type identifiers to indicate what each entry is, and delegates
+the definition of artifact-specific metadata to the respective protocol
+specifications.</p>
+<section id="terminology">
+<h2>Terminology</h2>
+<p>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+"OPTIONAL" in this document are to be interpreted as described in
+BCP 14 [[RFC2119]] [[RFC8174]] when, and only when, they appear in all
+capitals, as shown here.</p>
+<p>The following terms are used throughout this document:</p>
+<dl>
+<dt>AI Catalog</dt>
+<dd>A JSON document conforming to the <code>application/ai-catalog+json</code>
+  media type that contains an ordered list of catalog entries.</dd>
+<dt>Catalog Entry</dt>
+<dd>A single item in an AI Catalog, identified by a type identifier and
+  referencing or embedding an AI artifact.</dd>
+<dt>Trust Manifest</dt>
+<dd>A JSON object grouping one contributor's trust metadata about an AI
+  artifact. The entry stores it in the <code>trustManifests</code> array. Its
+  <code>contributor</code> identifies the party to whom the claims are attributed;
+  its optional signature authenticates that contributor's claims.</dd>
+<dt>Artifact</dt>
+<dd>Any AI resource described by a catalog entry, such as an MCP server
+  manifest, an A2A agent card, a Claude Code plugin, a
+  dataset descriptor, or a nested AI Catalog.</dd>
+</dl>
+</section>
+</section>
+<section id="design-goals">
+<h1>Design Goals</h1>
+<ol>
+<li>
+<p><strong>Artifact Agnosticism</strong>: The catalog MUST be capable of indexing
+   any type of AI artifact without requiring knowledge of the
+   artifact's internal schema.</p>
+</li>
+<li>
+<p><strong>Type Identification</strong>: Each catalog entry MUST declare its
+   artifact type using a type identifier, enabling clients to select,
+   filter, and route entries without parsing artifact content.</p>
+</li>
+<li>
+<p><strong>Composability</strong>: The catalog format supports nesting — a catalog
+   entry can reference another AI Catalog, enabling hierarchical
+   organization and multi-artifact packaging.</p>
+</li>
+<li>
+<p><strong>Progressive Complexity</strong>: The simplest catalog is just entries
+   with names and URLs. Trust, identity, and provenance metadata are
+   available as optional extensions that never modify the catalog
+   structure or artifact formats.</p>
+</li>
+<li>
+<p><strong>Scalable Federation</strong>: The catalog format enables partitioning
+   into sub-catalogs to manage size, and supports delegation to
+   sub-catalogs managed by independent publishers. Nested catalog
+   entries support a federated model where each segment of the
+   hierarchy may be authored, hosted, and updated independently.</p>
+</li>
+<li>
+<p><strong>Location Independence</strong>: An AI Catalog MAY be served from any URL.
+   The standard defines a well-known URL convention to enable
+   automated discovery, but catalogs are equally valid when hosted at
+   arbitrary paths, embedded in registries, or distributed as files.</p>
+</li>
+</ol>
+</section>
+<section id="ai-catalog">
+<h1>AI Catalog</h1>
+<section id="media-type">
+<h2>Media Type</h2>
+<p>An AI Catalog document is identified by the media type:</p>
+<pre><code>application/ai-catalog+json
+</code></pre>
+</section>
+<section id="top-level-structure">
+<h2>Top-Level Structure</h2>
+<p>An AI Catalog document is a JSON object that MUST contain the following
+members:</p>
+<dl>
+<dt><code>specVersion</code></dt>
+<dd>A string indicating the version of this specification that the
+  catalog conforms to, in "Major.Minor" format (e.g., "1.0").
+  See <a href="#version-handling">Version Handling</a> for compatibility rules.</dd>
+<dt><code>entries</code></dt>
+<dd>An array of Catalog Entry objects as defined in <a href="#catalog-entry">Catalog Entry</a>.
+  This array MAY be empty.</dd>
+</dl>
+<p>For example, a minimal catalog listing four AI artifacts:</p>
+<pre><code class="language-json">{
+  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;entries&quot;: [
+    {
+      &quot;identifier&quot;: &quot;urn:air:example.com:skill:code-review&quot;,
+      &quot;displayName&quot;: &quot;Code Review Assistant&quot;,
+      &quot;type&quot;: &quot;application/agent-skills+zip&quot;,
+      &quot;url&quot;: &quot;https://skills.example.com/code-review/skill.zip&quot;
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:example.com:mcp:weather&quot;,
+      &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
+      &quot;url&quot;: &quot;https://api.example.com/mcp/server-card&quot;
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:example.com:a2a:research&quot;,
+      &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+      &quot;url&quot;: &quot;https://agents.example.com/researchAssistant&quot;
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:example.com:agent:productivity-plugin&quot;,
+      &quot;displayName&quot;: &quot;Productivity Plugin&quot;,
+      &quot;type&quot;: &quot;application/agent-plugins+zip&quot;,
+      &quot;description&quot;: &quot;Tools for common productivity workflows.&quot;,
+      &quot;tags&quot;: [&quot;productivity&quot;, &quot;workflows&quot;],
+      &quot;url&quot;: &quot;https://plugins.example.com/productivity.zip&quot;
+    }
+  ]
+}
+</code></pre>
+<p>The following members are OPTIONAL:</p>
+<dl>
+<dt><code>host</code></dt>
+<dd>A Host Info object as defined in <a href="#host-info">Host Info</a> identifying the
+  operator of this catalog.</dd>
+<dt><code>extensions</code></dt>
+<dd>A JSON object (map) containing custom, vendor-specific, or
+  non-standard fields. See <a href="#extensions">Extensions</a> for definitions and
+  official extension types.</dd>
+<dt><code>signature</code></dt>
+<dd>A <a href="#signature-object">Signature object</a> authenticating this catalog
+  snapshot, as defined in <a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>.
+  Signer authentication alone does not establish authority to represent the
+  catalog operator; see <a href="#catalog-authorization">Catalog Authorization</a>.</dd>
+<dt><code>additionalSignatures</code></dt>
+<dd>Reserved for future use. Producers SHOULD omit this member. Consumers MUST
+  accept and ignore it regardless of its value. It is excluded from this
+  catalog's signature payload; it establishes no endorsement in this version.</dd>
+</dl>
+<p>The AI Catalog top-level object MAY also contain members this specification
+does not define. See <a href="#unrecognized-members">Unrecognized Members</a>.</p>
+</section>
+<section id="host-info">
+<h2>Host Info</h2>
+<p>The Host Info object identifies the operator of the catalog. It MUST
+contain:</p>
+<dl>
+<dt><code>displayName</code></dt>
+<dd>A string containing the human-readable name of the host (e.g., the
+  organization name).</dd>
+</dl>
+<p>The following members are OPTIONAL:</p>
+<dl>
+<dt><code>identifier</code></dt>
+<dd>A string containing a verifiable identifier for the host (e.g., a
+  DID or domain name).</dd>
+<dt><code>documentationUrl</code></dt>
+<dd>A string containing a URL to the host's documentation.</dd>
+<dt><code>logoUrl</code></dt>
+<dd>A string containing a URL to the host's logo.</dd>
+</dl>
+<p>For example:</p>
+<pre><code class="language-json">{
+  &quot;displayName&quot;: &quot;Acme Enterprise AI&quot;,
+  &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;,
+  &quot;documentationUrl&quot;: &quot;https://docs.acme-corp.com/ai&quot;,
+  &quot;logoUrl&quot;: &quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0c...&quot;
+}
+</code></pre>
+</section>
+<section id="catalog-entry">
+<h2>Catalog Entry</h2>
+<p>A Catalog Entry object describes a single AI artifact in the catalog.
+It MUST contain the following members:</p>
+<dl>
+<dt><code>identifier</code></dt>
+<dd>
+<p>A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific <code>urn:air</code> naming structure with its own domain in the <code>{publisher}</code> segment. A catalog operator incorporating an entry for the first time with a publisher-authorized <code>urn:air</code> identifier MUST preserve that identifier exactly.</p>
+<p><strong><code>urn:air</code> Identifier Format:</strong>
+<code>urn:air:{publisher}:{namespace}:{name}</code></p>
+<ul>
+<li><code>{publisher}</code>: The domain name of the organization publishing the artifact (e.g., <code>example.com</code>).</li>
+<li><code>{namespace}</code>: The logical namespace, which can contain one or more colon-separated categories (e.g., <code>mcp</code>, <code>skill</code>, <code>agent</code>, <code>finance:agent</code>).</li>
+<li><code>{name}</code>: The stable, unique name of the artifact within the publisher's namespace.</li>
+</ul>
+<p><em>Examples:</em></p>
+<ul>
+<li><code>urn:air:example.com:skill:code-review</code></li>
+<li><code>urn:air:example.com:mcp:weather</code></li>
+</ul>
+<p>For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.</p>
+<p>See <a href="#multi-version-entries">Multi-Version Entries</a> for uniqueness rules when multiple versions are present, and <a href="#catalog-projection">Catalog Projection</a> for identifiers assigned while projecting an existing Catalog Entry or source-system record.</p>
+</dd>
+<dt><code>type</code></dt>
+<dd>
+<p>A string containing the identifier that specifies the type of the
+  referenced artifact. This field is an open text format, so any string value is accepted. However, to ensure interoperability, it is RECOMMENDED to use one of the following recognized "known types" in the ecosystem when applicable, partitioned by their respective governance boundaries:</p>
+<p><strong>Core Protocol Types (Governed by the AI Catalog WG):</strong></p>
+<ul>
+<li><code>application/ai-catalog+json</code> — a nested AI Catalog</li>
+<li><code>application/agent-card+json</code> — reserved for a generic Agent Card format</li>
+</ul>
+<p><strong>Integrated Ecosystem &amp; Third-Party Types (Governed externally):</strong></p>
+<ul>
+<li><code>application/a2a-agent-card+json</code> — an A2A Agent Card</li>
+<li><code>application/mcp-server-card+json</code> — an MCP Server Card</li>
+<li><code>application/agent-skills+json</code> — Agent Skill Metadata json file</li>
+<li><code>application/agent-skills+md</code> — an Agent Skill defined in a standard Markdown file (the suffix <code>+md</code> is to be registered)</li>
+<li><code>application/agent-skills+zip</code> — an Agent Skill bundle (ZIP archive)</li>
+<li><code>application/agent-skills+gzip</code> — an Agent Skill bundle (gzipped tarball)</li>
+<li><code>application/agent-plugins+zip</code> — an Agent Plugin bundle (ZIP archive)</li>
+<li><code>application/agent-plugins+gzip</code> — an Agent Plugin bundle (gzipped tarball)</li>
+</ul>
+<p>These values are designed to align with official IANA media type registration standards. Standard ecosystem types use registered structured syntax suffixes (<code>+json</code>, <code>+zip</code>, <code>+gzip</code>). For any new or custom types not listed here, it is up to the specific client implementation to handle them correctly.</p>
+</dd>
+</dl>
+<p>A Catalog Entry MUST contain exactly one of the following members to
+provide the artifact content:</p>
+<dl>
+<dt><code>url</code></dt>
+<dd>A string containing a URL where the full artifact document can be
+  retrieved. The document served at this URL SHOULD be served with
+  the media type declared in the <code>type</code> field.</dd>
+<dt><code>data</code></dt>
+<dd>A JSON value containing the complete artifact document inline. The
+  structure of this value is determined by the <code>type</code> field and
+  is opaque to this specification.</dd>
+</dl>
+<p>The following members are OPTIONAL:</p>
+<dl>
+<dt><code>displayName</code></dt>
+<dd>A string containing a human-readable name for the artifact.
+  This field SHOULD be set only when the referenced artifact does not
+  already carry its own canonical human-readable name — for example a
+  raw dataset (<code>application/parquet</code>), a model blob, a skill bundle
+  (<code>application/agent-skills+zip</code>), or an Agent Plugin bundle
+  (<code>application/agent-plugins+zip</code>), none of which directly expose a
+  self-describing name without processing the artifact. When the referenced
+  artifact does carry such a name — for
+  example the <code>name</code> field of an A2A Agent Card or the <code>title</code> field of
+  an MCP Server Card — that artifact is the authoritative source and
+  <code>displayName</code> SHOULD be omitted to avoid duplicating a value that can
+  drift out of sync. When <code>displayName</code> <em>is</em> present, however, it takes
+  precedence: it is the authoritative value for display, and a consumer
+  SHOULD render it as given even when it differs from a name carried by
+  the referenced artifact. Setting <code>displayName</code> is how a publisher
+  deliberately overrides the artifact's own name. See
+  <a href="#resolving-an-artifact-s-display-name">Resolving an Artifact's Display Name</a>
+  for the full consumer resolution order.</dd>
+<dt><code>description</code></dt>
+<dd>A string containing a short description of the artifact. Like
+  <code>displayName</code>, <code>description</code> is OPTIONAL and follows the same
+  authoritative-source rule: when the referenced artifact carries its
+  own canonical description — for example the <code>description</code> field of an
+  A2A Agent Card or an MCP Server Card — that artifact is the
+  authoritative source and entry <code>description</code> SHOULD be omitted to
+  avoid duplicating a value that can drift out of sync. When entry
+  <code>description</code> <em>is</em> present, however, it takes precedence: a consumer
+  SHOULD render it as given even when it differs from a description
+  carried by the referenced artifact, which is how a publisher provides
+  a listing-specific blurb. See
+  <a href="#resolving-an-artifact-s-description">Resolving an Artifact's Description</a>
+  for the full consumer resolution order.</dd>
+<dt><code>tags</code></dt>
+<dd>An array of strings serving as keywords for filtering and discovery.</dd>
+<dt><code>version</code></dt>
+<dd>
+<p>A string containing the version of this artifact.
+  <a href="https://semver.org/">Semantic Versioning</a> is RECOMMENDED but not
+  required. See <a href="#multi-version-entries">Multi-Version Entries</a> for
+  how versions interact with <code>identifier</code>.</p>
+<p>Like <code>displayName</code> and <code>description</code>, <code>version</code> can restate a value
+the referenced artifact already carries (an A2A Agent Card
+<code>version</code>, an MCP Server Card <code>version</code>), and when a single entry
+references such an artifact the entry <code>version</code> SHOULD be omitted to
+avoid drift — the consumer can read it from the artifact. An entry
+MAY include that version when it needs to be signed directly. Unlike
+<code>displayName</code> and <code>description</code>, however, <code>version</code> is not merely
+cosmetic: it is part of the entry's uniqueness key, so it is
+REQUIRED when a catalog lists multiple versions of the same
+<code>identifier</code> (see <a href="#multi-version-entries">Multi-Version Entries</a>).
+A present <code>version</code> is used for catalog-level sorting and selection
+rather than as a free-form display override, so it SHOULD equal the
+version the referenced artifact reports; an entry <code>version</code> that
+contradicts the artifact's own version is a publishing error, not a
+deliberate override. See
+<a href="#resolving-an-artifact-s-version">Resolving an Artifact's Version</a>
+for the full consumer resolution order.</p>
+</dd>
+<dt><code>updatedAt</code></dt>
+<dd>A string containing an ISO 8601 [[RFC3339]] timestamp indicating
+  when this entry was last modified.</dd>
+<dt><code>extensions</code></dt>
+<dd>A JSON object (map) containing custom data.</dd>
+<dt><code>publisher</code></dt>
+<dd>A Publisher object as defined in <a href="#publisher-object">Publisher Object</a>
+  identifying the entity that publishes this artifact. This is the
+  sole location for publisher information; it is not duplicated in
+  the Trust Manifest.</dd>
+<dt><code>digest</code></dt>
+<dd>A string containing the artifact content digest in <a href="#digest-format">Digest Format</a>.
+  For <code>url</code>, hash the exact retrieved artifact bytes. For <code>data</code>, hash the
+  UTF-8 JCS-canonicalized [[RFC8785]] JSON value. Inline <code>data</code> MUST satisfy
+  JCS's input requirements for artifact verification to succeed. A digest
+  alone does not authenticate its source; see
+  <a href="#entry-release-coverage">Entry Release Coverage</a>.</dd>
+<dt><code>trustManifests</code></dt>
+<dd>An array of <a href="#trust-manifest">Trust Manifest</a> objects. Each manifest groups
+  one contributor's claims about this artifact and can carry its own signature.
+  A contributor's identity is attribution, not proof of authorship.</dd>
+</dl>
+<section id="resolving-an-artifact-s-display-name">
+<h3>Resolving an Artifact&#x27;s Display Name</h3>
+<p>Because <code>displayName</code> is OPTIONAL, a consumer rendering a catalog entry
+cannot assume it is present. To obtain a human-readable name, a consumer
+SHOULD resolve one in the following order:</p>
+<ol>
+<li><strong><code>displayName</code> on the entry</strong>, if present. A publisher-supplied
+   <code>displayName</code> always wins, even when it differs from a name carried by
+   the referenced artifact.</li>
+<li><strong>The referenced artifact's own canonical name</strong>, if the consumer has
+   already fetched or cached the artifact — for example the <code>name</code> field
+   of an A2A Agent Card or the <code>title</code> field of an MCP Server Card.</li>
+<li><strong>The trailing segment of the entry's <code>identifier</code></strong> as a last
+   resort — the portion after its final <code>:</code> or <code>/</code> delimiter. For
+   example, <code>urn:air:example.com:mcp:weather</code> yields <code>weather</code> and
+   <code>urn:air:anonymous.modelcontextprotocol.io:mcp:brave-search</code> yields
+   <code>brave-search</code>.</li>
+</ol>
+<p>A consumer SHOULD NOT dereference an artifact at render time solely to
+obtain a name. A registry, directory, or other service built on top of a
+catalog SHOULD resolve the name once at ingestion — alongside any other
+derived metadata it attaches, such as relevance scores or tags — and
+cache the result, rather than fetching artifacts on the rendering path.</p>
+<p>This order also covers a referenced MCP Server Card whose <code>title</code> is
+itself absent: step 2 yields no name, so the consumer falls through to
+the <code>identifier</code> segment in step 3. A publisher MAY still set
+<code>displayName</code> on such an entry to provide a better name than the bare
+identifier segment.</p>
+</section>
+<section id="resolving-an-artifact-s-description">
+<h3>Resolving an Artifact&#x27;s Description</h3>
+<p>Because <code>description</code> is OPTIONAL, a consumer that wants to show a
+description cannot assume the entry carries one. It SHOULD resolve one in
+the following order:</p>
+<ol>
+<li><strong><code>description</code> on the entry</strong>, if present. A publisher-supplied
+   <code>description</code> always wins, even when it differs from a description
+   carried by the referenced artifact.</li>
+<li><strong>The referenced artifact's own canonical description</strong>, if the
+   consumer has already fetched or cached the artifact — for example the
+   <code>description</code> field of an A2A Agent Card or an MCP Server Card.</li>
+<li><strong>No description</strong>, if neither is available. Unlike a name, a
+   description has no identifier-derived fallback; a consumer SHOULD
+   simply render the entry without one.</li>
+</ol>
+<p>As with name resolution, a consumer SHOULD NOT dereference an artifact at
+render time solely to obtain a description. A registry, directory, or
+other service built on top of a catalog SHOULD resolve the description
+once at ingestion and cache the result, rather than fetching artifacts on
+the rendering path.</p>
+</section>
+<section id="resolving-an-artifact-s-version">
+<h3>Resolving an Artifact&#x27;s Version</h3>
+<p>Because <code>version</code> is OPTIONAL on a single entry — and present only when
+the entry disambiguates others that share its <code>identifier</code> (see
+<a href="#multi-version-entries">Multi-Version Entries</a>) or deliberately restates
+the artifact's version — a consumer cannot assume every entry carries
+one. To obtain a version, a consumer SHOULD resolve one in the following
+order:</p>
+<ol>
+<li><strong><code>version</code> on the entry</strong>, if present. Unlike <code>displayName</code> and
+   <code>description</code>, a present <code>version</code> is not a free-form display
+   override: it is authoritative for catalog-level sorting and version
+   selection. Within a multi-version listing it is REQUIRED and, combined
+   with <code>identifier</code>, uniquely addresses the entry.</li>
+<li><strong>The referenced artifact's own version</strong>, if the consumer has already
+   fetched or cached the artifact — for example the <code>version</code> field of an
+   A2A Agent Card, an MCP Server Card, or an MCP Registry <code>server.json</code>.
+   A single entry that omits <code>version</code> because the artifact already
+   carries it is resolved here.</li>
+<li><strong>No version</strong>, if neither is available — the entry represents an
+   unversioned artifact. A consumer that needs to order such entries
+   SHOULD fall back to <code>updatedAt</code>, consistent with
+   <a href="#multi-version-entries">Multi-Version Entries</a>.</li>
+</ol>
+<p>When both the entry and the referenced artifact carry a <code>version</code> and
+they disagree, the entry <code>version</code> is authoritative for catalog-level
+sorting and selection; the mismatch is a publishing error (it breaks
+latest-selection) that a consumer MAY surface but SHOULD NOT resolve by
+silently preferring the artifact's value.</p>
+<p>As with name and description resolution, a consumer SHOULD NOT dereference
+an artifact at render time solely to obtain a version. A registry,
+directory, or other service built on top of a catalog SHOULD resolve the
+version once at ingestion and cache the result, rather than fetching
+artifacts on the rendering path.</p>
+<p>A Catalog Entry MAY also contain members this specification does not
+define. See <a href="#unrecognized-members">Unrecognized Members</a>.</p>
+</section>
+</section>
+<section id="multi-version-entries">
+<h2>Multi-Version Entries</h2>
+<p>A catalog MAY contain multiple entries with the same <code>identifier</code> and
+different <code>version</code> values, representing a version history for a
+single artifact — similar to a package registry.</p>
+<p>When <code>version</code> is present, the combination of <code>identifier</code> and <code>version</code>
+MUST be unique within the catalog. When <code>version</code> is absent, <code>identifier</code>
+alone MUST be unique. The <code>identifier</code> SHOULD be stable across versions.
+Only publisher-authorized <code>urn:air</code> identifiers receive a cross-catalog
+preservation requirement, as defined in <a href="#catalog-projection">Catalog Projection</a>.</p>
+<p>Clients that need only the latest version SHOULD sort entries
+sharing the same <code>identifier</code> by <code>version</code> (when parseable as a semantic
+version) or by <code>updatedAt</code>, and select the most recent. Clients
+that need a specific version SHOULD match on both <code>identifier</code> and <code>version</code>.</p>
+<p>For example, a catalog listing two versions of the same agent:</p>
+<pre><code class="language-json">{
+  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;entries&quot;: [
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance&quot;,
+      &quot;version&quot;: &quot;2.1.0&quot;,
+      &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+      &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance/v2.1.json&quot;,
+      &quot;updatedAt&quot;: &quot;2026-03-15T10:00:00Z&quot;
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance&quot;,
+      &quot;version&quot;: &quot;2.0.0&quot;,
+      &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+      &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance/v2.0.json&quot;,
+      &quot;updatedAt&quot;: &quot;2026-01-20T08:00:00Z&quot;
+    }
+  ]
+}
+</code></pre>
+<p>Both entries share the same <code>identifier</code> but have distinct <code>version</code>
+values, so the combination is unique.</p>
+</section>
+<section id="catalog-projection">
+<h2>Catalog Projection</h2>
+<p>A publisher-authorized <code>urn:air</code> identifier is one assigned by the
+artifact publisher or its authorized delegate, with the artifact
+publisher's domain in the <code>{publisher}</code> segment.</p>
+<p>Catalog projection creates a Catalog Entry from either a source Catalog
+Entry in another AI Catalog or a source record in another system. When
+incorporating a projected entry for the first time, a catalog operator
+MUST select its identifier by applying these rules in order:</p>
+<ol>
+<li>If the source contains a publisher-authorized <code>urn:air</code> identifier,
+   the operator MUST preserve it exactly.</li>
+<li>Otherwise, the operator MAY preserve a non-<code>urn:air</code> source identifier
+   or replace it. Non-<code>urn:air</code> identifiers have no guaranteed portability
+   across catalogs.</li>
+<li>When assigning a new identifier, an operator that becomes the artifact
+   publisher SHOULD use <code>urn:air</code> with its own domain in the <code>{publisher}</code>
+   segment. An operator acting as an authorized delegate SHOULD use
+   <code>urn:air</code> with the delegating publisher's domain in that segment. An
+   operator that is neither the artifact publisher nor its authorized
+   delegate MUST use a non-<code>urn:air</code> identifier under its own control.</li>
+</ol>
+<p>Operating a catalog or aggregating an entry does not make its operator the
+artifact publisher. A catalog operator MUST NOT infer publisher
+authorization from the artifact's URL or an unsigned <code>publisher</code> field.</p>
+<p>Adopting a different primary identifier after publication requires an
+explicit migration mechanism, which this specification does not define.</p>
+<p>An identifier assigned by a catalog operator identifies the artifact, not
+a particular version or source record. It MUST remain stable across
+versions, source-coordinate changes, and retrieval-URL changes, and MUST
+NOT be reassigned to another artifact. The catalog operator and artifact
+publisher are distinct roles. The operator is the entity identified by the
+top-level <code>host</code> field when that field is present.</p>
+<p>A catalog operator MAY retain replaced source identifiers or source-system
+coordinates. If retained, they SHOULD be stored in a namespaced entry
+extension. They do not participate in catalog uniqueness or establish
+publisher identity, trust, or equivalence with another identifier.</p>
+<pre><code class="language-json">{
+  &quot;identifier&quot;: &quot;https://registry.example/ids/artifacts/7bf4a8c2&quot;,
+  &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+  &quot;url&quot;: &quot;https://registry.example/apis/registry/v3/groups/payments/artifacts/fraud-agent&quot;,
+  &quot;publisher&quot;: {
+    &quot;identifier&quot;: &quot;did:web:acme.example&quot;,
+    &quot;displayName&quot;: &quot;Acme&quot;
+  },
+  &quot;extensions&quot;: {
+    &quot;com.example.registry.coordinates&quot;: {
+      &quot;registryUri&quot;: &quot;https://registry.example&quot;,
+      &quot;sourceIdentifier&quot;: &quot;foo&quot;,
+      &quot;namespace&quot;: &quot;payments&quot;,
+      &quot;name&quot;: &quot;fraud-agent&quot;
+    }
+  }
+}
+</code></pre>
+<p>The extension key is illustrative.</p>
+</section>
+<section id="publisher-object">
+<h2>Publisher Object</h2>
+<p>The Publisher object identifies the entity responsible for an artifact.
+It appears on the Catalog Entry and is the canonical location for
+publisher information. It MUST contain:</p>
+<dl>
+<dt><code>identifier</code></dt>
+<dd>A string containing a verifiable identifier for the publisher
+  organization.</dd>
+<dt><code>displayName</code></dt>
+<dd>A string containing the human-readable name of the publisher.</dd>
+</dl>
+<p>The following members are OPTIONAL:</p>
+<dl>
+<dt><code>identityType</code></dt>
+<dd>A string providing a type hint for the publisher identifier (e.g.,
+  "did", "dns").</dd>
+</dl>
+</section>
+</section>
+<section id="trust-manifest">
+<h1>Trust Manifest</h1>
+<p>A Trust Manifest is an OPTIONAL collection of one contributor's trust metadata
+about the artifact represented by an entry. The entry's <code>trustManifests</code>
+array contains these independent contributions. Each manifest MUST contain
+<code>contributor</code> and MAY contain the optional members below.</p>
+<section id="contributor-identity">
+<h2>Contributor Identity</h2>
+<p><code>contributor</code> MUST be an absolute URI [[RFC3986]] identifying the contributor
+asserting this manifest's references or claims, not necessarily the issuer
+of every referenced attestation or provenance statement. Authors SHOULD use
+their existing identity URI, such as <code>did:web:assessor.example</code>. The value
+MUST be preserved exactly when forwarding a Trust Manifest. Consumers MUST
+NOT infer authentication from its spelling or mere presence.</p>
+<p>A signed Trust Manifest's <code>signature.signer</code> MUST exactly equal <code>contributor</code>.
+Consumers MUST compare these decoded JSON strings case-sensitively, without
+URI normalization. Verifying the signature and this equality authenticates
+the contributor attribution. Accepting the claims for an entry additionally
+requires <a href="#entry-release-coverage">entry release binding</a>. A signature over
+one manifest does not authenticate other manifests or other entry fields.</p>
+</section>
+<section id="independent-contributions-and-updates">
+<h2>Independent Contributions and Updates</h2>
+<p>Contributors can publish and update their manifests without modifying other
+contributors' manifests or invalidating their signatures. This version
+supports one signer per manifest and defines no references between manifests.</p>
+<p>An entry MAY contain multiple manifests from the same contributor, including
+manifests using different verification profiles. Array order does not imply
+trust or precedence. Consumers evaluate each manifest independently.</p>
+<p>A contributor MAY publish an updated Trust Manifest for the same release.
+Two registries may retrieve that manifest at different times and hold
+different signed versions. When choosing among updates for the same
+contributor and release, consumers SHOULD prefer the manifest with the most
+recent acceptable signature, comparing authenticated <code>issuedAt</code> instants.
+An issuance time is the signer's assertion, not an independently trusted clock.
+Equal issuance times with different content require local selection policy;
+consumers MUST NOT infer an ordering from array order. Registries SHOULD
+preserve the chosen manifest and its signature rather than merge separately
+signed contents.</p>
+</section>
+<section id="manifest-validity">
+<h2>Manifest Validity</h2>
+<p>A Trust Manifest MUST contain at least one of: a <code>signature</code>, a <code>trustSchema</code>,
+a non-empty <code>attestations</code> array, a non-empty <code>provenance</code> array, or a non-empty
+<code>extensions</code> object. A manifest containing a <code>signature</code> MUST also contain
+<code>subject</code>. A signed manifest MAY endorse only the artifact release identified
+by that subject, without additional trust evidence. These members' presence
+does not establish verification. Empty manifests MUST be omitted.</p>
+</section>
+<section id="optional-members">
+<h2>Optional Members</h2>
+<dl>
+<dt><code>subject</code></dt>
+<dd>A <a href="#subject-object">Subject object</a> identifying the artifact release and
+  representation to which these claims apply. REQUIRED when <code>signature</code> is
+  present. It lets the signed manifest travel independently of the entry.</dd>
+<dt><code>signature</code></dt>
+<dd>A <a href="#signature-object">Signature object</a> authenticating this manifest's
+  contents, including its subject and contributor identity.</dd>
+<dt><code>additionalSignatures</code></dt>
+<dd>Reserved for future use. Producers SHOULD omit this member. Consumers MUST
+  accept and ignore it regardless of its value. It is excluded from this
+  manifest's signature payload; it establishes no endorsement in this version.</dd>
+<dt><code>trustSchema</code></dt>
+<dd>A <a href="#trust-schema-object">Trust Schema object</a> describing the framework the
+  contributor applies to its claims about this artifact. The descriptor does
+  not itself establish a trust root or override the consumer's policy.</dd>
+<dt><code>attestations</code></dt>
+<dd>An array of <a href="#attestation-object">Attestation objects</a> carrying references
+  to evidence. Their formats or applicable profiles define evidence verification.</dd>
+<dt><code>provenance</code></dt>
+<dd>An array of <a href="#provenance-link-object">Provenance Link objects</a>.</dd>
+<dt><code>extensions</code></dt>
+<dd>A JSON object containing this contributor's additional trust metadata, using
+  the namespaced keys defined in <a href="#extensions">Extensions</a>. Entry extensions
+  describe shared artifact metadata; manifest extensions express a particular
+  contributor's claims. A manifest signature covers only the latter.</dd>
+</dl>
+<p>For example, this unsigned entry carries independent contributions:</p>
+<pre><code class="language-json">{
+  &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance&quot;,
+  &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+  &quot;url&quot;: &quot;https://acme.com/finance.json&quot;,
+  &quot;trustManifests&quot;: [
+    {
+      &quot;contributor&quot;: &quot;did:web:acme.com&quot;,
+      &quot;provenance&quot;: [{
+        &quot;relation&quot;: &quot;publishedFrom&quot;,
+        &quot;sourceId&quot;: &quot;https://github.com/acme/finance&quot;
+      }]
+    },
+    {
+      &quot;contributor&quot;: &quot;did:web:assessor.example&quot;,
+      &quot;attestations&quot;: [{
+        &quot;type&quot;: &quot;SOC2-Type2&quot;,
+        &quot;uri&quot;: &quot;https://assessor.example/reports/acme.pdf&quot;
+      }]
+    }
+  ]
+}
+</code></pre>
+</section>
+<section id="subject-object">
+<h2>Subject Object</h2>
+<p>A Subject object binds a Trust Manifest to the artifact release it describes.
+It MUST contain:</p>
+<dl>
+<dt><code>identifier</code></dt>
+<dd>A string containing the artifact's logical identifier. It MUST exactly
+  equal the containing entry's <code>identifier</code>.</dd>
+<dt><code>type</code></dt>
+<dd>A string containing the artifact's type identifier. It MUST exactly equal
+  the containing entry's <code>type</code>.</dd>
+<dt><code>digest</code></dt>
+<dd>The artifact content digest in <a href="#digest-format">Digest Format</a>. It MUST
+  exactly equal the containing entry's <code>digest</code>, which MUST be present when
+  an entry carries a signed Trust Manifest. For <code>url</code>, hash the exact retrieved
+  artifact bytes. For <code>data</code>, hash the UTF-8 JCS-canonicalized JSON value.</dd>
+</dl>
+<p>The following member is conditional:</p>
+<dl>
+<dt><code>version</code></dt>
+<dd>A string containing the artifact release version. <code>subject.version</code> MUST
+  be present exactly when <code>entry.version</code> is present, and its value MUST
+  exactly equal <code>entry.version</code>.</dd>
+</dl>
+<p>These fields deliberately repeat entry values to make the signed manifest
+self-contained. Verification of a standalone manifest authenticates its
+subject and claims; accepting those claims for an entry additionally requires
+<a href="#entry-release-coverage">Entry Release Coverage</a>. The subject does not include
+the retrieval URL, permitting mirrors serving identical artifact bytes.</p>
+</section>
+<section id="trust-schema-object">
+<h2>Trust Schema Object</h2>
+<p>A Trust Schema object describes the trust framework applied to the
+artifact. It MUST contain:</p>
+<dl>
+<dt><code>identifier</code></dt>
+<dd>A string identifying the trust schema.</dd>
+<dt><code>version</code></dt>
+<dd>A string indicating the schema version.</dd>
+</dl>
+<p>The following members are OPTIONAL:</p>
+<dl>
+<dt><code>governanceUri</code></dt>
+<dd>A string containing a URI to the governance policy document.</dd>
+<dt><code>verificationMethods</code></dt>
+<dd>An array of strings identifying the verification methods supported
+  (e.g., "did", "x509", "dns-01").</dd>
+</dl>
+<p>For example:</p>
+<pre><code class="language-json">{
+  &quot;identifier&quot;: &quot;urn:trust:acme-enterprise-v1&quot;,
+  &quot;version&quot;: &quot;1.0&quot;,
+  &quot;governanceUri&quot;: &quot;https://acme-corp.com/trust/governance.pdf&quot;,
+  &quot;verificationMethods&quot;: [&quot;did&quot;, &quot;x509&quot;]
+}
+</code></pre>
+</section>
+<section id="attestation-object">
+<h2>Attestation Object</h2>
+<p>An Attestation object provides verifiable proof of a claim. It MUST
+contain:</p>
+<dl>
+<dt><code>type</code></dt>
+<dd>A string identifying the attestation type (e.g., "SOC2-Type2",
+  "HIPAA-Audit", "ISO27001").</dd>
+<dt><code>uri</code></dt>
+<dd>A string containing the location of the attestation document.
+  This may be an HTTPS URL or an inline Data URI [[RFC2397]].</dd>
+</dl>
+<p>The following members are OPTIONAL:</p>
+<dl>
+<dt><code>digest</code></dt>
+<dd>A string containing a cryptographic hash for integrity verification
+  (e.g., "sha256:abcd1234...").</dd>
+<dt><code>size</code></dt>
+<dd>An unsigned integer indicating the size of the attestation in bytes.</dd>
+<dt><code>description</code></dt>
+<dd>A string containing a human-readable label.</dd>
+</dl>
+<p>For example, a compliance attestation with integrity verification:</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;SOC2-Type2&quot;,
+  &quot;uri&quot;: &quot;https://trust.acme-corp.com/reports/soc2-2026.pdf&quot;,
+  &quot;digest&quot;: &quot;sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890&quot;,
+  &quot;size&quot;: 245760,
+  &quot;description&quot;: &quot;SOC2 Type 2 audit report for Acme Finance Agent (2026)&quot;
+}
+</code></pre>
+</section>
+<section id="provenance-link-object">
+<h2>Provenance Link Object</h2>
+<p>A Provenance Link records lineage information. It MUST contain:</p>
+<dl>
+<dt><code>relation</code></dt>
+<dd>A string describing the relationship (e.g., "materializedFrom",
+  "derivedFrom", "publishedFrom").</dd>
+<dt><code>sourceId</code></dt>
+<dd>A string identifying the source artifact or data.</dd>
+</dl>
+<p>The following members are OPTIONAL:</p>
+<dl>
+<dt><code>sourceDigest</code></dt>
+<dd>A string containing the digest of the source.</dd>
+<dt><code>registryUri</code></dt>
+<dd>A string containing the URI of the registry holding the source.</dd>
+<dt><code>statementUri</code></dt>
+<dd>A string containing the URI of a provenance statement document.</dd>
+<dt><code>signatureRef</code></dt>
+<dd>A string referencing the key used to sign the provenance statement.</dd>
+</dl>
+<p>For example, a provenance link recording that an artifact was built
+from a specific source commit and published through an OCI registry:</p>
+<pre><code class="language-json">{
+  &quot;relation&quot;: &quot;publishedFrom&quot;,
+  &quot;sourceId&quot;: &quot;https://github.com/acme-corp/finance-agent&quot;,
+  &quot;sourceDigest&quot;: &quot;sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321&quot;,
+  &quot;registryUri&quot;: &quot;oci://registry.acme-corp.com/agents/finance&quot;,
+  &quot;statementUri&quot;: &quot;https://trust.acme-corp.com/provenance/finance-agent-v2.1.json&quot;,
+  &quot;signatureRef&quot;: &quot;did:web:acme-corp.com#key-1&quot;
+}
+</code></pre>
+</section>
+<section id="verification-procedures">
+<h2>Verification Procedures</h2>
+<p>This section describes how consumers verify Trust Manifests, catalog
+snapshots, and the evidence referenced by Trust Manifests.
+Verification is OPTIONAL — consumers that do not need trust assurance can
+skip this entirely.</p>
+<p><a href="#the-did-web-signer-profile">The <code>did:web</code> Signer Profile</a> defines an initial
+interoperable authentication mechanism. Other signer profiles can use the
+same data model. A signer profile MUST define permitted signer identities,
+key discovery and authorization, algorithms, JWS header requirements, validity
+checks, and any authority it establishes. Consumers MUST NOT authenticate an
+identity using an unsupported profile.</p>
+<section id="safe-fetching">
+<h3>Safe Fetching</h3>
+<p>Verification procedures direct consumers to fetch artifact URLs, evidence
+references (<code>attestation.uri</code>, <code>statementUri</code>, and <code>registryUri</code>), and
+identity-resolution endpoints derived from signing metadata. These inputs
+may be attacker-controlled before authentication, so these fetches are a
+server-side request forgery (SSRF) and denial-of-service surface.
+Consumers performing verification MUST:</p>
+<ul>
+<li>Resolve and reject URLs targeting private, loopback, link-local, or
+  cloud metadata addresses (e.g., <code>127.0.0.0/8</code>, <code>::1</code>,
+  <code>169.254.0.0/16</code>, <code>fc00::/7</code>, <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>,
+  <code>192.168.0.0/16</code>), and re-check the resolved address after any
+  redirect.</li>
+<li>Restrict fetches to the <code>https</code> scheme (or inline <code>data:</code> URIs) and
+  refuse to follow redirects that cross into a disallowed address range.</li>
+<li>Enforce a maximum response size and a request timeout. When
+  <code>attestation.size</code> is present, reject responses that exceed it; in all
+  cases apply a consumer-defined ceiling.</li>
+<li>Treat every fetched document as untrusted input.</li>
+</ul>
+<p>Consumers SHOULD prefer inline <code>data:</code> attestations and Data-URI logos
+to avoid leaking verification activity to third-party endpoints.</p>
+</section>
+<section id="digest-format">
+<h3>Digest Format</h3>
+<p>Digests in this specification use the format <code>algorithm:hex-value</code>,
+where <code>algorithm</code> is a hash algorithm identifier and <code>hex-value</code> is
+the lowercase hexadecimal encoding of the hash output. For example:</p>
+<pre><code>sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+</code></pre>
+<p>Producers SHOULD use SHA-256 [[RFC6234]] or stronger. Consumers
+MUST reject digest values using algorithms shorter than SHA-256.</p>
+</section>
+<section id="signature-object">
+<h3>Signature Object</h3>
+<p>A Trust Manifest or catalog root MAY contain one <code>signature</code> object. A
+Signature object MUST contain <code>signer</code>, <code>profile</code>, <code>issuedAt</code>, and <code>jws</code>, and
+MAY contain <code>expiresAt</code>. Unrecognized members follow
+<a href="#version-handling">Version Handling</a> and remain part of the signed payload.</p>
+<dl>
+<dt><code>signer</code></dt>
+<dd>An absolute URI [[RFC3986]] identifying the party claimed to have issued
+  this endorsement. The applicable signer profile MUST establish that the
+  verification key is authorized to sign for this identity. Consumers MUST
+  NOT infer authentication or authority from this field alone.</dd>
+<dt><code>profile</code></dt>
+<dd>A non-empty string identifying the signer verification procedure, as defined
+  in <a href="#profile-selection">Profile Selection</a>. It is authenticated as part of
+  the payload but does not itself establish trust in the signer or authority
+  to make the claims.</dd>
+<dt><code>issuedAt</code></dt>
+<dd>An RFC 3339 [[RFC3339]] timestamp asserting when this endorsement was issued.
+  The timestamp is authenticated as part of the payload.</dd>
+<dt><code>expiresAt</code></dt>
+<dd>An OPTIONAL RFC 3339 timestamp after which this endorsement is stale.
+  If present it MUST denote an instant later than <code>issuedAt</code>.</dd>
+<dt><code>jws</code></dt>
+<dd>A detached compact JWS [[RFC7515]] over the
+  <a href="#signed-payload-and-jws-construction">payload</a>. The stored form is
+  <code>encodedProtectedHeader..encodedSignature</code>.</dd>
+</dl>
+<section id="profile-selection">
+<h4>Profile Selection</h4>
+<p>Consumers MUST select the verification procedure named by <code>profile</code>, and
+MUST require that it is both supported and permitted by local policy. They
+MUST NOT infer another profile from <code>signer</code>, JWS headers, or other metadata,
+or fall back to another procedure if the selected profile is unsupported,
+disallowed, or fails verification. Such a signature MUST NOT count as a
+verified endorsement; other manifests are evaluated independently.</p>
+<p>Profiles defined by this specification use reserved names. Independently
+defined profiles MUST use absolute URI identifiers [[RFC3986]] under the
+profile author's control. Authors are encouraged to use a versioned HTTPS
+URL pointing to a human-readable definition of the profile's verification
+requirements. Consumers need an implementation of those requirements;
+retrieving the document does not supply verification behavior. Profile
+identifiers MUST be compared exactly and case-sensitively, without URI
+normalization.</p>
+<p>A profile identifier names a defined set of verification requirements. It
+MUST NOT be reused for a different set of requirements. Key rotation under
+those requirements does not change the profile. A consumer MAY impose
+stricter local acceptance requirements without defining another profile.</p>
+<p>The selected profile MUST authenticate the exact <code>signer</code> value using its
+specified key-authorization and verification rules. Consumers MUST also
+apply the coverage and authority checks required for the intended endorsement.
+The <a href="#the-did-web-publisher-profile"><code>did:web</code> Publisher Profile</a>, for example,
+adds publisher authorization and release coverage to the <code>did:web</code> Signer
+Profile.</p>
+</section>
+<section id="signed-payload-and-jws-construction">
+<h4>Signed Payload and JWS Construction</h4>
+<p>The payload is the containing Trust Manifest or catalog object, with only
+these two members omitted:</p>
+<ol>
+<li>The immediate <code>jws</code> member of its immediate <code>signature</code> object.</li>
+<li>Its immediate <code>additionalSignatures</code> member, if present.</li>
+</ol>
+<p>All other members and values MUST be retained, including <code>signature.signer</code>,
+<code>signature.profile</code>, <code>signature.issuedAt</code>, optional <code>signature.expiresAt</code>,
+and unrecognized members. Ignoring an unrecognized field's meaning MUST NOT
+remove it from the payload. The omissions are not recursive: members named
+<code>jws</code> or <code>additionalSignatures</code> elsewhere remain included. For example, a
+catalog signature includes complete nested Trust Manifests and their signatures.</p>
+<p>For example, a signed release-only manifest has this payload:</p>
+<pre><code class="language-json">{
+  &quot;contributor&quot;: &quot;did:web:acme.com&quot;,
+  &quot;subject&quot;: {
+    &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance&quot;,
+    &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+    &quot;digest&quot;: &quot;sha256:56bbd2ff730d81a52951fc2f58809dfb086b4be7a82766dcc18cfe32ff6acbbd&quot;
+  },
+  &quot;signature&quot;: {
+    &quot;signer&quot;: &quot;did:web:acme.com&quot;,
+    &quot;profile&quot;: &quot;did-web-v1&quot;,
+    &quot;issuedAt&quot;: &quot;2026-09-12T10:00:00Z&quot;
+  }
+}
+</code></pre>
+<p>Canonicalize this payload with JCS [[RFC8785]]. Its UTF-8 bytes are the JWS
+payload. Use ordinary base64url-encoded JWS signing input, then omit only the
+payload segment from the stored compact serialization, as specified in
+Appendix F of [[RFC7515]]. Verifiers reconstruct that segment to verify the
+JWS. The payload MUST satisfy JCS's I-JSON constraints; parsers MUST reject
+duplicate JSON member names rather than silently discard one. Large integers
+that cannot round-trip as IEEE 754 doubles SHOULD be encoded as strings.</p>
+<p>The protected header MUST contain <code>alg</code> and <code>typ</code>. The <code>typ</code> value MUST
+exactly match the kind of containing object:</p>
+<table>
+<thead>
+<tr>
+<th>Containing object</th>
+<th>Protected <code>typ</code> value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trust Manifest</td>
+<td><code>ai-catalog-trust-manifest+jws</code></td>
+</tr>
+<tr>
+<td>Catalog root</td>
+<td><code>ai-catalog+jws</code></td>
+</tr>
+</tbody>
+</table>
+<p>Consumers MUST reject a missing or mismatched <code>typ</code>. This authenticated marker
+prevents reusing a manifest signature as a catalog signature or vice versa.
+The <code>alg</code> value <code>none</code> MUST NOT be accepted. The protected header MUST NOT
+contain <code>b64</code>: the unencoded-payload option of [[RFC7797]] is not used. All
+other header parameters, algorithm allowlists, and key-selection rules are
+governed by the applicable signer profile and JWS requirements, including
+rejection of unsupported critical parameters. A successful cryptographic
+check alone establishes neither signer identity nor authority to make the claims.</p>
+</section>
+<section id="signature-acceptance-and-time">
+<h4>Signature Acceptance and Time</h4>
+<p>Consumers MUST validate the Signature object's structure, profile selection,
+payload, JWS, and selected signer profile before accepting an
+endorsement. They MUST validate timestamp syntax and compare timestamps as
+instants, not strings.
+Consumers MUST NOT accept an endorsement before <code>issuedAt</code> or at or after
+<code>expiresAt</code>, when present. Consumers MAY allow a small clock-skew tolerance
+determined by implementation defaults or local policy. A new signature does
+not cryptographically invalidate an old one. Endorsement expiry does not
+replace freshness or validity checks defined by referenced evidence formats.</p>
+<p>An invalid, unsupported, or expired signature MUST NOT count as a verified
+endorsement. Other manifests are evaluated independently; consumers MAY
+apply local requirements such as evidence from particular contributors.
+Consumers MUST limit authentication claims based on a Trust Manifest to its
+signed contents and successfully verified subject bindings.</p>
+</section>
+</section>
+<section id="entry-release-coverage">
+<h3>Entry Release Coverage</h3>
+<p>Before relying on a Trust Manifest's signature as an endorsement of an entry's
+artifact release or of claims about that release, consumers MUST require:</p>
+<ul>
+<li>A <a href="#signature-acceptance-and-time">verified</a> Signature object whose <code>signer</code>
+  exactly equals the manifest's <code>contributor</code>.</li>
+<li>A signed <code>subject</code> whose <code>identifier</code>, <code>type</code>, and <code>digest</code> exactly equal
+  the corresponding entry fields. The entry MUST contain <code>digest</code>.</li>
+<li>Either both <code>subject.version</code> and <code>entry.version</code> absent, or both present
+  and exactly equal.</li>
+</ul>
+<p>These comparisons are between decoded JSON strings and MUST be case-sensitive,
+without URI normalization. Adding, removing, or changing an entry's version
+without the corresponding subject change makes the manifest unacceptable for
+that entry, even if the manifest's signature still verifies independently.
+Consumers MUST NOT combine fields from different manifests to establish binding.</p>
+<p>The consumer MUST also verify the artifact bytes against the matching digest
+using <a href="#verifying-artifact-integrity">Verifying Artifact Integrity</a>. The
+retrieval URL is not signed by the Trust Manifest, permitting mirrors serving
+identical bytes. Other entry fields, including entry extensions and
+<a href="#unrecognized-members">unrecognized members</a>, are outside the manifest
+signature's scope. Referenced evidence retains its own
+verification requirements.</p>
+</section>
+<section id="catalog-snapshot-coverage">
+<h3>Catalog Snapshot Coverage</h3>
+<p>A catalog signature covers the entire catalog object, omitting only its own
+<code>signature.jws</code> and its own reserved <code>additionalSignatures</code> as defined in
+<a href="#signed-payload-and-jws-construction">Signed Payload and JWS Construction</a>.
+This includes <code>specVersion</code>, every entry in order, Host Info, extensions, and
+all other present members, including unknown fields.</p>
+<p>Nested manifest signatures and nested <code>additionalSignatures</code> members remain
+included. Adding, removing, or changing a contribution therefore changes the
+catalog snapshot and requires a new catalog signature. Adding the catalog's
+own reserved <code>additionalSignatures</code> does not change its signed payload.
+Snapshot integrity does not replace checks on referenced artifacts or
+establish the authority of entry publishers.</p>
+</section>
+<section id="the-did-web-signer-profile">
+<h3>The `did:web` Signer Profile</h3>
+<p>This profile is selected by the exact <code>profile</code> value <code>did-web-v1</code>. It
+authenticates a signer using a root <code>did:web</code> DID and an ES256 assertion key.
+It can authenticate a publisher, assessor, registry, or other contributor.
+Authentication does not by itself grant publisher, host, or catalog authority.
+The <a href="#the-did-web-publisher-profile"><code>did:web</code> Publisher Profile</a> adds publisher
+namespace authorization.</p>
+<p>The Signature object's <code>signer</code> MUST be a root <code>did:web</code> DID. Its domain
+MUST be lowercase ASCII, with no port, IP address, trailing root dot, or
+Unicode U-label; IDNA A-labels are permitted [[DIDWEB]] [[RFC5890]]
+[[RFC5891]].</p>
+<p>Other identity mechanisms, delegated controllers, path-based <code>did:web</code> DIDs,
+and algorithms require separately defined profiles. Implementations MAY
+support additional profiles by agreement; they MUST NOT silently apply these
+rules to a different mechanism.</p>
+<section id="jws-algorithm-and-key-requirements">
+<h4>JWS Algorithm and Key Requirements</h4>
+<p>Producers conforming to the <code>did:web</code> Signer Profile MUST use ES256 as
+defined by [[RFC7518]]. Consumers implementing the <code>did:web</code> Signer Profile
+MUST support ES256 and MUST reject any other <code>alg</code> value when applying that
+profile. A different algorithm can be introduced by a future signature
+profile; an implementation-specific choice does not extend the <code>did:web</code>
+Signer Profile.</p>
+<p>The protected JWS header MUST contain <code>kid</code>, identifying the verification
+method that authorizes the signature. It MUST NOT contain <code>jku</code>, <code>jwk</code>, <code>x5u</code>,
+or <code>x5c</code>; a verifier applying the <code>did:web</code> Signer Profile selects key
+material only through the issuer's DID document, never from a key source named
+by the signature itself.</p>
+<p>The protected <code>kid</code> MUST be an absolute DID URL consisting of the exact
+<code>signer</code> value followed by a non-empty fragment, with no path or query.
+A mismatch MUST fail verification under this profile. It identifies a
+verification method in the signer's DID document.</p>
+<p>For example, a signature with <code>signer</code> set to <code>did:web:assessor.example</code>
+can use <code>kid</code> set to <code>did:web:assessor.example#assertion-key</code>.</p>
+</section>
+<section id="did-document-resolution-and-key-selection">
+<h4>DID Document Resolution and Key Selection</h4>
+<p>The verifier MUST resolve <code>signer</code> according to the <code>did:web</code> method
+[[DIDWEB]] and process the result as a DID document according to DID Core
+[[DIDCORE]]. The resolution MUST satisfy the safe-fetching requirements in
+<a href="#safe-fetching">Safe Fetching</a>. Resolution fails under the <code>did:web</code> Signer
+Profile if the DID document cannot be retrieved and validated or if its <code>id</code>
+is not exactly equal to <code>signer</code>.</p>
+<p>The verification method selected by <code>kid</code> MUST be authorized by the DID
+document's <code>assertionMethod</code> verification relationship. An
+<code>assertionMethod</code> entry can contain the verification method directly or can
+reference a method in the top-level <code>verificationMethod</code> collection. After
+resolving relative DID URLs as defined by DID Core, the verifier MUST select
+exactly one verification method whose <code>id</code> exactly equals <code>kid</code>.</p>
+<p>A key's presence in the top-level <code>verificationMethod</code> collection does not by
+itself authorize the key to sign an AI Catalog endorsement. A key used only
+for another relationship, such as <code>authentication</code> or <code>keyAgreement</code>, MUST NOT be accepted.
+The selected verification method's <code>controller</code> MUST exactly equal
+<code>signer</code>; the <code>did:web</code> Signer Profile does not support a verification method
+controlled by another DID.</p>
+<p>The selected verification method MUST contain <code>publicKeyJwk</code> [[RFC7517]]. The
+JWK MUST describe a P-256 elliptic-curve public key: <code>kty</code> MUST be <code>EC</code>, <code>crv</code>
+MUST be <code>P-256</code>, and <code>x</code> and <code>y</code> MUST contain valid curve coordinates. It MUST
+NOT contain private key material. When present, <code>alg</code> MUST be <code>ES256</code>, <code>use</code>
+MUST be <code>sig</code>, and <code>key_ops</code> MUST permit <code>verify</code>. A <code>kid</code> member inside the
+JWK, if present, is not used for verification-method selection; the DID
+verification method's <code>id</code> is authoritative.</p>
+</section>
+<section id="current-state-verification">
+<h4>Current-State Verification</h4>
+<p>This profile verifies against the DID document returned at verification time.
+If the key identified by <code>kid</code> is no longer authorized by <code>assertionMethod</code>,
+verification does not succeed. The Signature object's <code>issuedAt</code> value records a
+claim by the issuer; it is not an independently trusted timestamp and cannot
+prove that a removed key was authorized in the past.</p>
+<p>Historical verification requires a trustworthy record of the DID document and
+the relevant key authorization at the time of signing. This specification does
+not define such a record. Applications that require durable historical
+verification need an additional mechanism, such as a versioned DID method,
+transparency log, or independently timestamped signature profile.</p>
+</section>
+<section id="verification-result">
+<h4>Verification Result</h4>
+<p>Signer authentication succeeds only when the Signature object and detached
+JWS satisfy <a href="#signature-object">Signature Object</a>, the DID document resolves
+and authorizes exactly one suitable ES256 key under <code>assertionMethod</code>, and
+the signature verifies over the reconstructed payload. The authenticated
+identity is the Signature object's <code>signer</code>.</p>
+<p>Failure MUST NOT be treated as a verified endorsement. Consumers MAY retain
+or display unverified content, retry temporarily unavailable resolution, or
+reject it according to local policy. A successful signature is acceptable
+as current only after <a href="#signature-acceptance-and-time">Signature Acceptance and Time</a>.</p>
+</section>
+</section>
+<section id="the-did-web-publisher-profile">
+<h3>The `did:web` Publisher Profile</h3>
+<p>This profile applies the <a href="#the-did-web-signer-profile"><code>did:web</code> Signer Profile</a>
+with two additional requirements:</p>
+<ul>
+<li><strong>Publisher authorization:</strong> The entry MUST use the standard <code>urn:air</code>
+  syntax. Its <code>{publisher}</code> component is the text following <code>urn:air:</code> and
+  preceding the next colon and MUST satisfy the root <code>did:web</code> domain
+  restrictions above. The authenticated signer identity MUST exactly match
+  <code>did:web:</code> followed by that component. Subdomain, suffix, and
+  organizational-ownership heuristics MUST NOT be used.</li>
+<li><strong>Release binding:</strong> The signature MUST satisfy
+  <a href="#entry-release-coverage">Entry Release Coverage</a>, including the signed subject
+  matching the entry and verification of the artifact bytes against
+  <code>entry.digest</code>.</li>
+</ul>
+<p>For <code>urn:air:example.com:agent:billing</code>, the publisher signer is therefore
+<code>did:web:example.com</code>. A valid signature by an assessor can endorse claims
+about that same release, but does not satisfy publisher authorization.
+Matching the publisher domain proves namespace control, not reputation,
+claim accuracy, or artifact safety. Consumers choose which publishers and
+claims meet their trust policies. A publisher MAY issue a signed manifest
+containing only its contributor identity, subject, and signature to endorse
+the artifact release.</p>
+</section>
+<section id="catalog-authorization">
+<h3>Catalog Authorization</h3>
+<p>A catalog signature includes Host Info when present. The <code>did:web</code> Signer
+Profile can authenticate catalog signers, but this specification does not
+define a universal mapping from a signer to catalog authority. A separate
+profile or configured policy MUST identify authorized operators before a
+consumer accepts a signature as a catalog endorsement. A signer-supplied
+<code>host.identifier</code> alone is not a trust anchor.</p>
+<p>HTTPS authenticates the serving domain for transport. A DID document's
+service endpoint may describe a location, but is not by itself proof that
+the retrieved catalog was signed or authorized by that identity.</p>
+</section>
+<section id="publisher-and-policy-metadata">
+<h3>Publisher and Policy Metadata</h3>
+<p>A Trust Manifest signature does not authenticate the entry's <code>publisher</code>
+object, its entry extensions, including the
+<a href="#policy-urls-extension">Policy URLs extension</a>, or its
+<a href="#unrecognized-members">unrecognized members</a>. These fields are outside
+its payload. Consumers MUST distinguish publisher-authenticated metadata
+from metadata supplied or endorsed by another entity. A catalog signature
+covers them as part of its signer's snapshot, subject to
+<a href="#catalog-authorization">Catalog Authorization</a>; this does not by itself establish
+publisher endorsement of those values. This specification does not define
+a verification profile for a <code>publisher-identity</code> attestation.</p>
+<p>An accepted publisher endorsement of the artifact does not authenticate its
+policy links. Signing the catalog authenticates the URL strings in its
+policy extension, not the contents of documents served at those URLs.</p>
+</section>
+<section id="verifying-artifact-integrity">
+<h3>Verifying Artifact Integrity</h3>
+<p>To verify the representation bound by an entry endorsement:</p>
+<ol>
+<li>Authenticate the signer, verify the signature, check its time, and confirm
+   <a href="#entry-release-coverage">Entry Release Coverage</a> and the authorization
+   required for the intended claim.</li>
+<li>Retrieve bytes from <code>entry.url</code>, or use <code>entry.data</code>, observing
+   <a href="#safe-fetching">Safe Fetching</a>.</li>
+<li>Compute the digest of the retrieved bytes or the UTF-8 JCS-canonicalized
+   <code>data</code> value using the algorithm named by <code>entry.digest</code>.</li>
+<li>Compare with <code>entry.digest</code>. A mismatch MUST fail artifact verification.</li>
+</ol>
+<p>An unsigned digest can detect a content mismatch but cannot authenticate the
+source. The optional <code>provenance[].sourceDigest</code> identifies an upstream source
+and MUST NOT be substituted for the digest of this entry's artifact.</p>
+</section>
+<section id="verifying-attestations">
+<h3>Verifying Attestations</h3>
+<p>For each attestation in the <code>attestations</code> array:</p>
+<ol>
+<li>Fetch the attestation document from <code>uri</code>.</li>
+<li>If <code>digest</code> is present, verify the fetched document matches the
+   declared digest.</li>
+<li>Validate the attestation per its <code>type</code> (e.g., verify a JWT
+   signature, confirm a PDF certificate is current).</li>
+</ol>
+</section>
+<section id="provenance-statements">
+<h3>Provenance Statements</h3>
+<p>A Provenance Link MAY reference a signed provenance statement via
+<code>statementUri</code> and the key that signed it via <code>signatureRef</code>. The statement's
+own format MUST define its signature algorithm, signer authorization,
+key-selection rules, and verification procedure. The <code>did:web</code> Publisher
+Profile for Entry Trust Manifests does not automatically apply to a provenance
+statement, whose issuer may be a builder, transparency service, or other party.</p>
+<p>To process such a statement:</p>
+<ol>
+<li>Fetch the statement document from <code>statementUri</code>, observing
+   <a href="#safe-fetching">Safe Fetching</a>.</li>
+<li>Validate the statement and its signature according to the statement
+   format's verification procedure and the consumer's trust policy.
+   <code>signatureRef</code> can assist key discovery when that format defines how to use
+   it, but the value is not a trust anchor by itself.</li>
+<li>Confirm the statement's subject matches <code>entry.digest</code>. Treat an
+   unverifiable statement as absent, not as a failure of the artifact itself.</li>
+</ol>
+</section>
+</section>
+</section>
+<section id="organizing-catalogs">
+<h1>Organizing Catalogs</h1>
+<p>As catalogs grow, a flat list of entries becomes unwieldy. Because any
+catalog entry can have a <code>type</code> of <code>application/ai-catalog+json</code>,
+catalogs are naturally composable — an entry can reference or inline
+another AI Catalog, creating a hierarchy of any depth.</p>
+<section id="nested-catalog-entries">
+<h2>Nested Catalog Entries</h2>
+<p>A catalog entry whose <code>type</code> is <code>application/ai-catalog+json</code>
+references (via <code>url</code>) or embeds (via <code>data</code>) another AI Catalog
+document. This mechanism supports two complementary use cases:</p>
+<p><strong>Organizational hierarchy.</strong> An enterprise with thousands of artifacts
+can partition its catalog into sub-catalogs by department, product line,
+or region. Each sub-catalog is an independent AI Catalog document with
+its own <code>host</code> and entries:</p>
+<pre><code class="language-json">{
+  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;host&quot;: {
+    &quot;displayName&quot;: &quot;Acme Enterprise AI&quot;,
+    &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;
+  },
+  &quot;entries&quot;: [
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:catalog:finance&quot;,
+      &quot;displayName&quot;: &quot;Finance Services&quot;,
+      &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+      &quot;url&quot;: &quot;https://acme.com/catalogs/finance.json&quot;
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:catalog:ml&quot;,
+      &quot;displayName&quot;: &quot;ML Models&quot;,
+      &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+      &quot;url&quot;: &quot;https://acme.com/catalogs/ml.json&quot;
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:catalog:devops&quot;,
+      &quot;displayName&quot;: &quot;DevOps Tools&quot;,
+      &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+      &quot;url&quot;: &quot;https://acme.com/catalogs/devops.json&quot;
+    }
+  ]
+}
+</code></pre>
+<p><strong>Multi-artifact packaging.</strong> An entry with a <code>publisher</code> that contains
+a nested catalog may be interpreted as a set of items that could be
+acquired as a unit. For example, a finance plugin that ships an A2A
+agent, an MCP server, and a dataset together:</p>
+<pre><code class="language-json">{
+  &quot;identifier&quot;: &quot;urn:air:acme.com:plugin:finance-suite&quot;,
+  &quot;displayName&quot;: &quot;Finance Plugin&quot;,
+  &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+  &quot;url&quot;: &quot;https://acme.com/plugins/finance-suite.json&quot;,
+  &quot;publisher&quot;: {
+    &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;,
+    &quot;displayName&quot;: &quot;Acme Financial Corp&quot;
+  }
+}
+</code></pre>
+<p>The document at that URL would itself be an AI Catalog containing
+the A2A agent, MCP server, and dataset entries.</p>
+<p>A nested catalog entry is a regular catalog entry — it has an
+<code>identifier</code>, may carry <code>trustManifests</code>, and may include a
+<code>publisher</code>. An entry inside a nested catalog MAY reuse the same
+<code>identifier</code> as an entry elsewhere; this indicates the same logical
+artifact.</p>
+<p>Clients processing nested catalogs SHOULD impose a maximum nesting
+depth to prevent circular references. A depth limit of 4 is
+RECOMMENDED. Implementations MAY support deeper nesting but SHOULD
+document their limit.</p>
+</section>
+</section>
+<section id="extensions">
+<h1>Extensions</h1>
+<p>The <code>extensions</code> property appears on the AI Catalog top-level object,
+on Catalog Entry objects, and on Trust Manifest objects. It provides
+a single, well-defined extension point for custom or vendor-specific
+properties, and it is the only extension point whose keys and values
+this specification defines. Members outside <code>extensions</code> that this
+specification does not define are handled under
+<a href="#unrecognized-members">Unrecognized Members</a>.</p>
+<section id="format-and-key-naming">
+<h2>Format and Key Naming</h2>
+<p>The <code>extensions</code> field is a JSON object (map). Each key in the object MUST
+represent the extension type (namespace), and the corresponding value contains the extension data.</p>
+<p>To avoid collisions between independent publishers, the keys MUST
+be a valid URL or a reverse-DNS string:</p>
+<ul>
+<li><strong>Reverse-DNS prefix</strong> for vendor-specific extensions:
+  <code>com.example.confidenceScore</code>, <code>io.acme.deploymentRegion</code>.</li>
+<li><strong>URL prefix</strong> for publicly accessible extension schemas:
+  <code>https://cisco.com/extensions/security-scan</code>.</li>
+</ul>
+<p>Consumers that do not recognize an extension key MUST ignore it without
+throwing an error.</p>
+<p>For example, a catalog entry with <code>extensions</code> representing metadata and a custom schema:</p>
+<pre><code class="language-json">{
+  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;entries&quot;: [
+    {
+      &quot;identifier&quot;: &quot;urn:air:treasury.gov:okf:fiscaldata&quot;,
+      &quot;type&quot;: &quot;text/vnd.okf+markdown&quot;,
+      &quot;tags&quot;: [&quot;finance&quot;, &quot;treasury&quot;],
+      &quot;extensions&quot;: {
+        &quot;https://ai-catalog.org/extensions/metadata&quot;: {
+          &quot;location&quot;: &quot;US-West&quot;,
+          &quot;environment&quot;: &quot;staging&quot;,
+          &quot;version-compatible&quot;: [&quot;&gt;=1.0.0&quot;]
+        },
+        &quot;https://openknowledgeformat.org/ns#&quot;: {
+          &quot;@context&quot;: {
+            &quot;us-gaap&quot;: &quot;https://xbrl.fasb.org/us-gaap/&quot;,
+            &quot;ifrs&quot;: &quot;https://xbrl.ifrs.org/taxonomy/&quot;
+          },
+          &quot;type&quot;: &quot;Financial Dataset&quot;,
+          &quot;taxonomy&quot;: &quot;us-gaap&quot;,
+          &quot;conformsTo&quot;: [&quot;us-gaap:Revenue&quot;, &quot;ifrs:Revenue&quot;]
+        }
+      }
+    }
+  ]
+}
+</code></pre>
+</section>
+<section id="official-extensions">
+<h2>Official Extensions</h2>
+<p>While publishers are free to create custom extensions, this specification
+defines a set of "Official" known types for commonly requested schemas:</p>
+<ol>
+<li><strong>Metadata</strong> (<code>https://ai-catalog.org/extensions/metadata</code>)
+   - Used to store generic, schemaless key-value pairs.</li>
+<li><strong>Policy URLs</strong> (<code>https://ai-catalog.org/extensions/policy-urls</code>)
+   - Links to the policies governing an artifact, defined below.</li>
+</ol>
+<p>As custom extensions become highly popular, the AI-Catalog TSC may promote
+them to Official Known Types or core standard fields in future specification versions.</p>
+<section id="policy-urls-extension">
+<h3>Policy URLs Extension</h3>
+<p>The official extension key <code>https://ai-catalog.org/extensions/policy-urls</code>
+identifies links to policies governing the entry's artifact. It is used in
+<code>entry.extensions</code>. Its value MUST be a JSON object. The following members
+are OPTIONAL:</p>
+<dl>
+<dt><code>privacyPolicyUrl</code></dt>
+<dd>A string containing a URL to the privacy policy governing this artifact.</dd>
+<dt><code>termsOfServiceUrl</code></dt>
+<dd>A string containing a URL to the terms of service governing this artifact.</dd>
+</dl>
+<p>A publisher or catalog operator MAY populate this extension. An operator's
+own catalog policy is not a substitute for the artifact's governing policy.
+The extension's presence does not establish who authenticated its values.</p>
+<p>A Trust Manifest signature does not authenticate this extension. A catalog
+signature covers its complete value as part of the catalog snapshot, subject
+to <a href="#catalog-authorization">Catalog Authorization</a>. Signing authenticates
+the URL strings, not the contents of policy documents that can change at
+those URLs. Consumers fetching those documents MUST follow
+<a href="#safe-fetching">Safe Fetching</a>.</p>
+<p>For example, this entry excerpt supplies both links:</p>
+<pre><code class="language-json">{
+  &quot;extensions&quot;: {
+    &quot;https://ai-catalog.org/extensions/policy-urls&quot;: {
+      &quot;privacyPolicyUrl&quot;: &quot;https://example.com/privacy&quot;,
+      &quot;termsOfServiceUrl&quot;: &quot;https://example.com/terms&quot;
+    }
+  }
+}
+</code></pre>
+</section>
+</section>
+</section>
+<section id="unrecognized-members">
+<h1>Unrecognized Members</h1>
+<p>The AI Catalog top-level object and Catalog Entry objects are open: in
+addition to the members this specification defines, they MAY contain
+members it does not define. Such members are <em>unrecognized members</em>.
+This section states what an unrecognized member means to a consumer of
+this specification, which is nothing, and what a consumer does with it.</p>
+<p>This specification assigns no meaning to any unrecognized member. It takes
+no position on any convention a producer follows when choosing them,
+including conventions defined by other specifications. A producer may use
+unrecognized members to follow such a convention, to annotate a private
+catalog, or to experiment with a candidate field before proposing it.</p>
+<section id="consumer-requirements">
+<h2>Consumer Requirements</h2>
+<p>Consumers:</p>
+<ul>
+<li>MUST NOT reject a document because it contains unrecognized members.</li>
+<li>MUST NOT derive semantics defined by this specification from an
+  unrecognized member. An unrecognized member MUST NOT alter how a consumer
+  interprets <code>identifier</code>, <code>type</code>, <code>url</code>, <code>data</code>, <code>version</code>, or any other
+  defined member.</li>
+<li>SHOULD preserve unrecognized members, unchanged, when republishing or
+  re-serializing a catalog or entry, for example when a catalog operator
+  incorporates an entry from another catalog. Preservation is best effort:
+  an implementation bound to a fixed data model, such as a strongly typed
+  SDK, MAY drop members it cannot represent.</li>
+<li>MUST retain unrecognized members when constructing a signed payload, as
+  required by
+  <a href="#signed-payload-and-jws-construction">Signed Payload and JWS Construction</a>.</li>
+</ul>
+<p>Conformance tooling MAY report unrecognized members as informational
+output, for example to surface a misspelled member name, but MUST NOT treat
+their presence as a conformance failure.</p>
+</section>
+<section id="no-stability-guarantee">
+<h2>No Stability Guarantee</h2>
+<p>Any member name this specification does not define MAY be defined by a
+future version, with any meaning. A producer that relies on an unrecognized
+member accepts that risk, and this specification does not coordinate with
+any outside convention before defining a member. Producers that want a
+stable, publisher-owned place for custom data SHOULD use
+<a href="#extensions"><code>extensions</code></a>, whose namespaced keys cannot collide with
+members this specification defines later.</p>
+<p>A future major version MAY narrow or close these objects, depending on how
+the ecosystem uses them.</p>
+</section>
+<section id="trust-and-signing">
+<h2>Trust and Signing</h2>
+<p>An unrecognized member on a Catalog Entry is not covered by any Trust
+Manifest <code>subject</code> and is not a claim of the entry's publisher unless
+another specification says so. A catalog signature covers unrecognized
+members as part of the catalog snapshot (see
+<a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>), subject to
+<a href="#catalog-authorization">Catalog Authorization</a>; it authenticates that the
+catalog signer published those bytes, not what they mean.</p>
+</section>
+<section id="relationship-to-extensions">
+<h2>Relationship to `extensions`</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>extensions</code></th>
+<th>Unrecognized members</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Defined by this specification</td>
+<td>Yes: key rules and official extensions</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Can collide with a future core member</td>
+<td>No, keys are namespaced</td>
+<td>Yes, no stability guarantee</td>
+</tr>
+<tr>
+<td>Meaning to a consumer of this specification</td>
+<td>Whatever the extension defines</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Handling</td>
+<td>Ignore unknown keys; retain in signed payloads</td>
+<td>Ignore; preserve on republication; retain in signed payloads</td>
+</tr>
+<tr>
+<td>Intended for</td>
+<td>Publisher-owned, named extensions</td>
+<td>Outside conventions, local annotations, experimentation</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples">
+<h2>Examples</h2>
+<p>These examples are illustrative. None of them is a convention this
+specification defines or recommends.</p>
+<p><strong>Namespaced members following a linked-data convention.</strong> Some producers
+want to describe entries with terms drawn from other vocabularies, using a
+prefix map in the style of JSON-LD. The entry below is a valid Catalog Entry.
+<code>@context</code>, <code>okf:taxonomy</code>, and <code>okf:conformsTo</code> are unrecognized members. A
+consumer of this specification reads <code>identifier</code>, <code>type</code>, <code>url</code>, and <code>tags</code>
+exactly as it would without them; a consumer that implements the convention
+can do more. A producer that prefers a defined extension point can carry the
+same vocabulary under an <code>extensions</code> key instead, as shown in
+<a href="#extensions">Extensions</a>.</p>
+<pre><code class="language-json">{
+  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;entries&quot;: [
+    {
+      &quot;@context&quot;: {
+        &quot;okf&quot;: &quot;https://openknowledgeformat.org/ns#&quot;,
+        &quot;us-gaap&quot;: &quot;https://xbrl.fasb.org/us-gaap/&quot;
+      },
+      &quot;identifier&quot;: &quot;urn:air:treasury.gov:okf:fiscaldata&quot;,
+      &quot;type&quot;: &quot;text/vnd.okf+markdown&quot;,
+      &quot;url&quot;: &quot;https://example.org/sources/treasury-fiscaldata.md&quot;,
+      &quot;tags&quot;: [&quot;finance&quot;, &quot;treasury&quot;],
+      &quot;okf:taxonomy&quot;: &quot;us-gaap&quot;,
+      &quot;okf:conformsTo&quot;: [&quot;us-gaap:Revenue&quot;]
+    }
+  ]
+}
+</code></pre>
+<p><strong>Local annotations in a private catalog.</strong> An internal catalog that is
+never federated may annotate entries with members meaningful only inside the
+organization. These are bare names, so they carry the
+<a href="#no-stability-guarantee">no stability guarantee</a> above; an organization that
+wants protection against future collisions uses <code>extensions</code> instead.</p>
+<pre><code class="language-json">{
+  &quot;identifier&quot;: &quot;urn:air:example.com:hr:benefits-agent&quot;,
+  &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+  &quot;url&quot;: &quot;https://agents.example.com/benefits/.well-known/agent-card.json&quot;,
+  &quot;costCenter&quot;: &quot;CC-4471&quot;,
+  &quot;approvedBy&quot;: &quot;platform-security&quot;,
+  &quot;reviewDate&quot;: &quot;2026-09-30&quot;
+}
+</code></pre>
+<p><strong>Prototyping a candidate field.</strong> An implementer can ship a field that is
+under discussion for a future version, gather experience, and bring that
+experience to the proposal. Until the field is defined, consumers of this
+specification ignore it.</p>
+<pre><code class="language-json">{
+  &quot;identifier&quot;: &quot;urn:air:example.com:weather&quot;,
+  &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
+  &quot;url&quot;: &quot;https://api.example.com/mcp/weather.json&quot;,
+  &quot;lifecycle&quot;: &quot;deprecated&quot;,
+  &quot;supersededBy&quot;: &quot;urn:air:example.com:weather-v2&quot;
+}
+</code></pre>
+</section>
+</section>
+<section id="version-handling">
+<h1>Version Handling</h1>
+<p>The <code>specVersion</code> field identifies which version of this specification
+a catalog conforms to. This section defines how producers and consumers
+handle version differences.</p>
+<section id="version-format">
+<h2>Version Format</h2>
+<p>The <code>specVersion</code> value is a "Major.Minor" string (e.g., "1.0",
+"1.1", "2.0"). Major and minor components are non-negative integers.</p>
+</section>
+<section id="compatibility-rules">
+<h2>Compatibility Rules</h2>
+<dl>
+<dt>Minor version increments (e.g., 1.0 → 1.1)</dt>
+<dd>The specification adds new OPTIONAL fields or features. Documents
+  conforming to a higher minor version are backward-compatible with
+  consumers that understand the same major version. Consumers MUST
+  ignore unrecognized members as described in
+  <a href="#unrecognized-members">Unrecognized Members</a>.</dd>
+<dt>Major version increments (e.g., 1.x → 2.0)</dt>
+<dd>The specification introduces breaking changes (removed fields,
+  changed semantics, new required fields). Consumers that do not
+  support the major version SHOULD reject the document with an
+  informative error rather than silently misinterpreting it.</dd>
+</dl>
+</section>
+<section id="consumer-behavior">
+<h2>Consumer Behavior</h2>
+<p>Consumers SHOULD:</p>
+<ul>
+<li>Parse the <code>specVersion</code> field before processing the document.</li>
+<li>Accept documents whose major version matches their supported major
+  version, regardless of minor version differences.</li>
+<li>Ignore unrecognized members, and preserve them when republishing
+  (forward compatibility within a major version; see
+  <a href="#unrecognized-members">Unrecognized Members</a>).</li>
+<li>Reject documents whose major version is higher than the highest
+  major version they support, with an informative error message.</li>
+</ul>
+</section>
+<section id="producer-behavior">
+<h2>Producer Behavior</h2>
+<p>Producers MUST set <code>specVersion</code> to the version of this specification
+they implement. Producers SHOULD NOT set <code>specVersion</code> to a version
+higher than they actually conform to.</p>
+</section>
+</section>
+<section id="discovery">
+<h1>Discovery</h1>
+<section id="location-independence">
+<h2>Location Independence</h2>
+<p>An AI Catalog document MAY be served from any URL. It is identified
+by its media type (<code>application/ai-catalog+json</code>) and its <code>specVersion</code>
+field, not by its URL path. Catalogs are equally valid when hosted at
+an arbitrary path, embedded in a registry response, packaged in an
+archive, or distributed as a local file.</p>
+<p>When served over HTTP, the document SHOULD be served with the media
+type <code>application/ai-catalog+json</code>.</p>
+</section>
+<section id="well-known-uri">
+<h2>Well-Known URI</h2>
+<p>To support automated discovery, hosts MAY serve an AI Catalog at the
+following well-known URI [[RFC8615]]:</p>
+<pre><code>/.well-known/ai-catalog.json
+</code></pre>
+<p>Clients performing domain-level discovery SHOULD attempt to retrieve
+this well-known URL. If a valid AI Catalog document is returned, the
+client SHOULD use the entries' <code>url</code> values to retrieve individual
+artifacts. Trust metadata, when present, is carried inline on the
+entries as Trust Manifests.</p>
+<p>Use of the well-known URI is OPTIONAL. Hosts that publish catalogs at
+other locations (e.g., as part of an API response or a package
+registry) are fully conformant.</p>
+</section>
+<section id="dynamic-discovery">
+<h2>Dynamic Discovery</h2>
+<p>Implementing protocols MAY support dynamic catalog generation through
+their own mechanisms, such as providing different catalog content based
+on a caller's identity or query parameters. Defining dynamic discovery
+behavior is out of scope for this specification.</p>
+</section>
+<section id="link-relation-discovery">
+<h2>Link Relation Discovery</h2>
+<p>Websites MAY advertise their AI Catalog by including an <code>ai-catalog</code>
+link relation in HTTP responses or HTML documents. This enables AI
+agents, crawlers, and other automated clients to discover the catalog
+associated with any website without prior knowledge of its location.</p>
+<p><strong>HTTP Link header.</strong> A server MAY include a <code>Link</code> header [[RFC8288]]
+in HTTP responses:</p>
+<pre><code>Link: &lt;https://example.com/catalog/ai.json&gt;; rel="ai-catalog"
+</code></pre>
+<p><strong>HTML <code>&lt;link&gt;</code> element.</strong> An HTML page MAY include a link element in
+the document head:</p>
+<pre><code class="language-html">&lt;link rel=&quot;ai-catalog&quot; href=&quot;/catalog/ai.json&quot;
+      type=&quot;application/ai-catalog+json&quot;&gt;
+</code></pre>
+<p><strong>Agent-driven discovery.</strong> AI agents that interact with websites
+(for example, agents following user instructions to "find tools on
+this site" or browsing on behalf of a user) SHOULD check for the
+<code>ai-catalog</code> link relation on the target website. The discovery
+procedure is:</p>
+<ol>
+<li>Fetch the target URL and inspect the HTTP response headers for
+   a <code>Link</code> header with <code>rel="ai-catalog"</code>.</li>
+<li>If no <code>Link</code> header is present and the response is an HTML
+   document, parse the document for a <code>&lt;link&gt;</code> element with
+   <code>rel="ai-catalog"</code>.</li>
+<li>If neither is found, optionally fall back to the well-known URI
+   <code>/.well-known/ai-catalog.json</code> as described in
+   <a href="#well-known-uri">Well-Known URI</a>.</li>
+<li>Retrieve the discovered URL. If the response carries a JSON media
+   type (<code>application/ai-catalog+json</code> is preferred, but a generic
+   type such as <code>application/json</code> is acceptable, per
+   <a href="#location-independence">Location Independence</a>) and the document
+   contains a valid <code>specVersion</code> field, treat it as the site's AI
+   Catalog.</li>
+</ol>
+<p>This mechanism allows any website to surface its AI tools, agents,
+and services to visiting agents through a standard, machine-readable
+pointer — without requiring changes to the site's visible content.</p>
+</section>
+</section>
+<section id="conformance-levels">
+<h1>Conformance Levels</h1>
+<p>This specification defines three conformance levels. Each level builds
+on the previous one. Implementations MUST satisfy all requirements of
+their declared level.</p>
+<section id="level-1-minimal-catalog">
+<h2>Level 1: Minimal Catalog</h2>
+<p>A conformant Minimal Catalog is a JSON document with media type
+<code>application/ai-catalog+json</code> that contains:</p>
+<ul>
+<li><code>specVersion</code> — the specification version string</li>
+<li><code>entries</code> — an array of Catalog Entry objects, each containing at
+  minimum <code>identifier</code>, <code>type</code>, and exactly one of <code>url</code> or
+  <code>data</code></li>
+</ul>
+<p>All other defined members are OPTIONAL. This level supports consumers that
+only need a simple list of artifacts. Each manifest in <code>trustManifests</code>, when
+present at any level, MUST satisfy <a href="#manifest-validity">Manifest Validity</a>.</p>
+</section>
+<section id="level-2-discoverable-catalog">
+<h2>Level 2: Discoverable Catalog</h2>
+<p>In addition to Level 1 requirements, a Discoverable Catalog:</p>
+<ul>
+<li>Includes a <code>host</code> object identifying the catalog operator</li>
+<li>MAY be served at the well-known URI <code>/.well-known/ai-catalog.json</code>
+  to enable automated domain-level discovery</li>
+</ul>
+</section>
+<section id="level-3-trusted-catalog">
+<h2>Level 3: Trusted Catalog</h2>
+<p>In addition to Level 2 requirements, a Trusted Catalog:</p>
+<ul>
+<li>Includes an acceptably signed, publisher-authorized Trust Manifest on each
+  entry whose publisher authenticity is to be relied upon, using
+  <a href="#the-did-web-publisher-profile">The <code>did:web</code> Publisher Profile</a>.</li>
+<li>Consumers MUST authenticate signers, verify signatures and endorsement
+  times, enforce <a href="#entry-release-coverage">Entry Release Coverage</a>, and verify
+  artifact content against <code>entry.digest</code> before relying on signed claims.</li>
+<li>Additional contributors MAY provide their own Trust Manifests. Before
+  relying on their claims, consumers MUST verify each contributor's signature
+  and the subject binding to the same entry release.</li>
+<li>Consumers MUST distinguish the initial interoperable <code>did:web</code> profiles
+  from other profiles supported by private agreement. Future profiles can
+  define additional interoperable authentication and authorization mechanisms.</li>
+<li>SHOULD provide catalog-level integrity through a content-addressed channel
+  or a signature satisfying <a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>
+  and an applicable operator-authorization policy.</li>
+<li>MAY include signed attestations, provenance, and manifest extensions,
+  according to consumer policy.</li>
+</ul>
+<p>Conformance does not imply that every optional signature is acceptable or
+that every claim is true. Unverified additional contributions do not by
+themselves invalidate an independently verified publisher endorsement.</p>
+<p>Implementations at any level are fully conformant with this
+specification. Consumers MAY ignore fields defined at higher
+conformance levels and SHOULD gracefully handle their absence.</p>
+</section>
+</section>
+<section id="security-considerations">
+<h1>Security Considerations</h1>
+<section id="trust-layers">
+<h2>Trust Layers</h2>
+<p>This specification supports a progressive trust model. Each layer
+builds on the previous one, adding confidence without requiring all
+consumers to implement every layer. Consumers choose the level
+appropriate to their threat model.</p>
+<dl>
+<dt><strong>Layer 0 — Transport Security</strong></dt>
+<dd>The catalog and artifacts are served over HTTPS (TLS 1.2 or later).
+  The consumer trusts the TLS certificate chain and DNS resolution.
+  This prevents passive eavesdropping and casual tampering but does
+  not protect against compromised hosting or DNS hijack.</dd>
+<dt><strong>Layer 1 — Artifact Digest</strong></dt>
+<dd><code>entry.digest</code> allows consumers to compare fetched or embedded content
+  with the declared digest. Without an authenticated endorsement, an attacker
+  controlling the catalog can substitute both the content and the digest.
+  A provenance source digest describes the source, not the entry's
+  representation.</dd>
+<dt><strong>Layer 2 — Trust Manifest Signatures</strong></dt>
+<dd>A manifest signature binds its complete claims to the artifact identifier,
+  version when present, type, and digest through its signed subject. The consumer
+  authenticates its signer, checks release coverage, verifies artifact integrity, and
+  evaluates authority for the intended claim. Independent contributor
+  manifests can coexist. A valid signature over one contribution does not
+  authenticate another or establish completeness of the catalog.</dd>
+<dt><strong>Layer 3 — Content-Addressed Distribution (OCI)</strong></dt>
+<dd>The catalog is distributed through an OCI registry where all content
+  — entries, artifacts, and Trust Manifests — is addressed by
+  cryptographic digest. The registry enforces integrity: substitution
+  is impossible because any change produces a different digest.
+  Cosign or Notation signatures on OCI manifests provide an additional
+  layer of publisher authentication.</dd>
+</dl>
+<p>Consumers that rely on trust metadata for security decisions SHOULD
+implement at least Layer 2 (signature verification). Consumers that
+only implement Layer 0 or Layer 1 SHOULD treat Trust Manifest content
+as advisory, not authoritative.</p>
+</section>
+<section id="nested-catalog-depth-and-circular-references">
+<h2>Nested Catalog Depth and Circular References</h2>
+<p>Clients processing nested catalogs SHOULD enforce a maximum recursion
+depth to prevent denial-of-service attacks via deeply nested or
+circular catalog references. A maximum depth of 4 is RECOMMENDED.</p>
+<p>Depth limits alone do not prevent circular references at shallow
+depths (e.g., Catalog A → Catalog B → Catalog A). Clients SHOULD
+track the set of catalog URLs visited during recursive resolution and
+reject any catalog URL that has already been fetched in the current
+traversal path.</p>
+</section>
+<section id="catalog-poisoning">
+<h2>Catalog Poisoning</h2>
+<p>An attacker who can modify a catalog document (e.g., through a
+compromised hosting account or DNS hijack) can redirect consumers to
+malicious artifacts by changing <code>url</code> values or injecting new entries.</p>
+<p>The trust layers described above provide progressive defense against
+this threat:</p>
+<ul>
+<li><strong>Layer 0</strong> relies on HTTPS certificate management to prevent
+  unauthorized modification.</li>
+<li><strong>Layer 1</strong> enables post-fetch integrity checks but does not prevent
+  whole-entry substitution.</li>
+<li><strong>Layer 2</strong> binds the signed Trust Manifest to the logical artifact release
+  and its representation via the signed <code>subject</code>, preventing
+  artifact substitution or relabeling under a valid signature.</li>
+<li><strong>Layer 3</strong> makes modification structurally impossible through
+  content-addressing.</li>
+</ul>
+</section>
+<section id="trust-manifest-substitution">
+<h2>Trust Manifest Substitution</h2>
+<p>Because a Trust Manifest is a peer element of the catalog entry rather
+than part of the artifact, an attacker who can write the catalog
+document can attempt to substitute the artifact, the Trust Manifest, or
+both. This specification defends against substitution with three
+compounding mechanisms:</p>
+<ul>
+<li><strong>Release binding.</strong> Every accepted artifact endorsement jointly covers
+  subject identifier, type, digest, and version when present, plus the claims
+  relied upon. Consumers check subject-to-entry equality as well as cryptography
+  and artifact bytes.</li>
+<li><strong>Signer and claim authority.</strong> Contributor identities are not proof. Publisher
+  authorization requires the authenticated signer to match the publisher
+  namespace; contributor attribution requires authentication as that
+  contributor. An attacker's signature under its own identity does not
+  authenticate another publisher or contributor.</li>
+<li><strong>Catalog-level integrity.</strong> Manifest signatures do not prevent adding,
+  removing, or reordering complete entries. Hosts SHOULD provide a signature
+  satisfying <a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>, with
+  operator authorization, or an authenticated content-addressed channel.</li>
+</ul>
+<p>Signatures do not prove that a newer manifest, omitted contributor, or revoked
+evidence does not exist. Consumers requiring freshness beyond acceptable
+endorsement times need an appropriate update source and evidence policy.</p>
+</section>
+<section id="identifier-typosquatting">
+<h2>Identifier Typosquatting</h2>
+<p>Catalog entries are identified by URIs/URNs. An attacker can register
+identifiers similar to legitimate ones (e.g., <code>urn:air:acme.com:agent:financ</code>
+vs. <code>urn:air:acme.com:agent:finance</code>) to trick consumers into using a
+malicious artifact.</p>
+<p>Registries and consumers SHOULD implement similarity checks on
+identifiers. Publishers SHOULD use identifiers anchored to domains
+they control (e.g., DIDs or domain-scoped URNs).</p>
+</section>
+<section id="stale-attestations">
+<h2>Stale Attestations</h2>
+<p>Attestation documents referenced in Trust Manifests have no built-in
+expiry mechanism in this specification. A SOC2 report from a previous
+year may no longer reflect current practices.</p>
+<p>Consumers SHOULD:</p>
+<ul>
+<li>Check acceptable contributor endorsement times; unsigned entry <code>updatedAt</code>
+  is only an advisory listing timestamp.</li>
+<li>Independently verify attestation documents are current when making
+  trust decisions.</li>
+<li>Treat attestations as evidence, not guarantees — the attestation
+  indicates a claim was made, not that it remains valid indefinitely.</li>
+</ul>
+<p>Future versions of this specification MAY add <code>validFrom</code> and
+<code>expiresAt</code> fields to the Attestation object.</p>
+</section>
+<section id="embedded-content-safety">
+<h2>Embedded Content Safety</h2>
+<p>When the <code>data</code> field contains embedded artifact content, consumers
+MUST treat it as untrusted input. In particular:</p>
+<ul>
+<li>Content with HTML or script-capable media types MUST be sandboxed
+  and MUST NOT be executed in the consumer's security context.</li>
+<li>Consumers SHOULD validate that the <code>data</code> content is well-formed
+  JSON (or the expected format for the declared <code>type</code>) before
+  processing.</li>
+</ul>
+</section>
+<section id="privacy-considerations">
+<h2>Privacy Considerations</h2>
+<p>Logo URLs SHOULD use Data URIs [[RFC2397]] to avoid leaking client
+information through image fetch requests. Publishers SHOULD carefully
+consider what information is included in <code>extensions</code> fields.</p>
+</section>
+</section>
+<section class="appendix" id="data-model-overview">
+<h1>Data Model Overview</h1>
+<p>The following diagram illustrates the relationships between the
+core objects defined in this specification:</p>
+<pre class="mermaid nohighlight">
+classDiagram
+    class AICatalog {
+        specVersion string
+        entries CatalogEntry[]
+        host HostInfo
+        signature Signature
+    }
+    class HostInfo {
+        displayName string
+        identifier string
+    }
+    class CatalogEntry {
+        identifier string
+        displayName string
+        type string
+        url | data
+        version string
+        publisher Publisher
+        trustManifests TrustManifest[]
+        digest string
+    }
+    class Publisher {
+        identifier string
+        displayName string
+    }
+    class TrustManifest {
+        contributor string
+        subject Subject
+        signature Signature
+        trustSchema TrustSchema
+        attestations Attestation[]
+        provenance ProvenanceLink[]
+        extensions object
+    }
+    class Subject {
+        identifier string
+        type string
+        digest string
+        version string
+    }
+    class TrustSchema {
+        identifier string
+        version string
+        verificationMethods string[]
+    }
+    class Attestation {
+        type string
+        uri string
+        digest string
+    }
+    class ProvenanceLink {
+        relation string
+        sourceId string
+        sourceDigest string
+    }
+    class Signature {
+        signer string
+        profile string
+        issuedAt string
+        expiresAt string
+        jws string
+    }
+    AICatalog --> "*" CatalogEntry : entries
+    AICatalog --> "0..1" HostInfo : host
+    CatalogEntry --> "0..1" Publisher : publisher
+    CatalogEntry --> "*" TrustManifest : trustManifests
+    TrustManifest --> "0..1" TrustSchema : trustSchema
+    TrustManifest --> "*" Attestation : attestations
+    TrustManifest --> "*" ProvenanceLink : provenance
+    AICatalog --> "0..1" Signature : signature
+    TrustManifest --> "0..1" Signature : signature
+    TrustManifest --> "0..1" Subject : subject
+    CatalogEntry --> "0..1" AICatalog : nested
+</pre>
+</section>
+<section class="appendix" id="iana-considerations">
+<h1>IANA Considerations</h1>
+<section id="media-type-registration-application-ai-catalog-json">
+<h2>Media Type Registration: application/ai-catalog+json</h2>
+<p>This section registers the <code>application/ai-catalog+json</code> media type
+[[RFC6838]] in the "Application" registry.</p>
+<dl>
+<dt>Type name:</dt>
+<dd>application</dd>
+<dt>Subtype name:</dt>
+<dd>ai-catalog+json</dd>
+<dt>Required parameters:</dt>
+<dd>N/A</dd>
+<dt>Optional parameters:</dt>
+<dd>N/A</dd>
+<dt>Encoding considerations:</dt>
+<dd>binary (UTF-8 encoded JSON [[RFC8259]])</dd>
+<dt>Security considerations:</dt>
+<dd>See <a href="#security-considerations">Security Considerations</a> of this document.</dd>
+<dt>Interoperability considerations:</dt>
+<dd>This media type identifies a JSON document conforming to the AI
+  Catalog schema defined in this specification. The document MUST
+  contain <code>specVersion</code> and <code>entries</code> fields.</dd>
+<dt>Published specification:</dt>
+<dd>This document</dd>
+<dt>Applications that use this media type:</dt>
+<dd>AI artifact registries, agent discovery clients, package managers,
+  and catalog aggregation services.</dd>
+<dt>Fragment identifier considerations:</dt>
+<dd>N/A</dd>
+<dt>Person &amp; email address to contact for further information:</dt>
+<dd>Agent Card Working Group</dd>
+<dt>Intended usage:</dt>
+<dd>COMMON</dd>
+<dt>Restrictions on usage:</dt>
+<dd>N/A</dd>
+</dl>
+</section>
+<section id="link-relation-registration-ai-catalog">
+<h2>Link Relation Registration: ai-catalog</h2>
+<p>This section registers the <code>ai-catalog</code> link relation type in the
+IANA "Link Relations" registry [[RFC8288]].</p>
+<dl>
+<dt>Relation Name:</dt>
+<dd>ai-catalog</dd>
+<dt>Description:</dt>
+<dd>Refers to an AI Catalog document (<code>application/ai-catalog+json</code>)
+  that describes AI artifacts, agents, and services associated with
+  the context resource. See <a href="#link-relation-discovery">Link Relation Discovery</a>.</dd>
+<dt>Reference:</dt>
+<dd>This document</dd>
+</dl>
+</section>
+<section id="well-known-uri-registration-ai-catalog-json">
+<h2>Well-Known URI Registration: ai-catalog.json</h2>
+<p>This section registers the <code>ai-catalog.json</code> well-known URI in the
+IANA "Well-Known URIs" registry [[RFC8615]].</p>
+<dl>
+<dt>URI Suffix:</dt>
+<dd>ai-catalog.json</dd>
+<dt>Change Controller:</dt>
+<dd>Agent Card Working Group</dd>
+<dt>Specification Document:</dt>
+<dd>This document, <a href="#well-known-uri">Well-Known URI</a></dd>
+<dt>Related Information:</dt>
+<dd>The well-known URI returns a JSON document with media type
+  <code>application/ai-catalog+json</code> conforming to the AI Catalog schema
+  defined in this specification.</dd>
+</dl>
+</section>
+</section>
+<section class="appendix" id="cddl-schema">
+<h1>CDDL Schema</h1>
+<p>The following CDDL [[RFC8610]] defines the structural schema. The normative
+prose additionally constrains contributor URIs, manifest substance, subject
+binding, timestamp validity, and signature verification. The <code>AICatalog</code>
+and <code>CatalogEntry</code> maps are explicitly open (<code>* text =&gt; any</code>), as defined in
+<a href="#unrecognized-members">Unrecognized Members</a>. The remaining maps describe
+recognized members only; under <a href="#version-handling">Version Handling</a>,
+consumers MUST ignore unrecognized members when validating any of these
+structures, but MUST retain them when constructing signed payloads.</p>
+<section id="ai-catalog-2">
+<h2>AI Catalog</h2>
+<pre><code>AICatalog = {
+  specVersion: text,
+  ? host: HostInfo,
+  entries: [* CatalogEntry],
+  ? signature: Signature,
+  ? additionalSignatures: any,
+  ? extensions: { * text =&gt; any },
+  * text =&gt; any
+}
+
+HostInfo = {
+  displayName: text,
+  ? identifier: text,
+  ? documentationUrl: text,
+  ? logoUrl: text
+}
+
+CatalogEntry = {
+  identifier: text,
+  ? displayName: text,
+  type: text,
+  (url: text // data: any),
+  ? version: text,
+  ? description: text,
+  ? tags: [* text],
+  ? publisher: Publisher,
+  ? digest: text,
+  ? trustManifests: [* TrustManifest],
+  ? updatedAt: tdate,
+  ? extensions: { * text =&gt; any },
+  * text =&gt; any
+}
+
+Publisher = {
+  identifier: text,
+  displayName: text,
+  ? identityType: text
+}
+</code></pre>
+</section>
+<section id="trust-manifest-2">
+<h2>Trust Manifest</h2>
+<pre><code>TrustManifest = {
+  contributor: text,
+  ? subject: Subject,
+  ? signature: Signature,
+  ? additionalSignatures: any,
+  ? trustSchema: TrustSchema,
+  ? attestations: [* Attestation],
+  ? provenance: [* ProvenanceLink],
+  ? extensions: { * text =&gt; any }
+}
+
+Subject = {
+  identifier: text,
+  type: text,
+  digest: text,
+  ? version: text
+}
+
+Signature = {
+  signer: text,
+  profile: text,
+  issuedAt: tdate,
+  ? expiresAt: tdate,
+  jws: text
+}
+
+TrustSchema = {
+  identifier: text,
+  version: text,
+  ? governanceUri: text,
+  ? verificationMethods: [* text]
+}
+
+Attestation = {
+  type: text,
+  uri: text,
+  ? digest: text,
+  ? size: uint,
+  ? description: text
+}
+
+ProvenanceLink = {
+  relation: text,
+  sourceId: text,
+  ? sourceDigest: text,
+  ? registryUri: text,
+  ? statementUri: text,
+  ? signatureRef: text
+}
+</code></pre>
+</section>
+<section id="official-extension-values">
+<h2>Official Extension Values</h2>
+<p>The value under the <code>https://ai-catalog.org/extensions/policy-urls</code> key in
+<code>entry.extensions</code> has the following structure:</p>
+<pre><code>PolicyUrls = {
+  ? privacyPolicyUrl: text,
+  ? termsOfServiceUrl: text
+}
+</code></pre>
+</section>
+</section>
+<section class="appendix" id="example-multi-artifact-catalog-with-nested-catalog">
+<h1>Example: Multi-Artifact Catalog with Nested Catalog</h1>
+<p>The following example shows an AI Catalog that contains a mix of
+artifact types including a nested catalog packaging related artifacts.
+Digest and JWS strings in illustrative examples are placeholders.</p>
+<pre><code class="language-json">{
+  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;host&quot;: {
+    &quot;displayName&quot;: &quot;Acme Services Inc.&quot;,
+    &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;,
+    &quot;documentationUrl&quot;: &quot;https://docs.acme-corp.com/ai&quot;
+  },
+  &quot;entries&quot;: [
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance-a2a&quot;,
+      &quot;version&quot;: &quot;2.1.0&quot;,
+      &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+      &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance.json&quot;,
+      &quot;description&quot;: &quot;A2A agent for financial workflows.&quot;,
+      &quot;tags&quot;: [&quot;finance&quot;, &quot;a2a&quot;],
+      &quot;publisher&quot;: {
+        &quot;identifier&quot;: &quot;did:web:acme.com&quot;,
+        &quot;displayName&quot;: &quot;Acme Financial Corp&quot;
+      },
+      &quot;updatedAt&quot;: &quot;2026-03-15T10:00:00Z&quot;,
+      &quot;extensions&quot;: {
+        &quot;https://ai-catalog.org/extensions/policy-urls&quot;: {
+          &quot;privacyPolicyUrl&quot;: &quot;https://acme.com/legal/privacy&quot;,
+          &quot;termsOfServiceUrl&quot;: &quot;https://acme.com/legal/terms&quot;
+        }
+      },
+      &quot;trustManifests&quot;: [
+        {
+          &quot;contributor&quot;: &quot;did:web:acme.com&quot;,
+          &quot;attestations&quot;: [
+            {
+              &quot;type&quot;: &quot;SOC2-Type2&quot;,
+              &quot;uri&quot;: &quot;https://trust.acme.com/reports/soc2.pdf&quot;,
+              &quot;digest&quot;: &quot;sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890&quot;
+            }
+          ]
+        }
+      ]
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:server:finance-mcp&quot;,
+      &quot;version&quot;: &quot;1.4.0&quot;,
+      &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
+      &quot;url&quot;: &quot;https://api.acme-corp.com/mcp/server-card&quot;,
+      &quot;description&quot;: &quot;MCP server with finance tools.&quot;,
+      &quot;tags&quot;: [
+        &quot;finance&quot;,
+        &quot;mcp&quot;
+      ],
+      &quot;updatedAt&quot;: &quot;2026-03-15T10:00:00Z&quot;
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:plugin:finance-suite&quot;,
+      &quot;displayName&quot;: &quot;Acme Finance Suite&quot;,
+      &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+      &quot;description&quot;: &quot;A2A agent + MCP server + dataset for finance workflows.&quot;,
+      &quot;tags&quot;: [
+        &quot;finance&quot;,
+        &quot;suite&quot;
+      ],
+      &quot;data&quot;: {
+        &quot;specVersion&quot;: &quot;1.0&quot;,
+        &quot;entries&quot;: [
+          {
+            &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance-a2a&quot;,
+            &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+            &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance.json&quot;
+          },
+          {
+            &quot;identifier&quot;: &quot;urn:air:acme.com:server:finance-mcp&quot;,
+            &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
+            &quot;url&quot;: &quot;https://api.acme-corp.com/mcp/server-card&quot;
+          },
+          {
+            &quot;identifier&quot;: &quot;urn:air:acme.com:data:market-2026q1&quot;,
+            &quot;displayName&quot;: &quot;Market Dataset Q1 2026&quot;,
+            &quot;type&quot;: &quot;application/parquet&quot;,
+            &quot;url&quot;: &quot;https://data.acme-corp.com/market-2026q1.parquet&quot;,
+            &quot;trustManifests&quot;: [
+              {
+                &quot;contributor&quot;: &quot;did:web:acme.com&quot;,
+                &quot;provenance&quot;: [
+                  {
+                    &quot;relation&quot;: &quot;publishedFrom&quot;,
+                    &quot;sourceId&quot;: &quot;oci://registry.acme.com/data/market:2026q1&quot;,
+                    &quot;sourceDigest&quot;: &quot;sha256:99998888...&quot;
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      &quot;updatedAt&quot;: &quot;2026-03-20T14:00:00Z&quot;,
+      &quot;digest&quot;: &quot;sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111&quot;,
+      &quot;trustManifests&quot;: [
+        {
+          &quot;contributor&quot;: &quot;did:web:acme.com&quot;,
+          &quot;subject&quot;: {
+            &quot;identifier&quot;: &quot;urn:air:acme.com:plugin:finance-suite&quot;,
+            &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+            &quot;digest&quot;: &quot;sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111&quot;
+          },
+          &quot;signature&quot;: {
+            &quot;signer&quot;: &quot;did:web:acme.com&quot;,
+            &quot;profile&quot;: &quot;did-web-v1&quot;,
+            &quot;issuedAt&quot;: &quot;2026-03-20T14:00:00Z&quot;,
+            &quot;jws&quot;: &quot;eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDp3ZWI6YWNtZS5jb20jcmVsZWFzZS1zaWduaW5nLWtleSIsInR5cCI6ImFpLWNhdGFsb2ctdHJ1c3QtbWFuaWZlc3QrandzIn0..detached-jws-signature&quot;
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+</section>
+<section class="appendix" id="example-hierarchical-catalog">
+<h1>Example: Hierarchical Catalog</h1>
+<p>The following example shows how an enterprise uses nested catalog
+entries to organize a large number of artifacts into browsable
+categories. Each sub-catalog entry points to a separate AI Catalog
+document:</p>
+<pre><code class="language-json">{
+  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;host&quot;: {
+    &quot;displayName&quot;: &quot;Acme Enterprise AI&quot;,
+    &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;
+  },
+  &quot;entries&quot;: [
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:agent:assistant&quot;,
+      &quot;version&quot;: &quot;3.0.0&quot;,
+      &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+      &quot;url&quot;: &quot;https://api.acme-corp.com/agents/assistant.json&quot;,
+      &quot;description&quot;: &quot;General-purpose corporate assistant agent.&quot;
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:catalog:finance&quot;,
+      &quot;displayName&quot;: &quot;Finance Services&quot;,
+      &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+      &quot;url&quot;: &quot;https://acme-corp.com/catalogs/finance.json&quot;,
+      &quot;description&quot;: &quot;Financial agents, MCP servers, and datasets.&quot;,
+      &quot;tags&quot;: [&quot;finance&quot;, &quot;trading&quot;, &quot;compliance&quot;]
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:catalog:engineering&quot;,
+      &quot;displayName&quot;: &quot;Engineering Tools&quot;,
+      &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+      &quot;url&quot;: &quot;https://acme-corp.com/catalogs/engineering.json&quot;,
+      &quot;description&quot;: &quot;CI/CD agents, code review tools, and DevOps servers.&quot;,
+      &quot;tags&quot;: [&quot;engineering&quot;, &quot;devops&quot;, &quot;ci-cd&quot;]
+    },
+    {
+      &quot;identifier&quot;: &quot;urn:air:acme.com:catalog:ml-models&quot;,
+      &quot;displayName&quot;: &quot;ML Models&quot;,
+      &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+      &quot;url&quot;: &quot;https://acme-corp.com/catalogs/ml-models.json&quot;,
+      &quot;description&quot;: &quot;Model cards and inference endpoints.&quot;,
+      &quot;tags&quot;: [&quot;ml&quot;, &quot;models&quot;, &quot;inference&quot;]
+    }
+  ]
+}
+</code></pre>
+<p>A catalog MAY contain both direct artifact entries and nested catalog
+entries. In this example, the corporate assistant agent is listed
+directly while department-specific artifacts are organized into child
+catalogs.</p>
+</section>
+<section class="appendix" id="example-dual-protocol-agent-mcp-a2a">
+<h1>Example: Dual-Protocol Agent (MCP + A2A)</h1>
+<p>A single agent that supports both MCP and A2A protocols can be
+represented as one catalog entry whose content is a nested catalog
+containing both protocol-specific entries:</p>
+<pre><code class="language-json">{
+  &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance&quot;,
+  &quot;displayName&quot;: &quot;Acme Finance Agent&quot;,
+  &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
+  &quot;description&quot;: &quot;Finance agent accessible via both MCP and A2A protocols.&quot;,
+  &quot;tags&quot;: [
+    &quot;finance&quot;,
+    &quot;dual-protocol&quot;
+  ],
+  &quot;publisher&quot;: {
+    &quot;identifier&quot;: &quot;did:web:acme.com&quot;,
+    &quot;displayName&quot;: &quot;Acme Financial Corp&quot;
+  },
+  &quot;data&quot;: {
+    &quot;specVersion&quot;: &quot;1.0&quot;,
+    &quot;entries&quot;: [
+      {
+        &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance:mcp&quot;,
+        &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
+        &quot;url&quot;: &quot;https://api.acme-corp.com/mcp/server-card&quot;
+      },
+      {
+        &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance:a2a&quot;,
+        &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
+        &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance&quot;
+      }
+    ]
+  },
+  &quot;trustManifests&quot;: [
+    {
+      &quot;contributor&quot;: &quot;did:web:acme.com&quot;,
+      &quot;attestations&quot;: [
+        {
+          &quot;type&quot;: &quot;SOC2-Type2&quot;,
+          &quot;uri&quot;: &quot;https://trust.acme-corp.com/reports/soc2.pdf&quot;,
+          &quot;digest&quot;: &quot;sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890&quot;
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+<p>The outer entry represents the logical agent as a single discoverable
+artifact with its own trust metadata. The <code>data</code> field inlines a
+catalog with protocol-specific entries, allowing clients to choose
+MCP or A2A based on their capabilities.</p>
+</section>
+<section class="appendix" id="acknowledgments">
+<h1>Acknowledgments</h1>
+<p>This specification was developed through collaboration among members of
+the A2A and MCP protocol communities under the governance of the Linux
+Foundation.</p>
+</section>
+</body>
+</html>

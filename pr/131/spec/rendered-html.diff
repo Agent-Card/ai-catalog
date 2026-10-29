@@ -1,0 +1,276 @@
+--- a/base/index.html
++++ b/head/index.html
+@@ -277,6 +277,8 @@
+   accept and ignore it regardless of its value. It is excluded from this
+   catalog's signature payload; it establishes no endorsement in this version.</dd>
+ </dl>
++<p>The AI Catalog top-level object MAY also contain members this specification
++does not define. See <a href="#unrecognized-members">Unrecognized Members</a>.</p>
+ </section>
+ <section id="host-info">
+ <h2>Host Info</h2>
+@@ -532,6 +534,8 @@
+ directory, or other service built on top of a catalog SHOULD resolve the
+ version once at ingestion and cache the result, rather than fetching
+ artifacts on the rendering path.</p>
++<p>A Catalog Entry MAY also contain members this specification does not
++define. See <a href="#unrecognized-members">Unrecognized Members</a>.</p>
+ </section>
+ </section>
+ <section id="multi-version-entries">
+@@ -1077,8 +1081,9 @@
+ <p>The consumer MUST also verify the artifact bytes against the matching digest
+ using <a href="#verifying-artifact-integrity">Verifying Artifact Integrity</a>. The
+ retrieval URL is not signed by the Trust Manifest, permitting mirrors serving
+-identical bytes. Other entry fields, including entry extensions, are outside
+-the manifest signature's scope. Referenced evidence retains its own
++identical bytes. Other entry fields, including entry extensions and
++<a href="#unrecognized-members">unrecognized members</a>, are outside the manifest
++signature's scope. Referenced evidence retains its own
+ verification requirements.</p>
+ </section>
+ <section id="catalog-snapshot-coverage">
+@@ -1225,8 +1230,9 @@
+ <section id="publisher-and-policy-metadata">
+ <h3>Publisher and Policy Metadata</h3>
+ <p>A Trust Manifest signature does not authenticate the entry's <code>publisher</code>
+-object or its entry extensions, including the
+-<a href="#policy-urls-extension">Policy URLs extension</a>. These fields are outside
++object, its entry extensions, including the
++<a href="#policy-urls-extension">Policy URLs extension</a>, or its
++<a href="#unrecognized-members">unrecognized members</a>. These fields are outside
+ its payload. Consumers MUST distinguish publisher-authenticated metadata
+ from metadata supplied or endorsed by another entity. A catalog signature
+ covers them as part of its signer's snapshot, subject to
+@@ -1363,7 +1369,10 @@
+ <p>The <code>extensions</code> property appears on the AI Catalog top-level object,
+ on Catalog Entry objects, and on Trust Manifest objects. It provides
+ a single, well-defined extension point for custom or vendor-specific
+-properties.</p>
++properties, and it is the only extension point whose keys and values
++this specification defines. Members outside <code>extensions</code> that this
++specification does not define are handled under
++<a href="#unrecognized-members">Unrecognized Members</a>.</p>
+ <section id="format-and-key-naming">
+ <h2>Format and Key Naming</h2>
+ <p>The <code>extensions</code> field is a JSON object (map). Each key in the object MUST
+@@ -1453,6 +1462,160 @@
+ </section>
+ </section>
+ </section>
++<section id="unrecognized-members">
++<h1>Unrecognized Members</h1>
++<p>The AI Catalog top-level object and Catalog Entry objects are open: in
++addition to the members this specification defines, they MAY contain
++members it does not define. Such members are <em>unrecognized members</em>.
++This section states what an unrecognized member means to a consumer of
++this specification, which is nothing, and what a consumer does with it.</p>
++<p>This specification assigns no meaning to any unrecognized member. It takes
++no position on any convention a producer follows when choosing them,
++including conventions defined by other specifications. A producer may use
++unrecognized members to follow such a convention, to annotate a private
++catalog, or to experiment with a candidate field before proposing it.</p>
++<section id="consumer-requirements">
++<h2>Consumer Requirements</h2>
++<p>Consumers:</p>
++<ul>
++<li>MUST NOT reject a document because it contains unrecognized members.</li>
++<li>MUST NOT derive semantics defined by this specification from an
++  unrecognized member. An unrecognized member MUST NOT alter how a consumer
++  interprets <code>identifier</code>, <code>type</code>, <code>url</code>, <code>data</code>, <code>version</code>, or any other
++  defined member.</li>
++<li>SHOULD preserve unrecognized members, unchanged, when republishing or
++  re-serializing a catalog or entry, for example when a catalog operator
++  incorporates an entry from another catalog. Preservation is best effort:
++  an implementation bound to a fixed data model, such as a strongly typed
++  SDK, MAY drop members it cannot represent.</li>
++<li>MUST retain unrecognized members when constructing a signed payload, as
++  required by
++  <a href="#signed-payload-and-jws-construction">Signed Payload and JWS Construction</a>.</li>
++</ul>
++<p>Conformance tooling MAY report unrecognized members as informational
++output, for example to surface a misspelled member name, but MUST NOT treat
++their presence as a conformance failure.</p>
++</section>
++<section id="no-stability-guarantee">
++<h2>No Stability Guarantee</h2>
++<p>Any member name this specification does not define MAY be defined by a
++future version, with any meaning. A producer that relies on an unrecognized
++member accepts that risk, and this specification does not coordinate with
++any outside convention before defining a member. Producers that want a
++stable, publisher-owned place for custom data SHOULD use
++<a href="#extensions"><code>extensions</code></a>, whose namespaced keys cannot collide with
++members this specification defines later.</p>
++<p>A future major version MAY narrow or close these objects, depending on how
++the ecosystem uses them.</p>
++</section>
++<section id="trust-and-signing">
++<h2>Trust and Signing</h2>
++<p>An unrecognized member on a Catalog Entry is not covered by any Trust
++Manifest <code>subject</code> and is not a claim of the entry's publisher unless
++another specification says so. A catalog signature covers unrecognized
++members as part of the catalog snapshot (see
++<a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>), subject to
++<a href="#catalog-authorization">Catalog Authorization</a>; it authenticates that the
++catalog signer published those bytes, not what they mean.</p>
++</section>
++<section id="relationship-to-extensions">
++<h2>Relationship to `extensions`</h2>
++<table>
++<thead>
++<tr>
++<th></th>
++<th><code>extensions</code></th>
++<th>Unrecognized members</th>
++</tr>
++</thead>
++<tbody>
++<tr>
++<td>Defined by this specification</td>
++<td>Yes: key rules and official extensions</td>
++<td>No</td>
++</tr>
++<tr>
++<td>Can collide with a future core member</td>
++<td>No, keys are namespaced</td>
++<td>Yes, no stability guarantee</td>
++</tr>
++<tr>
++<td>Meaning to a consumer of this specification</td>
++<td>Whatever the extension defines</td>
++<td>None</td>
++</tr>
++<tr>
++<td>Handling</td>
++<td>Ignore unknown keys; retain in signed payloads</td>
++<td>Ignore; preserve on republication; retain in signed payloads</td>
++</tr>
++<tr>
++<td>Intended for</td>
++<td>Publisher-owned, named extensions</td>
++<td>Outside conventions, local annotations, experimentation</td>
++</tr>
++</tbody>
++</table>
++</section>
++<section id="examples">
++<h2>Examples</h2>
++<p>These examples are illustrative. None of them is a convention this
++specification defines or recommends.</p>
++<p><strong>Namespaced members following a linked-data convention.</strong> Some producers
++want to describe entries with terms drawn from other vocabularies, using a
++prefix map in the style of JSON-LD. The entry below is a valid Catalog Entry.
++<code>@context</code>, <code>okf:taxonomy</code>, and <code>okf:conformsTo</code> are unrecognized members. A
++consumer of this specification reads <code>identifier</code>, <code>type</code>, <code>url</code>, and <code>tags</code>
++exactly as it would without them; a consumer that implements the convention
++can do more. A producer that prefers a defined extension point can carry the
++same vocabulary under an <code>extensions</code> key instead, as shown in
++<a href="#extensions">Extensions</a>.</p>
++<pre><code class="language-json">{
++  &quot;specVersion&quot;: &quot;1.0&quot;,
++  &quot;entries&quot;: [
++    {
++      &quot;@context&quot;: {
++        &quot;okf&quot;: &quot;https://openknowledgeformat.org/ns#&quot;,
++        &quot;us-gaap&quot;: &quot;https://xbrl.fasb.org/us-gaap/&quot;
++      },
++      &quot;identifier&quot;: &quot;urn:air:treasury.gov:okf:fiscaldata&quot;,
++      &quot;type&quot;: &quot;text/vnd.okf+markdown&quot;,
++      &quot;url&quot;: &quot;https://example.org/sources/treasury-fiscaldata.md&quot;,
++      &quot;tags&quot;: [&quot;finance&quot;, &quot;treasury&quot;],
++      &quot;okf:taxonomy&quot;: &quot;us-gaap&quot;,
++      &quot;okf:conformsTo&quot;: [&quot;us-gaap:Revenue&quot;]
++    }
++  ]
++}
++</code></pre>
++<p><strong>Local annotations in a private catalog.</strong> An internal catalog that is
++never federated may annotate entries with members meaningful only inside the
++organization. These are bare names, so they carry the
++<a href="#no-stability-guarantee">no stability guarantee</a> above; an organization that
++wants protection against future collisions uses <code>extensions</code> instead.</p>
++<pre><code class="language-json">{
++  &quot;identifier&quot;: &quot;urn:air:example.com:hr:benefits-agent&quot;,
++  &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
++  &quot;url&quot;: &quot;https://agents.example.com/benefits/.well-known/agent-card.json&quot;,
++  &quot;costCenter&quot;: &quot;CC-4471&quot;,
++  &quot;approvedBy&quot;: &quot;platform-security&quot;,
++  &quot;reviewDate&quot;: &quot;2026-09-30&quot;
++}
++</code></pre>
++<p><strong>Prototyping a candidate field.</strong> An implementer can ship a field that is
++under discussion for a future version, gather experience, and bring that
++experience to the proposal. Until the field is defined, consumers of this
++specification ignore it.</p>
++<pre><code class="language-json">{
++  &quot;identifier&quot;: &quot;urn:air:example.com:weather&quot;,
++  &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
++  &quot;url&quot;: &quot;https://api.example.com/mcp/weather.json&quot;,
++  &quot;lifecycle&quot;: &quot;deprecated&quot;,
++  &quot;supersededBy&quot;: &quot;urn:air:example.com:weather-v2&quot;
++}
++</code></pre>
++</section>
++</section>
+ <section id="version-handling">
+ <h1>Version Handling</h1>
+ <p>The <code>specVersion</code> field identifies which version of this specification
+@@ -1470,7 +1633,8 @@
+ <dd>The specification adds new OPTIONAL fields or features. Documents
+   conforming to a higher minor version are backward-compatible with
+   consumers that understand the same major version. Consumers MUST
+-  ignore unrecognized fields.</dd>
++  ignore unrecognized members as described in
++  <a href="#unrecognized-members">Unrecognized Members</a>.</dd>
+ <dt>Major version increments (e.g., 1.x → 2.0)</dt>
+ <dd>The specification introduces breaking changes (removed fields,
+   changed semantics, new required fields). Consumers that do not
+@@ -1485,8 +1649,9 @@
+ <li>Parse the <code>specVersion</code> field before processing the document.</li>
+ <li>Accept documents whose major version matches their supported major
+   version, regardless of minor version differences.</li>
+-<li>Ignore unrecognized fields (forward compatibility within a major
+-  version).</li>
++<li>Ignore unrecognized members, and preserve them when republishing
++  (forward compatibility within a major version; see
++  <a href="#unrecognized-members">Unrecognized Members</a>).</li>
+ <li>Reject documents whose major version is higher than the highest
+   major version they support, with an informative error message.</li>
+ </ul>
+@@ -1928,10 +2093,12 @@
+ <h1>CDDL Schema</h1>
+ <p>The following CDDL [[RFC8610]] defines the structural schema. The normative
+ prose additionally constrains contributor URIs, manifest substance, subject
+-binding, timestamp validity, and signature verification. The schema describes
+-recognized members. Under <a href="#version-handling">Version Handling</a>, consumers
+-MUST ignore unrecognized members when validating this structure, but MUST
+-retain them when constructing signed payloads.</p>
++binding, timestamp validity, and signature verification. The <code>AICatalog</code>
++and <code>CatalogEntry</code> maps are explicitly open (<code>* text =&gt; any</code>), as defined in
++<a href="#unrecognized-members">Unrecognized Members</a>. The remaining maps describe
++recognized members only; under <a href="#version-handling">Version Handling</a>,
++consumers MUST ignore unrecognized members when validating any of these
++structures, but MUST retain them when constructing signed payloads.</p>
+ <section id="ai-catalog-2">
+ <h2>AI Catalog</h2>
+ <pre><code>AICatalog = {
+@@ -1940,7 +2107,8 @@
+   entries: [* CatalogEntry],
+   ? signature: Signature,
+   ? additionalSignatures: any,
+-  ? extensions: { * text =&gt; any }
++  ? extensions: { * text =&gt; any },
++  * text =&gt; any
+ }
+ 
+ HostInfo = {
+@@ -1962,7 +2130,8 @@
+   ? digest: text,
+   ? trustManifests: [* TrustManifest],
+   ? updatedAt: tdate,
+-  ? extensions: { * text =&gt; any }
++  ? extensions: { * text =&gt; any },
++  * text =&gt; any
+ }
+ 
+ Publisher = {
