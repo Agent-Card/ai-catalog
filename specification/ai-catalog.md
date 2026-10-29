@@ -168,6 +168,9 @@ The following members are OPTIONAL:
   accept and ignore it regardless of its value. It is excluded from this
   catalog's signature payload; it establishes no endorsement in this version.
 
+The AI Catalog top-level object MAY also contain members this specification
+does not define. See [Unrecognized Members](#unrecognized-members).
+
 ## Host Info
 
 The Host Info object identifies the operator of the catalog. It MUST
@@ -436,6 +439,9 @@ an artifact at render time solely to obtain a version. A registry,
 directory, or other service built on top of a catalog SHOULD resolve the
 version once at ingestion and cache the result, rather than fetching
 artifacts on the rendering path.
+
+A Catalog Entry MAY also contain members this specification does not
+define. See [Unrecognized Members](#unrecognized-members).
 
 ## Multi-Version Entries
 
@@ -1024,8 +1030,9 @@ Consumers MUST NOT combine fields from different manifests to establish binding.
 The consumer MUST also verify the artifact bytes against the matching digest
 using [Verifying Artifact Integrity](#verifying-artifact-integrity). The
 retrieval URL is not signed by the Trust Manifest, permitting mirrors serving
-identical bytes. Other entry fields, including entry extensions, are outside
-the manifest signature's scope. Referenced evidence retains its own
+identical bytes. Other entry fields, including entry extensions and
+[unrecognized members](#unrecognized-members), are outside the manifest
+signature's scope. Referenced evidence retains its own
 verification requirements.
 
 ### Catalog Snapshot Coverage
@@ -1184,8 +1191,9 @@ the retrieved catalog was signed or authorized by that identity.
 ### Publisher and Policy Metadata
 
 A Trust Manifest signature does not authenticate the entry's `publisher`
-object or its entry extensions, including the
-[Policy URLs extension](#policy-urls-extension). These fields are outside
+object, its entry extensions, including the
+[Policy URLs extension](#policy-urls-extension), or its
+[unrecognized members](#unrecognized-members). These fields are outside
 its payload. Consumers MUST distinguish publisher-authenticated metadata
 from metadata supplied or endorsed by another entity. A catalog signature
 covers them as part of its signer's snapshot, subject to
@@ -1329,7 +1337,10 @@ document their limit.
 The `extensions` property appears on the AI Catalog top-level object,
 on Catalog Entry objects, and on Trust Manifest objects. It provides
 a single, well-defined extension point for custom or vendor-specific
-properties.
+properties, and it is the only extension point whose keys and values
+this specification defines. Members outside `extensions` that this
+specification does not define are handled under
+[Unrecognized Members](#unrecognized-members).
 
 ## Format and Key Naming
 
@@ -1428,6 +1439,142 @@ For example, this entry excerpt supplies both links:
 }
 ```
 
+# Unrecognized Members
+
+The AI Catalog top-level object and Catalog Entry objects are open: in
+addition to the members this specification defines, they MAY contain
+members it does not define. Such members are *unrecognized members*.
+This section states what an unrecognized member means to a consumer of
+this specification, which is nothing, and what a consumer does with it.
+
+This specification assigns no meaning to any unrecognized member. It takes
+no position on any convention a producer follows when choosing them,
+including conventions defined by other specifications. A producer may use
+unrecognized members to follow such a convention, to annotate a private
+catalog, or to experiment with a candidate field before proposing it.
+
+## Consumer Requirements
+
+Consumers:
+
+- MUST NOT reject a document because it contains unrecognized members.
+- MUST NOT derive semantics defined by this specification from an
+  unrecognized member. An unrecognized member MUST NOT alter how a consumer
+  interprets `identifier`, `type`, `url`, `data`, `version`, or any other
+  defined member.
+- SHOULD preserve unrecognized members, unchanged, when republishing or
+  re-serializing a catalog or entry, for example when a catalog operator
+  incorporates an entry from another catalog. Preservation is best effort:
+  an implementation bound to a fixed data model, such as a strongly typed
+  SDK, MAY drop members it cannot represent.
+- MUST retain unrecognized members when constructing a signed payload, as
+  required by
+  [Signed Payload and JWS Construction](#signed-payload-and-jws-construction).
+
+Conformance tooling MAY report unrecognized members as informational
+output, for example to surface a misspelled member name, but MUST NOT treat
+their presence as a conformance failure.
+
+## No Stability Guarantee
+
+Any member name this specification does not define MAY be defined by a
+future version, with any meaning. A producer that relies on an unrecognized
+member accepts that risk, and this specification does not coordinate with
+any outside convention before defining a member. Producers that want a
+stable, publisher-owned place for custom data SHOULD use
+[`extensions`](#extensions), whose namespaced keys cannot collide with
+members this specification defines later.
+
+A future major version MAY narrow or close these objects, depending on how
+the ecosystem uses them.
+
+## Trust and Signing
+
+An unrecognized member on a Catalog Entry is not covered by any Trust
+Manifest `subject` and is not a claim of the entry's publisher unless
+another specification says so. A catalog signature covers unrecognized
+members as part of the catalog snapshot (see
+[Catalog Snapshot Coverage](#catalog-snapshot-coverage)), subject to
+[Catalog Authorization](#catalog-authorization); it authenticates that the
+catalog signer published those bytes, not what they mean.
+
+## Relationship to `extensions`
+
+| | `extensions` | Unrecognized members |
+|---|---|---|
+| Defined by this specification | Yes: key rules and official extensions | No |
+| Can collide with a future core member | No, keys are namespaced | Yes, no stability guarantee |
+| Meaning to a consumer of this specification | Whatever the extension defines | None |
+| Handling | Ignore unknown keys; retain in signed payloads | Ignore; preserve on republication; retain in signed payloads |
+| Intended for | Publisher-owned, named extensions | Outside conventions, local annotations, experimentation |
+
+## Examples
+
+These examples are illustrative. None of them is a convention this
+specification defines or recommends.
+
+**Namespaced members following a linked-data convention.** Some producers
+want to describe entries with terms drawn from other vocabularies, using a
+prefix map in the style of JSON-LD. The entry below is a valid Catalog Entry.
+`@context`, `okf:taxonomy`, and `okf:conformsTo` are unrecognized members. A
+consumer of this specification reads `identifier`, `type`, `url`, and `tags`
+exactly as it would without them; a consumer that implements the convention
+can do more. A producer that prefers a defined extension point can carry the
+same vocabulary under an `extensions` key instead, as shown in
+[Extensions](#extensions).
+
+```json
+{
+  "specVersion": "1.0",
+  "entries": [
+    {
+      "@context": {
+        "okf": "https://openknowledgeformat.org/ns#",
+        "us-gaap": "https://xbrl.fasb.org/us-gaap/"
+      },
+      "identifier": "urn:air:treasury.gov:okf:fiscaldata",
+      "type": "text/vnd.okf+markdown",
+      "url": "https://example.org/sources/treasury-fiscaldata.md",
+      "tags": ["finance", "treasury"],
+      "okf:taxonomy": "us-gaap",
+      "okf:conformsTo": ["us-gaap:Revenue"]
+    }
+  ]
+}
+```
+
+**Local annotations in a private catalog.** An internal catalog that is
+never federated may annotate entries with members meaningful only inside the
+organization. These are bare names, so they carry the
+[no stability guarantee](#no-stability-guarantee) above; an organization that
+wants protection against future collisions uses `extensions` instead.
+
+```json
+{
+  "identifier": "urn:air:example.com:hr:benefits-agent",
+  "type": "application/a2a-agent-card+json",
+  "url": "https://agents.example.com/benefits/.well-known/agent-card.json",
+  "costCenter": "CC-4471",
+  "approvedBy": "platform-security",
+  "reviewDate": "2026-09-30"
+}
+```
+
+**Prototyping a candidate field.** An implementer can ship a field that is
+under discussion for a future version, gather experience, and bring that
+experience to the proposal. Until the field is defined, consumers of this
+specification ignore it.
+
+```json
+{
+  "identifier": "urn:air:example.com:weather",
+  "type": "application/mcp-server-card+json",
+  "url": "https://api.example.com/mcp/weather.json",
+  "lifecycle": "deprecated",
+  "supersededBy": "urn:air:example.com:weather-v2"
+}
+```
+
 # Version Handling
 
 The `specVersion` field identifies which version of this specification
@@ -1445,7 +1592,8 @@ Minor version increments (e.g., 1.0 → 1.1)
 : The specification adds new OPTIONAL fields or features. Documents
   conforming to a higher minor version are backward-compatible with
   consumers that understand the same major version. Consumers MUST
-  ignore unrecognized fields.
+  ignore unrecognized members as described in
+  [Unrecognized Members](#unrecognized-members).
 
 Major version increments (e.g., 1.x → 2.0)
 : The specification introduces breaking changes (removed fields,
@@ -1460,8 +1608,9 @@ Consumers SHOULD:
 - Parse the `specVersion` field before processing the document.
 - Accept documents whose major version matches their supported major
   version, regardless of minor version differences.
-- Ignore unrecognized fields (forward compatibility within a major
-  version).
+- Ignore unrecognized members, and preserve them when republishing
+  (forward compatibility within a major version; see
+  [Unrecognized Members](#unrecognized-members)).
 - Reject documents whose major version is higher than the highest
   major version they support, with an informative error message.
 
@@ -1926,10 +2075,12 @@ Related Information:
 
 The following CDDL [[RFC8610]] defines the structural schema. The normative
 prose additionally constrains contributor URIs, manifest substance, subject
-binding, timestamp validity, and signature verification. The schema describes
-recognized members. Under [Version Handling](#version-handling), consumers
-MUST ignore unrecognized members when validating this structure, but MUST
-retain them when constructing signed payloads.
+binding, timestamp validity, and signature verification. The `AICatalog`
+and `CatalogEntry` maps are explicitly open (`* text => any`), as defined in
+[Unrecognized Members](#unrecognized-members). The remaining maps describe
+recognized members only; under [Version Handling](#version-handling),
+consumers MUST ignore unrecognized members when validating any of these
+structures, but MUST retain them when constructing signed payloads.
 
 ## AI Catalog
 
@@ -1940,7 +2091,8 @@ AICatalog = {
   entries: [* CatalogEntry],
   ? signature: Signature,
   ? additionalSignatures: any,
-  ? extensions: { * text => any }
+  ? extensions: { * text => any },
+  * text => any
 }
 
 HostInfo = {
@@ -1962,7 +2114,8 @@ CatalogEntry = {
   ? digest: text,
   ? trustManifests: [* TrustManifest],
   ? updatedAt: tdate,
-  ? extensions: { * text => any }
+  ? extensions: { * text => any },
+  * text => any
 }
 
 Publisher = {
