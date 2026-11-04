@@ -71,7 +71,7 @@ Actual properties for inclusion will be debated in PRs.
 
 #### AI Artifact Coverage
 
-AI Catalog entries can reference or inline a wide range of AI artifacts, including MCP servers, A2A agent cards, Claude Code plugins, datasets, model cards, and nested catalogs.
+AI Catalog entries can reference or inline a wide range of AI artifacts, including MCP servers, A2A agent cards, Agent Plugins, datasets, model cards, and nested catalogs.
 
 Protocol-specific metadata remains defined by the underlying artifact specifications. The catalog does not duplicate or constrain those schemas; it uses media types to identify what each entry contains.
 
