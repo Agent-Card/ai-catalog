@@ -20,6 +20,7 @@ Community-built tools, libraries, and integrations. Listed here to help discover
 - [spec-works/ai-catalog](https://github.com/spec-works/ai-catalog) (C#, Python)
 - [tomevault-io/ai-catalog-reference](https://github.com/tomevault-io/ai-catalog-reference) (Python, Trust Manifest signer/verifier)
 - [AI Catalog](https://ai-catalog.outshift.io/) (testbed service)
+- [ai-catalog-sdk](https://github.com/vercel-labs/ai-catalog-sdk) (TypeScript SDK)
 - [Apicurio Registry](https://github.com/Apicurio/apicurio-registry) (Java/Quarkus API and schema registry with experimental AI Catalog publishing for registered agent and tool metadata)
 
 !!! tip "Add your project"
