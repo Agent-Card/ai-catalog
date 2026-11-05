@@ -185,6 +185,8 @@ def build_document(source: Path, output: Path, config_path: Path) -> None:
     body_html = render_sections(converter, sections)
     config_json = json.dumps(respec_config, indent=6, ensure_ascii=False)
 
+    # The empty .copyright element is deliberate: ReSpec uses an author-supplied
+    # .copyright in place of its default W3C copyright notice.
     document = f"""<!DOCTYPE html>
 <html lang=\"en\">
 <head>
@@ -208,6 +210,8 @@ def build_document(source: Path, output: Path, config_path: Path) -> None:
   </script>
 </head>
 <body>
+
+<p class=\"copyright\"></p>
 
 <section id=\"abstract\">
   <h2>Abstract</h2>
