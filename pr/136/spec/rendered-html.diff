@@ -1,0 +1,11 @@
+--- a/base/index.html
++++ b/head/index.html
+@@ -90,6 +90,8 @@
+   </script>
+ </head>
+ <body>
++
++<p class="copyright"></p>
+ 
+ <section id="abstract">
+   <h2>Abstract</h2>
