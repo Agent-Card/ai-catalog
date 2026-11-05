@@ -130,7 +130,7 @@ Record the endorsement time in `signature.issuedAt` and, optionally, an expiry t
 
 The protected JWS header includes `typ: "ai-catalog-trust-manifest+jws"` to identify the signed object as a Trust Manifest. The manifest carries its own release binding, so its signature can be verified independently of the containing entry; accepting it for a particular entry additionally requires the subject and artifact checks.
 
-Adding another contributor's manifest does not invalidate this manifest's signature. Changing any signed content inside this manifest does. Entry metadata outside the manifest, including policy URLs and entry extensions, is not authenticated by this signature. An artifact may be retrieved from a mirror as long as its bytes match the signed digest.
+Adding another contributor's manifest leaves this manifest's signature valid. Changing its signed contents requires a new signature. Entry metadata participates in this endorsement only through a defined binding. Selected entry extensions can be authenticated through `subject.extensionDigests`, as described below. An artifact may be retrieved from a mirror as long as its bytes match the signed digest.
 
 ## Verifying a Trust Manifest
 
@@ -152,6 +152,22 @@ Consumers should:
 
 If a check fails, do not treat the affected claims as verified. Consumers can retain an unverified entry, retry temporary resolution failures, or reject it according to local policy. A valid signature proves an endorsement, not that the artifact is safe or every claim is true.
 
+## Authenticating entry extensions
+
+To authenticate an entry extension, JCS-canonicalize its entire value, hash the UTF-8 bytes, and place the digest under the same extension key in `subject.extensionDigests` before signing the manifest. For example, this subject excerpt selects one extension (the digest is a placeholder):
+
+```json
+{
+  "extensionDigests": {
+    "com.example.capabilities": "sha256:..."
+  }
+}
+```
+
+After verifying the manifest and its artifact binding, check each extension you want to authenticate against its recorded digest. Report whether the value matches, its binding could not be verified, or the manifest did not select it. Missing or changed values are not authenticated by that binding, but they do not invalidate the artifact endorsement or other matching extensions. Keep the complete digest map when verifying the manifest signature.
+
+The digest covers the whole extension value, including nested fields. Changing an unselected extension has no effect; changing any member of a selected extension changes that extension's binding. You can check an unfamiliar extension's digest without interpreting its contents. No current profile requires selecting any extension.
+
 ## Catalog signatures
 
 The catalog root can carry one `signature` object authenticating the complete catalog snapshot, including Host Info, entries, and all nested Trust Manifests. Its payload omits only the root's `additionalSignatures` field and the root's `signature.jws`. The catalog signature also covers the signatures and reserved `additionalSignatures` fields inside its Trust Manifests.
@@ -160,7 +176,7 @@ The protected JWS header uses `typ: "ai-catalog+jws"`. Adding or changing a nest
 
 ## Complete example
 
-An entry with a contributor manifest, artifact digest, policy links, and a signature. The manifest signature endorses the artifact but does not authenticate the policy links in the entry extension. The digest and JWS values are illustrative placeholders:
+An entry with a contributor manifest that endorses the artifact and authenticates its policy-link values through `subject.extensionDigests`. The artifact digest and JWS values are illustrative placeholders:
 
 ```json
 {
@@ -184,7 +200,10 @@ An entry with a contributor manifest, artifact digest, policy links, and a signa
       "subject": {
         "identifier": "urn:air:acme-corp.com:a2a:finance",
         "type": "application/a2a-agent-card+json",
-        "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "extensionDigests": {
+          "https://ai-catalog.org/extensions/policy-urls": "sha256:d2d43cb6efb27c583476d8bd09f485a210c5fa373a5e5708d793e34331cec555"
+        }
       },
       "trustSchema": {
         "identifier": "urn:trust:acme-enterprise-v1",
