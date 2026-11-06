@@ -41,10 +41,10 @@ beside the core members and be addressed by a flat key. Other uses have come
 up too: private annotations in internal catalogs that are never federated,
 and shipping a candidate field to gather experience before proposing it.
 
-The TSC does not want to adopt JSON-LD, or any other outside convention, into
-the core data model. The question is whether the data model can leave room
-for such conventions without endorsing one, and without creating a
-dependency on anyone else's specification.
+AI Catalog does not want to adopt JSON-LD into the core data model at this
+time. The question is whether the data model can leave room for such
+conventions without endorsing one, and without creating a dependency on
+anyone else's specification.
 
 ## Decision
 
