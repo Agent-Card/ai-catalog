@@ -163,7 +163,7 @@ Each entry must provide its artifact content via exactly one of these fields:
 
 ## Identifier best practices
 
-The spec highly recommends the `urn:air:{domain}:{namespace}:{name}` format for open and federated systems:
+The spec highly recommends the `urn:air:{domain}{:namespace+}:{name}{;kind}` format for open and federated systems:
 
 ```
 urn:air:acme-corp.com:mcp:weather        # MCP server
@@ -174,8 +174,9 @@ finance-agent                            # Avoid: not globally unique
 ```
 
 - `{domain}` — the domain name of the publishing organization
-- `{namespace}` — logical category, can be colon-separated (`finance:agent`)
+- `{namespace}` — optional logical category, can be colon-separated (`finance:payments`)
 - `{name}` — stable, unique name within the publisher's namespace
+- `{kind}` — optional label for the kind of artifact (`urn:air:acme-corp.com:weather;mcp`); `;` separates commands in common shells, so quote identifiers that use it on the command line
 
 Keep identifiers stable across catalog locations and versions. Anchoring to a domain you own prevents typosquatting.
 

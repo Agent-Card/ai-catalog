@@ -209,16 +209,20 @@ It MUST contain the following members:
 : A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific `urn:air` naming structure with its own domain in the `{publisher}` segment. A catalog operator incorporating an entry for the first time with a publisher-authorized `urn:air` identifier MUST preserve that identifier exactly.
 
     **`urn:air` Identifier Format:**
-    `urn:air:{publisher}:{namespace}:{name}`
+    `urn:air:{publisher}{:namespace+}:{name}{;kind}`
 
     - `{publisher}`: The domain name of the organization publishing the artifact (e.g., `example.com`).
-    - `{namespace}`: The logical namespace, which can contain one or more colon-separated categories (e.g., `mcp`, `skill`, `agent`, `finance:agent`).
+    - `{namespace}`: An optional logical namespace, which can contain one or more colon-separated categories (e.g., `finance`, `finance:payments`).
     - `{name}`: The stable, unique name of the artifact within the publisher's namespace.
+    - `{kind}`: An optional label for the kind of artifact (e.g., `skill`, `mcp`). It does not replace `type`, which tells a consumer how to process the artifact. This specification does not define a set of `{kind}` values.
+
+    A `;` always introduces `{kind}`, so no other component can contain one. `{kind}` is part of the identifier and counts toward URN equivalence [[RFC8141]]: identifiers that differ only in `{kind}` are different identifiers, and this specification defines no relationship between the artifacts they name.
 
     *Examples:*
 
-    - `urn:air:example.com:skill:code-review`
-    - `urn:air:example.com:mcp:weather`
+    - `urn:air:example.com:code-review;skill`
+    - `urn:air:example.com:finance:weather;mcp`
+    - `urn:air:example.com:weather`
 
     For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.
 
@@ -362,8 +366,10 @@ SHOULD resolve one in the following order:
    already fetched or cached the artifact — for example the `name` field
    of an A2A Agent Card or the `title` field of an MCP Server Card.
 3. **The trailing segment of the entry's `identifier`** as a last
-   resort — the portion after its final `:` or `/` delimiter. For
-   example, `urn:air:example.com:mcp:weather` yields `weather` and
+   resort — after removing any `urn:air` `{kind}` suffix, the portion after
+   its final `:` or `/` delimiter. For example,
+   `urn:air:example.com:mcp:weather` and `urn:air:example.com:weather;mcp`
+   yield `weather` and
    `urn:air:anonymous.modelcontextprotocol.io:mcp:brave-search` yields
    `brave-search`.
 
