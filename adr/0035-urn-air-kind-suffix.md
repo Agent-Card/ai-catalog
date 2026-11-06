@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 
-**Date:** 2026-11-06
+**Date:** 2026-11-05 (Accepted at the TSC call)
 
 **Related:** [Issue #59](https://github.com/Agent-Card/ai-catalog/issues/59),
 [ADR-0015](0015-agent-identifier-naming.md)
@@ -29,7 +29,7 @@ This reverses ADR-0015's use of `{namespace}` for artifact types (`mcp`, `skill`
 the publisher's own categories. The specification and documentation examples no
 longer use type-like namespaces.
 
-The TSC chose `;` by vote on November 5, 2026. As part of the namespace-specific
+The TSC chose `;` by vote at its November 5, 2026 call. As part of the namespace-specific
 string, it counts toward URN equivalence, so identifiers that differ only in
 `{kind}` are different identifiers. The uniqueness key remains `identifier`
 plus `version`.
@@ -39,7 +39,10 @@ identifiers that share everything but `{kind}`.
 
 ## Alternatives Considered
 
-`#` is ignored for URN equivalence. `:` and `::` were also voted on.
+- `#`: Ignored for URN equivalence.
+- `+`: Needs percent-encoding in browsers.
+- `@`: Reads as a version in package identifiers.
+- `:` and `::`: The other options voted on.
 
 ## Consequences
 

@@ -2253,7 +2253,7 @@ containing both protocol-specific entries:
       {
         "identifier": "urn:air:acme.com:finance-a2a",
         "type": "application/a2a-agent-card+json",
-        "url": "https://api.acme-corp.com/agents/finance"
+        "url": "https://api.acme-corp.com/agents/finance.json"
       }
     ]
   },
