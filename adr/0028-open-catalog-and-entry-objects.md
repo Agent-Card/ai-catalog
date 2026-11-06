@@ -26,7 +26,7 @@ is closed; the only trace is that the CDDL maps for `AICatalog` and
 `CatalogEntry` carry no wildcard member, which CDDL treats as closed by
 default. So the normative schema rejects exactly the documents the prose
 tells consumers to accept, and implementers reading the schema and
-implementers reading the prose build different validators. The TSC call of
+implementers reading the prose build different validators. The AI Catalog call of
 2026-11-05 confirmed this reading: the decision in ADR-0012 did not make it
 into the spec, the compatibility rules already require ignoring unrecognized
 fields, and a closed entry would make every added field a breaking change.
@@ -79,7 +79,7 @@ as opaque.
   any other specification. The no-stability-guarantee clause states that
   this specification will define future members without checking whether an
   outside convention already uses the name. The collision risk sits with
-  whoever relies on undefined names, which is where it belongs.
+  whoever relies on undefined names.
 - **Resolves the prose/CDDL contradiction** in the direction the prose
   already went.
 - **Consistent with signing.** Catalog signatures already cover unknown
@@ -88,12 +88,8 @@ as opaque.
 - **`extensions` keeps a distinct job.** It is the *defined* extension
   point: namespaced keys, official extensions, no collision with future
   core members. Unrecognized members are the *absence* of a definition.
-  Defined versus undefined is a real distinction, not two ways to do one
-  thing.
 
 ## Trade-offs
-
-What is lost, stated plainly:
 
 - **Validators no longer catch misspelled member names.** A document with
   `identifer` instead of `identifier` fails for the missing required member,
@@ -113,14 +109,14 @@ What is lost, stated plainly:
 
 ## Alternatives Considered
 
-- **Keep the objects closed (status quo).** Leaves the prose/CDDL
+- **Keep the objects closed.** Leaves the prose/CDDL
   contradiction in place and rules out outside conventions entirely.
 - **Reserve only a syntactic space**, for example member names beginning
   with `@` or containing `:`, and keep bare names closed. Covers prefixed
   terms but not terms a prefix map aliases to bare names, and adds a rule
   whose only purpose is to describe someone else's syntax.
 - **Define a JSON-LD compatibility profile or publish a context document.**
-  Takes a stance on a convention the TSC has declined to adopt, and pulls
+  Takes a stance on a convention AI Catalog has declined to adopt, and pulls
   questions about `type` versus `@type`, `@id`, and value typing into this
   specification.
 - **A media-type `profile` parameter.** Does not match how catalogs are
@@ -140,7 +136,7 @@ reconciled. This ADR does not adopt the rule.
 
 ## Meeting Reference
 
-2026-11-05 TSC call. The group confirmed that ADR-0012's closed-schema
+2026-11-05 AI Catalog call. The group confirmed that ADR-0012's closed-schema
 decision had not been propagated into the specification, that the existing
 compatibility rules already require consumers to ignore unrecognized fields,
 and that a closed entry object would make every new field a breaking change.
