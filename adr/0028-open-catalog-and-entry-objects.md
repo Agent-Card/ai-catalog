@@ -20,10 +20,18 @@ following it:
   fields".
 - The CDDL preamble says the schema "describes recognized members".
 
-Yet the CDDL maps for `AICatalog` and `CatalogEntry` are closed, so the
-normative schema rejects exactly the documents the prose tells consumers to
-accept. Implementers reading the schema and implementers reading the prose
-build different validators.
+In other words, the closed direction of ADR-0012 was never carried into the
+specification text. No sentence in the spec says the entry or catalog object
+is closed; the only trace is that the CDDL maps for `AICatalog` and
+`CatalogEntry` carry no wildcard member, which CDDL treats as closed by
+default. So the normative schema rejects exactly the documents the prose
+tells consumers to accept, and implementers reading the schema and
+implementers reading the prose build different validators. The TSC call of
+2026-11-05 confirmed this reading: the decision in ADR-0012 did not make it
+into the spec, the compatibility rules already require ignoring unrecognized
+fields, and a closed entry would make every added field a breaking change.
+This ADR therefore records an alignment on the direction the spec already
+took, not a change of direction.
 
 At the same time, several parties have indicated a desire to describe
 entries using conventions this specification does not define. The most
@@ -118,6 +126,27 @@ What is lost, stated plainly:
 - **A media-type `profile` parameter.** Does not match how catalogs are
   published or discovered, and this group has already declined `profile`
   parameters for artifact types.
+
+## Possible Refinement
+
+On the 2026-11-05 call a producer-side rule was floated: an added member that
+this specification does not define must contain a `:` or begin with `@`, the
+spiritual equivalent of OpenAPI's `x-` convention. It would keep bare names
+free for future core members at the cost of ruling out a first-class
+namespaced core member later. The call's conclusion for 0.9 was to leave the
+objects open and say nothing more; the refinement, and any words about
+`@context`, can be revisited before 1.0 if namespacing and `@context` are
+reconciled. This ADR does not adopt the rule.
+
+## Meeting Reference
+
+2026-11-05 TSC call. The group confirmed that ADR-0012's closed-schema
+decision had not been propagated into the specification, that the existing
+compatibility rules already require consumers to ignore unrecognized fields,
+and that a closed entry object would make every new field a breaking change.
+Leaving the objects open drew broad support; the retransmission question
+(carry or drop unrecognized members) and the CDDL update were called out as
+the things this change needs to settle.
 
 ## Revisit
 
