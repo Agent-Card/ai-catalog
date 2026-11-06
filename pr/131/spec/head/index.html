@@ -309,6 +309,8 @@ contain:</p>
   &quot;logoUrl&quot;: &quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0c...&quot;
 }
 </code></pre>
+<p>A Host Info object MAY also contain members this specification does not
+define. See <a href="#unrecognized-members">Unrecognized Members</a>.</p>
 </section>
 <section id="catalog-entry">
 <h2>Catalog Entry</h2>
@@ -653,6 +655,8 @@ publisher information. It MUST contain:</p>
 <dd>A string providing a type hint for the publisher identifier (e.g.,
   "did", "dns").</dd>
 </dl>
+<p>A Publisher object MAY also contain members this specification does not
+define. See <a href="#unrecognized-members">Unrecognized Members</a>.</p>
 </section>
 </section>
 <section id="trust-manifest">
@@ -1466,9 +1470,9 @@ those URLs. Consumers fetching those documents MUST follow
 </section>
 <section id="unrecognized-members">
 <h1>Unrecognized Members</h1>
-<p>The AI Catalog top-level object and Catalog Entry objects are open: in
-addition to the members this specification defines, they MAY contain
-members it does not define. Such members are <em>unrecognized members</em>.
+<p>The AI Catalog top-level object, Catalog Entry, Host Info, and Publisher
+objects are open: in addition to the members this specification defines,
+they MAY contain members it does not define. Such members are <em>unrecognized members</em>.
 This section states what an unrecognized member means to a consumer of
 this specification, which is nothing, and what a consumer does with it.</p>
 <p>This specification assigns no meaning to any unrecognized member. It takes
@@ -1512,8 +1516,8 @@ the ecosystem uses them.</p>
 </section>
 <section id="trust-and-signing">
 <h2>Trust and Signing</h2>
-<p>An unrecognized member on a Catalog Entry is not covered by any Trust
-Manifest <code>subject</code> and is not a claim of the entry's publisher unless
+<p>An unrecognized member on a Catalog Entry or its Publisher object is not
+covered by any Trust Manifest <code>subject</code> and is not a claim of the entry's publisher unless
 another specification says so. A catalog signature covers unrecognized
 members as part of the catalog snapshot (see
 <a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>), subject to
@@ -1563,33 +1567,6 @@ catalog signer published those bytes, not what they mean.</p>
 <h2>Examples</h2>
 <p>These examples are illustrative. None of them is a convention this
 specification defines or recommends.</p>
-<p><strong>Namespaced members following a linked-data convention.</strong> Some producers
-want to describe entries with terms drawn from other vocabularies, using a
-prefix map in the style of JSON-LD. The entry below is a valid Catalog Entry.
-<code>@context</code>, <code>okf:taxonomy</code>, and <code>okf:conformsTo</code> are unrecognized members. A
-consumer of this specification reads <code>identifier</code>, <code>type</code>, <code>url</code>, and <code>tags</code>
-exactly as it would without them; a consumer that implements the convention
-can do more. A producer that prefers a defined extension point can carry the
-same vocabulary under an <code>extensions</code> key instead, as shown in
-<a href="#extensions">Extensions</a>.</p>
-<pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
-  &quot;entries&quot;: [
-    {
-      &quot;@context&quot;: {
-        &quot;okf&quot;: &quot;https://openknowledgeformat.org/ns#&quot;,
-        &quot;us-gaap&quot;: &quot;https://xbrl.fasb.org/us-gaap/&quot;
-      },
-      &quot;identifier&quot;: &quot;urn:air:treasury.gov:okf:fiscaldata&quot;,
-      &quot;type&quot;: &quot;text/vnd.okf+markdown&quot;,
-      &quot;url&quot;: &quot;https://example.org/sources/treasury-fiscaldata.md&quot;,
-      &quot;tags&quot;: [&quot;finance&quot;, &quot;treasury&quot;],
-      &quot;okf:taxonomy&quot;: &quot;us-gaap&quot;,
-      &quot;okf:conformsTo&quot;: [&quot;us-gaap:Revenue&quot;]
-    }
-  ]
-}
-</code></pre>
 <p><strong>Local annotations in a private catalog.</strong> An internal catalog that is
 never federated may annotate entries with members meaningful only inside the
 organization. These are bare names, so they carry the
@@ -2095,10 +2072,11 @@ IANA "Well-Known URIs" registry [[RFC8615]].</p>
 <h1>CDDL Schema</h1>
 <p>The following CDDL [[RFC8610]] defines the structural schema. The normative
 prose additionally constrains contributor URIs, manifest substance, subject
-binding, timestamp validity, and signature verification. The <code>AICatalog</code>
-and <code>CatalogEntry</code> maps are explicitly open (<code>* text =&gt; any</code>), as defined in
-<a href="#unrecognized-members">Unrecognized Members</a>. The remaining maps describe
-recognized members only; under <a href="#version-handling">Version Handling</a>,
+binding, timestamp validity, and signature verification. The <code>AICatalog</code>,
+<code>CatalogEntry</code>, <code>HostInfo</code>, and <code>Publisher</code> maps are explicitly open
+(<code>* text =&gt; any</code>), as defined in
+<a href="#unrecognized-members">Unrecognized Members</a>. The Trust Manifest maps
+describe recognized members only; under <a href="#version-handling">Version Handling</a>,
 consumers MUST ignore unrecognized members when validating any of these
 structures, but MUST retain them when constructing signed payloads.</p>
 <section id="ai-catalog-2">
@@ -2117,7 +2095,8 @@ HostInfo = {
   displayName: text,
   ? identifier: text,
   ? documentationUrl: text,
-  ? logoUrl: text
+  ? logoUrl: text,
+  * text =&gt; any
 }
 
 CatalogEntry = {
@@ -2139,7 +2118,8 @@ CatalogEntry = {
 Publisher = {
   identifier: text,
   displayName: text,
-  ? identityType: text
+  ? identityType: text,
+  * text =&gt; any
 }
 </code></pre>
 </section>
