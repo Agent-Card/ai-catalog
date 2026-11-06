@@ -7,7 +7,7 @@
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:finance",
+      "identifier": "urn:air:acme-corp.com:finance-a2a",
       "type": "application/a2a-agent-card+json",
       "description": "Multi-protocol finance agent.",
       "tags": ["finance", "trading"],
@@ -30,7 +30,7 @@
             }
           ],
           "subject": {
-            "identifier": "urn:air:acme-corp.com:finance",
+            "identifier": "urn:air:acme-corp.com:finance-a2a",
             "type": "application/a2a-agent-card+json",
             "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
           },

@@ -188,14 +188,14 @@ A catalog may contain multiple entries with the same `identifier` but different 
   "specVersion": "1.0",
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:finance",
+      "identifier": "urn:air:acme-corp.com:finance-a2a",
       "version": "2.1.0",
       "type": "application/a2a-agent-card+json",
       "url": "https://agents.acme-corp.com/finance/v2.1.json",
       "updatedAt": "2026-03-15T10:00:00Z"
     },
     {
-      "identifier": "urn:air:acme-corp.com:finance",
+      "identifier": "urn:air:acme-corp.com:finance-a2a",
       "version": "2.0.0",
       "type": "application/a2a-agent-card+json",
       "url": "https://agents.acme-corp.com/finance/v2.0.json",

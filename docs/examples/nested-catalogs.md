@@ -55,13 +55,13 @@ The Finance team owns and hosts `finance.json`. It can be updated independently 
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:finance;agent",
+      "identifier": "urn:air:acme-corp.com:finance-a2a",
       "type": "application/a2a-agent-card+json",
       "url": "https://api.acme-corp.com/agents/finance.json",
       "tags": ["finance", "trading"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:finance;mcp",
+      "identifier": "urn:air:acme-corp.com:finance-mcp",
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/mcp/server-card",
       "tags": ["finance", "mcp"]

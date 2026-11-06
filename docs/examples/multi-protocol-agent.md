@@ -11,7 +11,7 @@ An agent that supports both MCP and A2A protocols can be represented as a single
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:finance",
+      "identifier": "urn:air:acme-corp.com:finance-agent",
       "displayName": "Acme Finance Agent",
       "type": "application/ai-catalog+json",
       "description": "Finance agent accessible via both MCP and A2A protocols.",
@@ -24,12 +24,12 @@ An agent that supports both MCP and A2A protocols can be represented as a single
         "specVersion": "1.0",
         "entries": [
           {
-            "identifier": "urn:air:acme-corp.com:finance;mcp",
+            "identifier": "urn:air:acme-corp.com:finance-mcp",
             "type": "application/mcp-server-card+json",
             "url": "https://api.acme-corp.com/mcp/server-card"
           },
           {
-            "identifier": "urn:air:acme-corp.com:finance;agent",
+            "identifier": "urn:air:acme-corp.com:finance-a2a",
             "type": "application/a2a-agent-card+json",
             "url": "https://api.acme-corp.com/agents/finance"
           }
@@ -54,7 +54,7 @@ An agent that supports both MCP and A2A protocols can be represented as a single
 
 ## How it works
 
-**The outer entry** (`urn:air:acme-corp.com:finance`) represents the logical agent. It has `type: "application/ai-catalog+json"`, meaning its content is itself a catalog. Clients that don't need to know about protocols can stop here — they see one agent with a name, description, tags, and trust metadata.
+**The outer entry** (`urn:air:acme-corp.com:finance-agent`) represents the logical agent. It has `type: "application/ai-catalog+json"`, meaning its content is itself a catalog. Clients that don't need to know about protocols can stop here — they see one agent with a name, description, tags, and trust metadata.
 
 The outer entry sets `displayName` because a catalog document has no intrinsic name of its own — unlike an A2A Agent Card or MCP Server Card which embed their own names. The inner protocol-specific entries omit `displayName` since their native formats carry canonical names.
 
@@ -76,7 +76,7 @@ If the inner catalog is large or updated independently, reference it via `url` i
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:finance",
+  "identifier": "urn:air:acme-corp.com:finance-agent",
   "displayName": "Acme Finance Agent",
   "type": "application/ai-catalog+json",
   "url": "https://acme-corp.com/agents/finance-protocols.json"
