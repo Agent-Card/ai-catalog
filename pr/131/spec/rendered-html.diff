@@ -1,6 +1,6 @@
 --- a/base/index.html
 +++ b/head/index.html
-@@ -277,6 +277,8 @@
+@@ -279,6 +279,8 @@
    accept and ignore it regardless of its value. It is excluded from this
    catalog's signature payload; it establishes no endorsement in this version.</dd>
  </dl>
@@ -9,7 +9,7 @@
  </section>
  <section id="host-info">
  <h2>Host Info</h2>
-@@ -532,6 +534,8 @@
+@@ -534,6 +536,8 @@
  directory, or other service built on top of a catalog SHOULD resolve the
  version once at ingestion and cache the result, rather than fetching
  artifacts on the rendering path.</p>
@@ -18,7 +18,7 @@
  </section>
  </section>
  <section id="multi-version-entries">
-@@ -1077,8 +1081,9 @@
+@@ -1079,8 +1083,9 @@
  <p>The consumer MUST also verify the artifact bytes against the matching digest
  using <a href="#verifying-artifact-integrity">Verifying Artifact Integrity</a>. The
  retrieval URL is not signed by the Trust Manifest, permitting mirrors serving
@@ -30,7 +30,7 @@
  verification requirements.</p>
  </section>
  <section id="catalog-snapshot-coverage">
-@@ -1225,8 +1230,9 @@
+@@ -1227,8 +1232,9 @@
  <section id="publisher-and-policy-metadata">
  <h3>Publisher and Policy Metadata</h3>
  <p>A Trust Manifest signature does not authenticate the entry's <code>publisher</code>
@@ -42,7 +42,7 @@
  its payload. Consumers MUST distinguish publisher-authenticated metadata
  from metadata supplied or endorsed by another entity. A catalog signature
  covers them as part of its signer's snapshot, subject to
-@@ -1363,7 +1369,10 @@
+@@ -1365,7 +1371,10 @@
  <p>The <code>extensions</code> property appears on the AI Catalog top-level object,
  on Catalog Entry objects, and on Trust Manifest objects. It provides
  a single, well-defined extension point for custom or vendor-specific
@@ -54,7 +54,7 @@
  <section id="format-and-key-naming">
  <h2>Format and Key Naming</h2>
  <p>The <code>extensions</code> field is a JSON object (map). Each key in the object MUST
-@@ -1453,6 +1462,160 @@
+@@ -1455,6 +1464,160 @@
  </section>
  </section>
  </section>
@@ -215,7 +215,7 @@
  <section id="version-handling">
  <h1>Version Handling</h1>
  <p>The <code>specVersion</code> field identifies which version of this specification
-@@ -1470,7 +1633,8 @@
+@@ -1472,7 +1635,8 @@
  <dd>The specification adds new OPTIONAL fields or features. Documents
    conforming to a higher minor version are backward-compatible with
    consumers that understand the same major version. Consumers MUST
@@ -225,7 +225,7 @@
  <dt>Major version increments (e.g., 1.x → 2.0)</dt>
  <dd>The specification introduces breaking changes (removed fields,
    changed semantics, new required fields). Consumers that do not
-@@ -1485,8 +1649,9 @@
+@@ -1487,8 +1651,9 @@
  <li>Parse the <code>specVersion</code> field before processing the document.</li>
  <li>Accept documents whose major version matches their supported major
    version, regardless of minor version differences.</li>
@@ -237,7 +237,7 @@
  <li>Reject documents whose major version is higher than the highest
    major version they support, with an informative error message.</li>
  </ul>
-@@ -1928,10 +2093,12 @@
+@@ -1930,10 +2095,12 @@
  <h1>CDDL Schema</h1>
  <p>The following CDDL [[RFC8610]] defines the structural schema. The normative
  prose additionally constrains contributor URIs, manifest substance, subject
@@ -254,7 +254,7 @@
  <section id="ai-catalog-2">
  <h2>AI Catalog</h2>
  <pre><code>AICatalog = {
-@@ -1940,7 +2107,8 @@
+@@ -1942,7 +2109,8 @@
    entries: [* CatalogEntry],
    ? signature: Signature,
    ? additionalSignatures: any,
@@ -264,7 +264,7 @@
  }
  
  HostInfo = {
-@@ -1962,7 +2130,8 @@
+@@ -1964,7 +2132,8 @@
    ? digest: text,
    ? trustManifests: [* TrustManifest],
    ? updatedAt: tdate,
