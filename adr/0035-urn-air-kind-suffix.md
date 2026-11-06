@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 
-**Date:** 2026-11-05 (Accepted at the TSC call)
+**Date:** 2026-11-05
 
 **Related:** [Issue #59](https://github.com/Agent-Card/ai-catalog/issues/59),
 [ADR-0015](0015-agent-identifier-naming.md)
