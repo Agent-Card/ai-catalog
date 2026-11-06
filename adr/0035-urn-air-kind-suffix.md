@@ -1,6 +1,6 @@
-# ADR-0034: Add an Optional Kind Suffix to `urn:air` Identifiers
+# ADR-0035: Add an Optional Kind Suffix to `urn:air` Identifiers
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Date:** 2026-11-06
 
@@ -24,6 +24,11 @@ urn:air:{publisher}{:namespace+}:{name}{;kind}
 
 `{namespace}` is optional, as ADR-0015 already described.
 
+This reverses ADR-0015's use of `{namespace}` for artifact types (`mcp`, `skill`,
+`agent`). The kind of artifact now belongs in `{kind}`, and `{namespace}` is for
+the publisher's own categories. The specification and documentation examples no
+longer use type-like namespaces.
+
 The TSC chose `;` by vote on November 5, 2026. As part of the namespace-specific
 string, it counts toward URN equivalence, so identifiers that differ only in
 `{kind}` are different identifiers. The uniqueness key remains `identifier`
@@ -38,6 +43,7 @@ identifiers that share everything but `{kind}`.
 
 ## Consequences
 
-- Existing `urn:air` identifiers that do not contain `;` remain valid.
+- Existing `urn:air` identifiers that do not contain `;` remain valid. That includes
+  identifiers with type-like namespaces, which are not disallowed.
 - A `{namespace}` or `{name}` can no longer contain `;`.
 - Identifiers that use the suffix need quoting in common shells.

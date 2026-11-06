@@ -13,8 +13,9 @@ narrows the interoperable v1 signature profile to a root `did:web` issuer and
 assigns runtime or workload identity to separate profiles. The logical-name and
 cryptographic-issuer separation established here remains unchanged.
 
-[ADR-0034](0034-urn-air-kind-suffix.md) adds an optional `;kind` suffix to the
-`urn:air` format and makes `namespace` explicitly optional.
+[ADR-0035](0035-urn-air-kind-suffix.md) adds an optional `;kind` suffix to the
+`urn:air` format, makes `namespace` explicitly optional, and reverses the use
+of `namespace` for artifact types shown here (`mcp`, `skill`, `agent`).
 
 ## Context
 The `ai-catalog` specification originally recommended using URNs or URIs for the `identifier` field in catalog entries, but did not mandate a specific format. This led to inconsistency in examples and potential interoperability issues across different registries and orchestrators.

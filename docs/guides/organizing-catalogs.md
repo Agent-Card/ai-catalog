@@ -19,7 +19,7 @@ An entry whose `type` is `application/ai-catalog+json` is a nested catalog refer
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:catalog:finance",
+  "identifier": "urn:air:acme-corp.com:finance",
   "displayName": "Finance Services",
   "type": "application/ai-catalog+json",
   "url": "https://acme-corp.com/catalogs/finance.json",
@@ -46,14 +46,14 @@ An enterprise can organize a large artifact inventory into browsable categories:
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:a2a:assistant",
+      "identifier": "urn:air:acme-corp.com:assistant",
       "version": "3.0.0",
       "type": "application/a2a-agent-card+json",
       "url": "https://api.acme-corp.com/agents/assistant.json",
       "description": "General-purpose corporate assistant agent."
     },
     {
-      "identifier": "urn:air:acme-corp.com:catalog:finance",
+      "identifier": "urn:air:acme-corp.com:finance",
       "displayName": "Finance Services",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/finance.json",
@@ -61,7 +61,7 @@ An enterprise can organize a large artifact inventory into browsable categories:
       "tags": ["finance", "trading", "compliance"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:catalog:engineering",
+      "identifier": "urn:air:acme-corp.com:engineering",
       "displayName": "Engineering Tools",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/engineering.json",
@@ -69,7 +69,7 @@ An enterprise can organize a large artifact inventory into browsable categories:
       "tags": ["engineering", "devops", "ci-cd"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:catalog:ml-models",
+      "identifier": "urn:air:acme-corp.com:ml-models",
       "displayName": "ML Models",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/ml-models.json",
@@ -88,7 +88,7 @@ Bundle related artifacts together using the `data` field to embed the child cata
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:catalog:finance-suite",
+  "identifier": "urn:air:acme-corp.com:finance-suite",
   "displayName": "Finance Suite",
   "type": "application/ai-catalog+json",
   "description": "Finance plugin — includes A2A agent, MCP server, and dataset.",
@@ -100,17 +100,17 @@ Bundle related artifacts together using the `data` field to embed the child cata
     "specVersion": "1.0",
     "entries": [
       {
-        "identifier": "urn:air:acme-corp.com:a2a:finance",
+        "identifier": "urn:air:acme-corp.com:finance;agent",
         "type": "application/a2a-agent-card+json",
         "url": "https://api.acme-corp.com/agents/finance.json"
       },
       {
-        "identifier": "urn:air:acme-corp.com:mcp:finance",
+        "identifier": "urn:air:acme-corp.com:finance;mcp",
         "type": "application/mcp-server-card+json",
         "url": "https://api.acme-corp.com/mcp/server-card"
       },
       {
-        "identifier": "urn:air:acme-corp.com:data:market-2026q1",
+        "identifier": "urn:air:acme-corp.com:market-2026q1",
         "displayName": "Market Dataset Q1 2026",
         "type": "application/parquet",
         "url": "https://data.acme-corp.com/market-2026q1.parquet"
@@ -128,7 +128,7 @@ An agent that supports both MCP and A2A can be represented as one logical entry 
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:agent:finance",
+  "identifier": "urn:air:acme-corp.com:finance",
   "displayName": "Acme Finance Agent",
   "type": "application/ai-catalog+json",
   "description": "Finance agent accessible via both MCP and A2A protocols.",
@@ -141,12 +141,12 @@ An agent that supports both MCP and A2A can be represented as one logical entry 
     "specVersion": "1.0",
     "entries": [
       {
-        "identifier": "urn:air:acme-corp.com:mcp:finance",
+        "identifier": "urn:air:acme-corp.com:finance;mcp",
         "type": "application/mcp-server-card+json",
         "url": "https://api.acme-corp.com/mcp/server-card"
       },
       {
-        "identifier": "urn:air:acme-corp.com:a2a:finance",
+        "identifier": "urn:air:acme-corp.com:finance;agent",
         "type": "application/a2a-agent-card+json",
         "url": "https://api.acme-corp.com/agents/finance"
       }

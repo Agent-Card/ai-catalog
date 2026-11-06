@@ -208,7 +208,7 @@ These scenarios describe the weaknesses that motivated the findings; their
 closing statements summarize the current controls.
 
 **SC-1 — URL swap under a valid signature (primary).** Acme publishes
-`urn:air:acme-corp.com:agent:finance` with a manifest signed by
+`urn:air:acme-corp.com:finance` with a manifest signed by
 `did:web:acme-corp.com`. An attacker who compromises Acme's CDN leaves
 the manifest byte-for-byte intact and changes only `entry.url` to a
 look-alike host serving a trojaned agent. A Layer-2 consumer "verifies
