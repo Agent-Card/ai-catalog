@@ -23,17 +23,17 @@ AI Catalog solves this with a simple, typed JSON format that indexes any kind of
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:mcp:weather",
+      "identifier": "urn:air:acme-corp.com:weather",
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/mcp/server-card"
     },
     {
-      "identifier": "urn:air:acme-corp.com:a2a:research",
+      "identifier": "urn:air:acme-corp.com:research",
       "type": "application/a2a-agent-card+json",
       "url": "https://agents.acme-corp.com/research"
     },
     {
-      "identifier": "urn:air:acme-corp.com:catalog:finance",
+      "identifier": "urn:air:acme-corp.com:finance-services",
       "displayName": "Finance Suite",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/finance.json"

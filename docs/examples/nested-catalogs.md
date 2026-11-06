@@ -16,14 +16,14 @@ The root catalog is served at `/.well-known/ai-catalog.json`:
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:a2a:assistant",
+      "identifier": "urn:air:acme-corp.com:assistant",
       "version": "3.0.0",
       "type": "application/a2a-agent-card+json",
       "url": "https://api.acme-corp.com/agents/assistant.json",
       "description": "General-purpose corporate assistant agent."
     },
     {
-      "identifier": "urn:air:acme-corp.com:catalog:finance",
+      "identifier": "urn:air:acme-corp.com:finance-services",
       "displayName": "Finance Services",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/finance.json",
@@ -31,7 +31,7 @@ The root catalog is served at `/.well-known/ai-catalog.json`:
       "tags": ["finance", "trading", "compliance"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:catalog:engineering",
+      "identifier": "urn:air:acme-corp.com:engineering",
       "displayName": "Engineering Tools",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/engineering.json",
@@ -55,19 +55,19 @@ The Finance team owns and hosts `finance.json`. It can be updated independently 
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:a2a:finance",
+      "identifier": "urn:air:acme-corp.com:finance;a2a",
       "type": "application/a2a-agent-card+json",
       "url": "https://api.acme-corp.com/agents/finance.json",
       "tags": ["finance", "trading"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:mcp:finance",
+      "identifier": "urn:air:acme-corp.com:finance;mcp",
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/mcp/server-card",
       "tags": ["finance", "mcp"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:data:market-2026q1",
+      "identifier": "urn:air:acme-corp.com:market-2026q1",
       "displayName": "Market Dataset Q1 2026",
       "type": "application/parquet",
       "url": "https://data.acme-corp.com/market-2026q1.parquet",
@@ -79,9 +79,9 @@ The Finance team owns and hosts `finance.json`. It can be updated independently 
 
 ## How it works
 
-**Direct entries** (like `urn:air:acme-corp.com:a2a:assistant`) appear directly in the root catalog. Clients see them without any additional fetching. The `displayName` is omitted for A2A entries since the agent card itself carries a canonical name.
+**Direct entries** (like `urn:air:acme-corp.com:assistant`) appear directly in the root catalog. Clients see them without any additional fetching. The `displayName` is omitted for A2A entries since the agent card itself carries a canonical name.
 
-**Nested catalog entries** (like `urn:air:acme-corp.com:catalog:finance`) have `type: "application/ai-catalog+json"` and set `displayName` since catalogs don't embed their own name. Clients follow the `url` to fetch the sub-catalog and process it as another AI Catalog.
+**Nested catalog entries** (like `urn:air:acme-corp.com:finance-services`) have `type: "application/ai-catalog+json"` and set `displayName` since catalogs don't embed their own name. Clients follow the `url` to fetch the sub-catalog and process it as another AI Catalog.
 
 **Dataset entries** set `displayName` since Parquet files don't carry a human-readable name.
 
