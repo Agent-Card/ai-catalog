@@ -1,0 +1,39 @@
+--- a/base/index.html
++++ b/head/index.html
+@@ -317,16 +317,19 @@
+ <dd>
+ <p>A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific <code>urn:air</code> naming structure with its own domain in the <code>{publisher}</code> segment. A catalog operator incorporating an entry for the first time with a publisher-authorized <code>urn:air</code> identifier MUST preserve that identifier exactly.</p>
+ <p><strong><code>urn:air</code> Identifier Format:</strong>
+-<code>urn:air:{publisher}:{namespace}:{name}</code></p>
++<code>urn:air:{publisher}{:namespace+}:{name}{;kind}</code></p>
+ <ul>
+ <li><code>{publisher}</code>: The domain name of the organization publishing the artifact (e.g., <code>example.com</code>).</li>
+-<li><code>{namespace}</code>: The logical namespace, which can contain one or more colon-separated categories (e.g., <code>mcp</code>, <code>skill</code>, <code>agent</code>, <code>finance:agent</code>).</li>
++<li><code>{namespace}</code>: An optional logical namespace, which can contain one or more colon-separated categories (e.g., <code>finance</code>, <code>finance:payments</code>).</li>
+ <li><code>{name}</code>: The stable, unique name of the artifact within the publisher's namespace.</li>
++<li><code>{kind}</code>: An optional label for the kind of artifact (e.g., <code>skill</code>, <code>mcp</code>). It does not replace <code>type</code>, which tells a consumer how to process the artifact. This specification does not define a set of <code>{kind}</code> values.</li>
+ </ul>
++<p>A <code>;</code> always introduces <code>{kind}</code>, so no other component can contain one. <code>{kind}</code> is part of the identifier and counts toward URN equivalence [[RFC8141]]: identifiers that differ only in <code>{kind}</code> are different identifiers, and this specification defines no relationship between the artifacts they name.</p>
+ <p><em>Examples:</em></p>
+ <ul>
+-<li><code>urn:air:example.com:skill:code-review</code></li>
+-<li><code>urn:air:example.com:mcp:weather</code></li>
++<li><code>urn:air:example.com:code-review;skill</code></li>
++<li><code>urn:air:example.com:finance:weather;mcp</code></li>
++<li><code>urn:air:example.com:weather</code></li>
+ </ul>
+ <p>For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.</p>
+ <p>See <a href="#multi-version-entries">Multi-Version Entries</a> for uniqueness rules when multiple versions are present, and <a href="#catalog-projection">Catalog Projection</a> for identifiers assigned while projecting an existing Catalog Entry or source-system record.</p>
+@@ -462,8 +465,10 @@
+    already fetched or cached the artifact — for example the <code>name</code> field
+    of an A2A Agent Card or the <code>title</code> field of an MCP Server Card.</li>
+ <li><strong>The trailing segment of the entry's <code>identifier</code></strong> as a last
+-   resort — the portion after its final <code>:</code> or <code>/</code> delimiter. For
+-   example, <code>urn:air:example.com:mcp:weather</code> yields <code>weather</code> and
++   resort — after removing any <code>urn:air</code> <code>{kind}</code> suffix, the portion after
++   its final <code>:</code> or <code>/</code> delimiter. For example,
++   <code>urn:air:example.com:mcp:weather</code> and <code>urn:air:example.com:weather;mcp</code>
++   yield <code>weather</code> and
+    <code>urn:air:anonymous.modelcontextprotocol.io:mcp:brave-search</code> yields
+    <code>brave-search</code>.</li>
+ </ol>
