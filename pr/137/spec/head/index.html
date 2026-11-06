@@ -560,14 +560,14 @@ that need a specific version SHOULD match on both <code>identifier</code> and <c
   &quot;specVersion&quot;: &quot;1.0&quot;,
   &quot;entries&quot;: [
     {
-      &quot;identifier&quot;: &quot;urn:air:acme.com:finance-a2a&quot;,
+      &quot;identifier&quot;: &quot;urn:air:acme.com:finance;a2a&quot;,
       &quot;version&quot;: &quot;2.1.0&quot;,
       &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
       &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance/v2.1.json&quot;,
       &quot;updatedAt&quot;: &quot;2026-03-15T10:00:00Z&quot;
     },
     {
-      &quot;identifier&quot;: &quot;urn:air:acme.com:finance-a2a&quot;,
+      &quot;identifier&quot;: &quot;urn:air:acme.com:finance;a2a&quot;,
       &quot;version&quot;: &quot;2.0.0&quot;,
       &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
       &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance/v2.0.json&quot;,
@@ -736,7 +736,7 @@ does not establish verification. Empty manifests MUST be omitted.</p>
 </dl>
 <p>For example, this unsigned entry carries independent contributions:</p>
 <pre><code class="language-json">{
-  &quot;identifier&quot;: &quot;urn:air:acme.com:finance-a2a&quot;,
+  &quot;identifier&quot;: &quot;urn:air:acme.com:finance;a2a&quot;,
   &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
   &quot;url&quot;: &quot;https://acme.com/finance.json&quot;,
   &quot;trustManifests&quot;: [
@@ -999,7 +999,7 @@ catalog signature includes complete nested Trust Manifests and their signatures.
 <pre><code class="language-json">{
   &quot;contributor&quot;: &quot;did:web:acme.com&quot;,
   &quot;subject&quot;: {
-    &quot;identifier&quot;: &quot;urn:air:acme.com:finance-a2a&quot;,
+    &quot;identifier&quot;: &quot;urn:air:acme.com:finance;a2a&quot;,
     &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
     &quot;digest&quot;: &quot;sha256:56bbd2ff730d81a52951fc2f58809dfb086b4be7a82766dcc18cfe32ff6acbbd&quot;
   },
@@ -1317,7 +1317,7 @@ its own <code>host</code> and entries:</p>
   },
   &quot;entries&quot;: [
     {
-      &quot;identifier&quot;: &quot;urn:air:acme.com:finance&quot;,
+      &quot;identifier&quot;: &quot;urn:air:acme.com:finance-services&quot;,
       &quot;displayName&quot;: &quot;Finance Services&quot;,
       &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
       &quot;url&quot;: &quot;https://acme.com/catalogs/finance.json&quot;
@@ -2057,7 +2057,7 @@ Digest and JWS strings in illustrative examples are placeholders.</p>
   },
   &quot;entries&quot;: [
     {
-      &quot;identifier&quot;: &quot;urn:air:acme.com:finance-a2a&quot;,
+      &quot;identifier&quot;: &quot;urn:air:acme.com:finance;a2a&quot;,
       &quot;version&quot;: &quot;2.1.0&quot;,
       &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
       &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance.json&quot;,
@@ -2088,7 +2088,7 @@ Digest and JWS strings in illustrative examples are placeholders.</p>
       ]
     },
     {
-      &quot;identifier&quot;: &quot;urn:air:acme.com:finance-mcp&quot;,
+      &quot;identifier&quot;: &quot;urn:air:acme.com:finance;mcp&quot;,
       &quot;version&quot;: &quot;1.4.0&quot;,
       &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
       &quot;url&quot;: &quot;https://api.acme-corp.com/mcp/server-card&quot;,
@@ -2112,12 +2112,12 @@ Digest and JWS strings in illustrative examples are placeholders.</p>
         &quot;specVersion&quot;: &quot;1.0&quot;,
         &quot;entries&quot;: [
           {
-            &quot;identifier&quot;: &quot;urn:air:acme.com:finance-a2a&quot;,
+            &quot;identifier&quot;: &quot;urn:air:acme.com:finance;a2a&quot;,
             &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
             &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance.json&quot;
           },
           {
-            &quot;identifier&quot;: &quot;urn:air:acme.com:finance-mcp&quot;,
+            &quot;identifier&quot;: &quot;urn:air:acme.com:finance;mcp&quot;,
             &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
             &quot;url&quot;: &quot;https://api.acme-corp.com/mcp/server-card&quot;
           },
@@ -2185,7 +2185,7 @@ document:</p>
       &quot;description&quot;: &quot;General-purpose corporate assistant agent.&quot;
     },
     {
-      &quot;identifier&quot;: &quot;urn:air:acme.com:finance&quot;,
+      &quot;identifier&quot;: &quot;urn:air:acme.com:finance-services&quot;,
       &quot;displayName&quot;: &quot;Finance Services&quot;,
       &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
       &quot;url&quot;: &quot;https://acme-corp.com/catalogs/finance.json&quot;,
@@ -2222,7 +2222,7 @@ catalogs.</p>
 represented as one catalog entry whose content is a nested catalog
 containing both protocol-specific entries:</p>
 <pre><code class="language-json">{
-  &quot;identifier&quot;: &quot;urn:air:acme.com:finance-agent&quot;,
+  &quot;identifier&quot;: &quot;urn:air:acme.com:finance&quot;,
   &quot;displayName&quot;: &quot;Acme Finance Agent&quot;,
   &quot;type&quot;: &quot;application/ai-catalog+json&quot;,
   &quot;description&quot;: &quot;Finance agent accessible via both MCP and A2A protocols.&quot;,
@@ -2238,12 +2238,12 @@ containing both protocol-specific entries:</p>
     &quot;specVersion&quot;: &quot;1.0&quot;,
     &quot;entries&quot;: [
       {
-        &quot;identifier&quot;: &quot;urn:air:acme.com:finance-mcp&quot;,
+        &quot;identifier&quot;: &quot;urn:air:acme.com:finance;mcp&quot;,
         &quot;type&quot;: &quot;application/mcp-server-card+json&quot;,
         &quot;url&quot;: &quot;https://api.acme-corp.com/mcp/server-card&quot;
       },
       {
-        &quot;identifier&quot;: &quot;urn:air:acme.com:finance-a2a&quot;,
+        &quot;identifier&quot;: &quot;urn:air:acme.com:finance;a2a&quot;,
         &quot;type&quot;: &quot;application/a2a-agent-card+json&quot;,
         &quot;url&quot;: &quot;https://api.acme-corp.com/agents/finance.json&quot;
       }
