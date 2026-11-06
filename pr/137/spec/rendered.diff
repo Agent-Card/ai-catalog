@@ -1,5 +1,33 @@
 --- a/base/rendered.txt
 +++ b/head/rendered.txt
+@@ -138,23 +138,23 @@
+ "specVersion": "1.0",
+ "entries": [
+ {
+-"identifier": "urn:air:example.com:skill:code-review",
++"identifier": "urn:air:example.com:code-review",
+ "displayName": "Code Review Assistant",
+ "type": "application/agent-skills+zip",
+ "url": "https://skills.example.com/code-review/skill.zip"
+ },
+ {
+-"identifier": "urn:air:example.com:mcp:weather",
++"identifier": "urn:air:example.com:weather",
+ "type": "application/mcp-server-card+json",
+ "url": "https://api.example.com/mcp/server-card"
+ },
+ {
+-"identifier": "urn:air:example.com:a2a:research",
++"identifier": "urn:air:example.com:research",
+ "type": "application/a2a-agent-card+json",
+ "url": "https://agents.example.com/researchAssistant"
+ },
+ {
+-"identifier": "urn:air:example.com:agent:productivity-plugin",
++"identifier": "urn:air:example.com:productivity-plugin",
+ "displayName": "Productivity Plugin",
+ "type": "application/agent-plugins+zip",
+ "description": "Tools for common productivity workflows.",
 @@ -234,19 +234,25 @@
  A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific urn:air naming structure with its own domain in the {publisher} segment. A catalog operator incorporating an entry for the first time with a publisher-authorized urn:air identifier MUST preserve that identifier exactly.
  
@@ -31,16 +59,230 @@
  
  For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.
  
-@@ -412,8 +418,10 @@
+@@ -412,9 +418,11 @@
  of an A2A Agent Card or the title field of an MCP Server Card.
  
  The trailing segment of the entry's identifier as a last
 -resort — the portion after its final : or / delimiter. For
 -example, urn:air:example.com:mcp:weather yields weather and
+-urn:air:anonymous.modelcontextprotocol.io:mcp:brave-search yields
 +resort — after removing any urn:air {kind} suffix, the portion after
 +its final : or / delimiter. For example,
-+urn:air:example.com:mcp:weather and urn:air:example.com:weather;mcp
++urn:air:example.com:finance:weather and urn:air:example.com:weather;mcp
 +yield weather and
- urn:air:anonymous.modelcontextprotocol.io:mcp:brave-search yields
++urn:air:anonymous.modelcontextprotocol.io:brave-search yields
  brave-search.
  
+ A consumer SHOULD NOT dereference an artifact at render time solely to
+@@ -514,14 +522,14 @@
+ "specVersion": "1.0",
+ "entries": [
+ {
+-"identifier": "urn:air:acme.com:agent:finance",
++"identifier": "urn:air:acme.com:finance-a2a",
+ "version": "2.1.0",
+ "type": "application/a2a-agent-card+json",
+ "url": "https://api.acme-corp.com/agents/finance/v2.1.json",
+ "updatedAt": "2026-03-15T10:00:00Z"
+ },
+ {
+-"identifier": "urn:air:acme.com:agent:finance",
++"identifier": "urn:air:acme.com:finance-a2a",
+ "version": "2.0.0",
+ "type": "application/a2a-agent-card+json",
+ "url": "https://api.acme-corp.com/agents/finance/v2.0.json",
+@@ -716,7 +724,7 @@
+ For example, this unsigned entry carries independent contributions:
+ 
+ {
+-"identifier": "urn:air:acme.com:agent:finance",
++"identifier": "urn:air:acme.com:finance-a2a",
+ "type": "application/a2a-agent-card+json",
+ "url": "https://acme.com/finance.json",
+ "trustManifests": [
+@@ -1029,7 +1037,7 @@
+ {
+ "contributor": "did:web:acme.com",
+ "subject": {
+-"identifier": "urn:air:acme.com:agent:finance",
++"identifier": "urn:air:acme.com:finance-a2a",
+ "type": "application/a2a-agent-card+json",
+ "digest": "sha256:56bbd2ff730d81a52951fc2f58809dfb086b4be7a82766dcc18cfe32ff6acbbd"
+ },
+@@ -1249,7 +1257,7 @@
+ matching the entry and verification of the artifact bytes against
+ entry.digest.
+ 
+-For urn:air:example.com:agent:billing, the publisher signer is therefore
++For urn:air:example.com:billing, the publisher signer is therefore
+ did:web:example.com. A valid signature by an assessor can endorse claims
+ about that same release, but does not satisfy publisher authorization.
+ Matching the publisher domain proves namespace control, not reputation,
+@@ -1367,19 +1375,19 @@
+ },
+ "entries": [
+ {
+-"identifier": "urn:air:acme.com:catalog:finance",
++"identifier": "urn:air:acme.com:finance",
+ "displayName": "Finance Services",
+ "type": "application/ai-catalog+json",
+ "url": "https://acme.com/catalogs/finance.json"
+ },
+ {
+-"identifier": "urn:air:acme.com:catalog:ml",
++"identifier": "urn:air:acme.com:ml",
+ "displayName": "ML Models",
+ "type": "application/ai-catalog+json",
+ "url": "https://acme.com/catalogs/ml.json"
+ },
+ {
+-"identifier": "urn:air:acme.com:catalog:devops",
++"identifier": "urn:air:acme.com:devops",
+ "displayName": "DevOps Tools",
+ "type": "application/ai-catalog+json",
+ "url": "https://acme.com/catalogs/devops.json"
+@@ -1393,7 +1401,7 @@
+ agent, an MCP server, and a dataset together:
+ 
+ {
+-"identifier": "urn:air:acme.com:plugin:finance-suite",
++"identifier": "urn:air:acme.com:finance-suite",
+ "displayName": "Finance Plugin",
+ "type": "application/ai-catalog+json",
+ "url": "https://acme.com/plugins/finance-suite.json",
+@@ -1447,7 +1455,7 @@
+ "specVersion": "1.0",
+ "entries": [
+ {
+-"identifier": "urn:air:treasury.gov:okf:fiscaldata",
++"identifier": "urn:air:treasury.gov:fiscaldata",
+ "type": "text/vnd.okf+markdown",
+ "tags": ["finance", "treasury"],
+ "extensions": {
+@@ -1829,8 +1837,8 @@
+ Identifier Typosquatting
+ 
+ Catalog entries are identified by URIs/URNs. An attacker can register
+-identifiers similar to legitimate ones (e.g., urn:air:acme.com:agent:financ
+-vs. urn:air:acme.com:agent:finance) to trick consumers into using a
++identifiers similar to legitimate ones (e.g., urn:air:acme.com:financ
++vs. urn:air:acme.com:finance) to trick consumers into using a
+ malicious artifact.
+ 
+ Registries and consumers SHOULD implement similarity checks on
+@@ -2183,7 +2191,7 @@
+ },
+ "entries": [
+ {
+-"identifier": "urn:air:acme.com:agent:finance-a2a",
++"identifier": "urn:air:acme.com:finance-a2a",
+ "version": "2.1.0",
+ "type": "application/a2a-agent-card+json",
+ "url": "https://api.acme-corp.com/agents/finance.json",
+@@ -2214,7 +2222,7 @@
+ ]
+ },
+ {
+-"identifier": "urn:air:acme.com:server:finance-mcp",
++"identifier": "urn:air:acme.com:finance-mcp",
+ "version": "1.4.0",
+ "type": "application/mcp-server-card+json",
+ "url": "https://api.acme-corp.com/mcp/server-card",
+@@ -2226,7 +2234,7 @@
+ "updatedAt": "2026-03-15T10:00:00Z"
+ },
+ {
+-"identifier": "urn:air:acme.com:plugin:finance-suite",
++"identifier": "urn:air:acme.com:finance-suite",
+ "displayName": "Acme Finance Suite",
+ "type": "application/ai-catalog+json",
+ "description": "A2A agent + MCP server + dataset for finance workflows.",
+@@ -2238,17 +2246,17 @@
+ "specVersion": "1.0",
+ "entries": [
+ {
+-"identifier": "urn:air:acme.com:agent:finance-a2a",
++"identifier": "urn:air:acme.com:finance-a2a",
+ "type": "application/a2a-agent-card+json",
+ "url": "https://api.acme-corp.com/agents/finance.json"
+ },
+ {
+-"identifier": "urn:air:acme.com:server:finance-mcp",
++"identifier": "urn:air:acme.com:finance-mcp",
+ "type": "application/mcp-server-card+json",
+ "url": "https://api.acme-corp.com/mcp/server-card"
+ },
+ {
+-"identifier": "urn:air:acme.com:data:market-2026q1",
++"identifier": "urn:air:acme.com:market-2026q1",
+ "displayName": "Market Dataset Q1 2026",
+ "type": "application/parquet",
+ "url": "https://data.acme-corp.com/market-2026q1.parquet",
+@@ -2273,7 +2281,7 @@
+ {
+ "contributor": "did:web:acme.com",
+ "subject": {
+-"identifier": "urn:air:acme.com:plugin:finance-suite",
++"identifier": "urn:air:acme.com:finance-suite",
+ "type": "application/ai-catalog+json",
+ "digest": "sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111"
+ },
+@@ -2304,14 +2312,14 @@
+ },
+ "entries": [
+ {
+-"identifier": "urn:air:acme.com:agent:assistant",
++"identifier": "urn:air:acme.com:assistant",
+ "version": "3.0.0",
+ "type": "application/a2a-agent-card+json",
+ "url": "https://api.acme-corp.com/agents/assistant.json",
+ "description": "General-purpose corporate assistant agent."
+ },
+ {
+-"identifier": "urn:air:acme.com:catalog:finance",
++"identifier": "urn:air:acme.com:finance",
+ "displayName": "Finance Services",
+ "type": "application/ai-catalog+json",
+ "url": "https://acme-corp.com/catalogs/finance.json",
+@@ -2319,7 +2327,7 @@
+ "tags": ["finance", "trading", "compliance"]
+ },
+ {
+-"identifier": "urn:air:acme.com:catalog:engineering",
++"identifier": "urn:air:acme.com:engineering",
+ "displayName": "Engineering Tools",
+ "type": "application/ai-catalog+json",
+ "url": "https://acme-corp.com/catalogs/engineering.json",
+@@ -2327,7 +2335,7 @@
+ "tags": ["engineering", "devops", "ci-cd"]
+ },
+ {
+-"identifier": "urn:air:acme.com:catalog:ml-models",
++"identifier": "urn:air:acme.com:ml-models",
+ "displayName": "ML Models",
+ "type": "application/ai-catalog+json",
+ "url": "https://acme-corp.com/catalogs/ml-models.json",
+@@ -2349,7 +2357,7 @@
+ containing both protocol-specific entries:
+ 
+ {
+-"identifier": "urn:air:acme.com:agent:finance",
++"identifier": "urn:air:acme.com:finance-agent",
+ "displayName": "Acme Finance Agent",
+ "type": "application/ai-catalog+json",
+ "description": "Finance agent accessible via both MCP and A2A protocols.",
+@@ -2365,12 +2373,12 @@
+ "specVersion": "1.0",
+ "entries": [
+ {
+-"identifier": "urn:air:acme.com:agent:finance:mcp",
++"identifier": "urn:air:acme.com:finance-mcp",
+ "type": "application/mcp-server-card+json",
+ "url": "https://api.acme-corp.com/mcp/server-card"
+ },
+ {
+-"identifier": "urn:air:acme.com:agent:finance:a2a",
++"identifier": "urn:air:acme.com:finance-a2a",
+ "type": "application/a2a-agent-card+json",
+ "url": "https://api.acme-corp.com/agents/finance"
+ }
