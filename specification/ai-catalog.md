@@ -100,6 +100,19 @@ An AI Catalog document is identified by the media type:
 
 ## Top-Level Structure
 
+Producers MUST ensure that each complete AI Catalog document is valid input
+to JCS [[RFC8785]], including all nested values, whether or not the catalog is
+signed. Consumers MAY reject documents that do not satisfy this requirement.
+This requirement does not mandate validation during ingestion. Producers need
+not serialize the JSON in canonical form.
+
+Consumers MAY reject JSON objects containing duplicate member names.
+Otherwise, they MUST retain only the last occurrence of each name after JSON
+escape processing. This rule also applies when preparing data for JCS-based
+signing or verification; it does not require a separate duplicate-detection
+pass. Signature verification and subsequent processing of authenticated
+claims MUST use the same resulting JSON value.
+
 An AI Catalog document is a JSON object that MUST contain the following
 members:
 
@@ -165,8 +178,9 @@ The following members are OPTIONAL:
 
 `additionalSignatures`
 : Reserved for future use. Producers SHOULD omit this member. Consumers MUST
-  accept and ignore it regardless of its value. It is excluded from this
-  catalog's signature payload; it establishes no endorsement in this version.
+  accept and ignore any value permitted by the catalog's JCS input
+  requirements. It is excluded from this catalog's signature payload; it
+  establishes no endorsement in this version.
 
 ## Host Info
 
@@ -257,7 +271,8 @@ provide the artifact content:
 `data`
 : A JSON value containing the complete artifact document inline. The
   structure of this value is determined by the `type` field and
-  is opaque to this specification.
+  is opaque to this specification. Like all catalog data, it is subject to
+  the JCS input requirements in [Top-Level Structure](#top-level-structure).
 
 The following members are OPTIONAL:
 
@@ -339,9 +354,8 @@ The following members are OPTIONAL:
 `digest`
 : A string containing the artifact content digest in [Digest Format](#digest-format).
   For `url`, hash the exact retrieved artifact bytes. For `data`, hash the
-  UTF-8 JCS-canonicalized [[RFC8785]] JSON value. Inline `data` MUST satisfy
-  JCS's input requirements for artifact verification to succeed. A digest
-  alone does not authenticate its source; see
+  UTF-8 JCS-canonicalized [[RFC8785]] JSON value. A digest alone does not
+  authenticate its source; see
   [Entry Release Coverage](#entry-release-coverage).
 
 `trustManifests`
@@ -630,8 +644,9 @@ does not establish verification. Empty manifests MUST be omitted.
 
 `additionalSignatures`
 : Reserved for future use. Producers SHOULD omit this member. Consumers MUST
-  accept and ignore it regardless of its value. It is excluded from this
-  manifest's signature payload; it establishes no endorsement in this version.
+  accept and ignore any value permitted by the catalog's JCS input
+  requirements. It is excluded from this manifest's signature payload; it
+  establishes no endorsement in this version.
 
 `trustSchema`
 : A [Trust Schema object](#trust-schema-object) describing the framework the
@@ -964,9 +979,9 @@ Canonicalize this payload with JCS [[RFC8785]]. Its UTF-8 bytes are the JWS
 payload. Use ordinary base64url-encoded JWS signing input, then omit only the
 payload segment from the stored compact serialization, as specified in
 Appendix F of [[RFC7515]]. Verifiers reconstruct that segment to verify the
-JWS. The payload MUST satisfy JCS's I-JSON constraints; parsers MUST reject
-duplicate JSON member names rather than silently discard one. Large integers
-that cannot round-trip as IEEE 754 doubles SHOULD be encoded as strings.
+JWS. The JSON value supplied to JCS MUST satisfy its input requirements.
+Large integers that cannot round-trip as IEEE 754 doubles SHOULD be encoded
+as strings.
 
 The protected header MUST contain `alg` and `typ`. The `typ` value MUST
 exactly match the kind of containing object:

@@ -27,6 +27,12 @@ Two optional top-level fields round out a complete catalog:
 `extensions`
 :   A map of custom or vendor-specific extensions, keyed by a URL or reverse-DNS name. See [Extensions](#extensions).
 
+The complete catalog must be valid input to JCS (RFC 8785), even when
+unsigned, so others can import its entries or embed the catalog without
+introducing canonicalization problems. This applies to all values, including
+extensions and inline artifacts. You do not need to serialize the JSON in
+canonical form.
+
 ## Adding a `host` object
 
 The `host` object identifies who operates the catalog. Adding it upgrades you to Level 2 (Discoverable):
@@ -149,7 +155,7 @@ Each entry must provide its artifact content via exactly one of these fields:
 :   A URL where clients fetch the full artifact. The server at that URL should respond with the content type declared in `type`. This is the recommended approach for most cases.
 
 `data`
-:   The complete artifact document embedded directly as a JSON value. The structure is determined by the `type` field and is opaque to the AI Catalog spec.
+:   The complete artifact document embedded directly as a JSON value. The structure is determined by the `type` field and is opaque to the AI Catalog spec. Like all catalog data, the value must be valid input to JCS; canonical serialization is not required.
 
 **Use `url` when:**
 - The artifact is large
