@@ -31,7 +31,7 @@ An agent that supports both MCP and A2A protocols can be represented as a single
           {
             "identifier": "urn:air:acme-corp.com:finance-a2a",
             "type": "application/a2a-agent-card+json",
-            "url": "https://api.acme-corp.com/agents/finance"
+            "url": "https://api.acme-corp.com/agents/finance.json"
           }
         ]
       },

@@ -148,7 +148,7 @@ An agent that supports both MCP and A2A can be represented as one logical entry 
       {
         "identifier": "urn:air:acme-corp.com:finance-a2a",
         "type": "application/a2a-agent-card+json",
-        "url": "https://api.acme-corp.com/agents/finance"
+        "url": "https://api.acme-corp.com/agents/finance.json"
       }
     ]
   }
