@@ -102,7 +102,7 @@ authored by hand:
       "size": 1024,
       "artifactType": "application/a2a-agent-card+json",
       "annotations": {
-        "ai-catalog.identifier": "urn:air:acme.com:finance-a2a",
+        "ai-catalog.identifier": "urn:air:acme.com:finance;a2a",
         "ai-catalog.displayName": "Acme Finance A2A Agent"
       }
     },
@@ -112,7 +112,7 @@ authored by hand:
       "size": 512,
       "artifactType": "application/mcp-server-card+json",
       "annotations": {
-        "ai-catalog.identifier": "urn:air:acme.com:finance-mcp",
+        "ai-catalog.identifier": "urn:air:acme.com:finance;mcp",
         "ai-catalog.displayName": "Acme Finance MCP Server"
       }
     }

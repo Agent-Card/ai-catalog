@@ -19,7 +19,7 @@ An entry whose `type` is `application/ai-catalog+json` is a nested catalog refer
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:finance",
+  "identifier": "urn:air:acme-corp.com:finance-services",
   "displayName": "Finance Services",
   "type": "application/ai-catalog+json",
   "url": "https://acme-corp.com/catalogs/finance.json",
@@ -53,7 +53,7 @@ An enterprise can organize a large artifact inventory into browsable categories:
       "description": "General-purpose corporate assistant agent."
     },
     {
-      "identifier": "urn:air:acme-corp.com:finance",
+      "identifier": "urn:air:acme-corp.com:finance-services",
       "displayName": "Finance Services",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/finance.json",
@@ -100,12 +100,12 @@ Bundle related artifacts together using the `data` field to embed the child cata
     "specVersion": "1.0",
     "entries": [
       {
-        "identifier": "urn:air:acme-corp.com:finance-a2a",
+        "identifier": "urn:air:acme-corp.com:finance;a2a",
         "type": "application/a2a-agent-card+json",
         "url": "https://api.acme-corp.com/agents/finance.json"
       },
       {
-        "identifier": "urn:air:acme-corp.com:finance-mcp",
+        "identifier": "urn:air:acme-corp.com:finance;mcp",
         "type": "application/mcp-server-card+json",
         "url": "https://api.acme-corp.com/mcp/server-card"
       },
@@ -128,7 +128,7 @@ An agent that supports both MCP and A2A can be represented as one logical entry 
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:finance-agent",
+  "identifier": "urn:air:acme-corp.com:finance",
   "displayName": "Acme Finance Agent",
   "type": "application/ai-catalog+json",
   "description": "Finance agent accessible via both MCP and A2A protocols.",
@@ -141,12 +141,12 @@ An agent that supports both MCP and A2A can be represented as one logical entry 
     "specVersion": "1.0",
     "entries": [
       {
-        "identifier": "urn:air:acme-corp.com:finance-mcp",
+        "identifier": "urn:air:acme-corp.com:finance;mcp",
         "type": "application/mcp-server-card+json",
         "url": "https://api.acme-corp.com/mcp/server-card"
       },
       {
-        "identifier": "urn:air:acme-corp.com:finance-a2a",
+        "identifier": "urn:air:acme-corp.com:finance;a2a",
         "type": "application/a2a-agent-card+json",
         "url": "https://api.acme-corp.com/agents/finance.json"
       }

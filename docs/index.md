@@ -33,7 +33,7 @@ AI Catalog solves this with a simple, typed JSON format that indexes any kind of
       "url": "https://agents.acme-corp.com/research"
     },
     {
-      "identifier": "urn:air:acme-corp.com:finance",
+      "identifier": "urn:air:acme-corp.com:finance-services",
       "displayName": "Finance Suite",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/finance.json"

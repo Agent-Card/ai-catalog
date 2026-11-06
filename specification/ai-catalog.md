@@ -467,14 +467,14 @@ For example, a catalog listing two versions of the same agent:
   "specVersion": "1.0",
   "entries": [
     {
-      "identifier": "urn:air:acme.com:finance-a2a",
+      "identifier": "urn:air:acme.com:finance;a2a",
       "version": "2.1.0",
       "type": "application/a2a-agent-card+json",
       "url": "https://api.acme-corp.com/agents/finance/v2.1.json",
       "updatedAt": "2026-03-15T10:00:00Z"
     },
     {
-      "identifier": "urn:air:acme.com:finance-a2a",
+      "identifier": "urn:air:acme.com:finance;a2a",
       "version": "2.0.0",
       "type": "application/a2a-agent-card+json",
       "url": "https://api.acme-corp.com/agents/finance/v2.0.json",
@@ -661,7 +661,7 @@ For example, this unsigned entry carries independent contributions:
 
 ```json
 {
-  "identifier": "urn:air:acme.com:finance-a2a",
+  "identifier": "urn:air:acme.com:finance;a2a",
   "type": "application/a2a-agent-card+json",
   "url": "https://acme.com/finance.json",
   "trustManifests": [
@@ -954,7 +954,7 @@ For example, a signed release-only manifest has this payload:
 {
   "contributor": "did:web:acme.com",
   "subject": {
-    "identifier": "urn:air:acme.com:finance-a2a",
+    "identifier": "urn:air:acme.com:finance;a2a",
     "type": "application/a2a-agent-card+json",
     "digest": "sha256:56bbd2ff730d81a52951fc2f58809dfb086b4be7a82766dcc18cfe32ff6acbbd"
   },
@@ -1277,7 +1277,7 @@ its own `host` and entries:
   },
   "entries": [
     {
-      "identifier": "urn:air:acme.com:finance",
+      "identifier": "urn:air:acme.com:finance-services",
       "displayName": "Finance Services",
       "type": "application/ai-catalog+json",
       "url": "https://acme.com/catalogs/finance.json"
@@ -2060,7 +2060,7 @@ Digest and JWS strings in illustrative examples are placeholders.
   },
   "entries": [
     {
-      "identifier": "urn:air:acme.com:finance-a2a",
+      "identifier": "urn:air:acme.com:finance;a2a",
       "version": "2.1.0",
       "type": "application/a2a-agent-card+json",
       "url": "https://api.acme-corp.com/agents/finance.json",
@@ -2091,7 +2091,7 @@ Digest and JWS strings in illustrative examples are placeholders.
       ]
     },
     {
-      "identifier": "urn:air:acme.com:finance-mcp",
+      "identifier": "urn:air:acme.com:finance;mcp",
       "version": "1.4.0",
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/mcp/server-card",
@@ -2115,12 +2115,12 @@ Digest and JWS strings in illustrative examples are placeholders.
         "specVersion": "1.0",
         "entries": [
           {
-            "identifier": "urn:air:acme.com:finance-a2a",
+            "identifier": "urn:air:acme.com:finance;a2a",
             "type": "application/a2a-agent-card+json",
             "url": "https://api.acme-corp.com/agents/finance.json"
           },
           {
-            "identifier": "urn:air:acme.com:finance-mcp",
+            "identifier": "urn:air:acme.com:finance;mcp",
             "type": "application/mcp-server-card+json",
             "url": "https://api.acme-corp.com/mcp/server-card"
           },
@@ -2190,7 +2190,7 @@ document:
       "description": "General-purpose corporate assistant agent."
     },
     {
-      "identifier": "urn:air:acme.com:finance",
+      "identifier": "urn:air:acme.com:finance-services",
       "displayName": "Finance Services",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/finance.json",
@@ -2230,7 +2230,7 @@ containing both protocol-specific entries:
 
 ```json
 {
-  "identifier": "urn:air:acme.com:finance-agent",
+  "identifier": "urn:air:acme.com:finance",
   "displayName": "Acme Finance Agent",
   "type": "application/ai-catalog+json",
   "description": "Finance agent accessible via both MCP and A2A protocols.",
@@ -2246,12 +2246,12 @@ containing both protocol-specific entries:
     "specVersion": "1.0",
     "entries": [
       {
-        "identifier": "urn:air:acme.com:finance-mcp",
+        "identifier": "urn:air:acme.com:finance;mcp",
         "type": "application/mcp-server-card+json",
         "url": "https://api.acme-corp.com/mcp/server-card"
       },
       {
-        "identifier": "urn:air:acme.com:finance-a2a",
+        "identifier": "urn:air:acme.com:finance;a2a",
         "type": "application/a2a-agent-card+json",
         "url": "https://api.acme-corp.com/agents/finance.json"
       }

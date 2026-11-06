@@ -23,7 +23,7 @@ The root catalog is served at `/.well-known/ai-catalog.json`:
       "description": "General-purpose corporate assistant agent."
     },
     {
-      "identifier": "urn:air:acme-corp.com:finance",
+      "identifier": "urn:air:acme-corp.com:finance-services",
       "displayName": "Finance Services",
       "type": "application/ai-catalog+json",
       "url": "https://acme-corp.com/catalogs/finance.json",
@@ -55,13 +55,13 @@ The Finance team owns and hosts `finance.json`. It can be updated independently 
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:finance-a2a",
+      "identifier": "urn:air:acme-corp.com:finance;a2a",
       "type": "application/a2a-agent-card+json",
       "url": "https://api.acme-corp.com/agents/finance.json",
       "tags": ["finance", "trading"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:finance-mcp",
+      "identifier": "urn:air:acme-corp.com:finance;mcp",
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/mcp/server-card",
       "tags": ["finance", "mcp"]
@@ -81,7 +81,7 @@ The Finance team owns and hosts `finance.json`. It can be updated independently 
 
 **Direct entries** (like `urn:air:acme-corp.com:assistant`) appear directly in the root catalog. Clients see them without any additional fetching. The `displayName` is omitted for A2A entries since the agent card itself carries a canonical name.
 
-**Nested catalog entries** (like `urn:air:acme-corp.com:finance`) have `type: "application/ai-catalog+json"` and set `displayName` since catalogs don't embed their own name. Clients follow the `url` to fetch the sub-catalog and process it as another AI Catalog.
+**Nested catalog entries** (like `urn:air:acme-corp.com:finance-services`) have `type: "application/ai-catalog+json"` and set `displayName` since catalogs don't embed their own name. Clients follow the `url` to fetch the sub-catalog and process it as another AI Catalog.
 
 **Dataset entries** set `displayName` since Parquet files don't carry a human-readable name.
 
