@@ -1,6 +1,6 @@
 # ADR-0028: Open the AI Catalog and Catalog Entry Objects to Unrecognized Members
 
-**Status:** Proposed (exploratory draft; expect iteration)
+**Status:** Accepted
 
 **Date:** 2026-10-29
 
