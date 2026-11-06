@@ -258,21 +258,9 @@ Both fields are optional. The publisher or catalog operator can supply these lin
 
 ### Members beyond the specification
 
-The top-level catalog object and each entry are open: they may contain members the specification does not define. The spec assigns them no meaning. Consumers ignore them, should preserve them when republishing an entry, and keep them inside signed payloads. Any undefined name may be claimed by a future version of the spec, so use `extensions` for data that needs a stable, namespaced home. See [Unrecognized Members](https://agent-card.github.io/ai-catalog/spec/#unrecognized-members).
+The top-level catalog object, each entry, and the Host Info and Publisher objects are open: they may contain members the specification does not define. The spec assigns them no meaning. Consumers ignore them, should preserve them when republishing an entry, and keep them inside signed payloads. Any undefined name may be claimed by a future version of the spec, so use `extensions` for data that needs a stable, namespaced home. See [Unrecognized Members](https://agent-card.github.io/ai-catalog/spec/#unrecognized-members).
 
-This is what lets a publisher follow a convention the spec does not define, for example a JSON-LD-style `@context` with prefixed members, or add private annotations to an internal catalog:
-
-```json
-{
-  "@context": { "acme": "https://acme.example/vocab#" },
-  "identifier": "urn:air:acme.example:server:weather",
-  "type": "application/mcp-server-card+json",
-  "url": "https://api.acme.example/mcp/weather.json",
-  "acme:serviceTier": "enterprise"
-}
-```
-
-A consumer of the spec reads `identifier`, `type`, and `url`; everything else is passed through.
+This is what lets a publisher follow a convention the spec does not define, for example a JSON-LD-style `@context` with prefixed members, or add private annotations to an internal catalog. A consumer of the spec reads the members the spec defines; everything else is passed through.
 
 ## Complete example
 

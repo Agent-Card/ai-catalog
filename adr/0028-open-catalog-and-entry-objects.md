@@ -48,9 +48,9 @@ anyone else's specification.
 
 ## Decision
 
-The AI Catalog top-level object and Catalog Entry objects are explicitly
-open. The CDDL gains `* text => any` on both maps, and a new
-*Unrecognized Members* section defines four consumer rules:
+The AI Catalog top-level object, Catalog Entry, Host Info, and Publisher
+objects are explicitly open. The CDDL gains `* text => any` on all four
+maps, and a new *Unrecognized Members* section defines four consumer rules:
 
 1. Consumers MUST NOT reject a document for containing unrecognized members.
 2. Consumers MUST NOT derive semantics defined by this specification from

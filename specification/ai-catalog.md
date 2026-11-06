@@ -203,6 +203,9 @@ For example:
 }
 ```
 
+A Host Info object MAY also contain members this specification does not
+define. See [Unrecognized Members](#unrecognized-members).
+
 ## Catalog Entry
 
 A Catalog Entry object describes a single AI artifact in the catalog.
@@ -569,6 +572,9 @@ The following members are OPTIONAL:
 `identityType`
 : A string providing a type hint for the publisher identifier (e.g.,
   "did", "dns").
+
+A Publisher object MAY also contain members this specification does not
+define. See [Unrecognized Members](#unrecognized-members).
 
 # Trust Manifest
 
@@ -1441,9 +1447,9 @@ For example, this entry excerpt supplies both links:
 
 # Unrecognized Members
 
-The AI Catalog top-level object and Catalog Entry objects are open: in
-addition to the members this specification defines, they MAY contain
-members it does not define. Such members are *unrecognized members*.
+The AI Catalog top-level object, Catalog Entry, Host Info, and Publisher
+objects are open: in addition to the members this specification defines,
+they MAY contain members it does not define. Such members are *unrecognized members*.
 This section states what an unrecognized member means to a consumer of
 this specification, which is nothing, and what a consumer does with it.
 
@@ -1490,8 +1496,8 @@ the ecosystem uses them.
 
 ## Trust and Signing
 
-An unrecognized member on a Catalog Entry is not covered by any Trust
-Manifest `subject` and is not a claim of the entry's publisher unless
+An unrecognized member on a Catalog Entry or its Publisher object is not
+covered by any Trust Manifest `subject` and is not a claim of the entry's publisher unless
 another specification says so. A catalog signature covers unrecognized
 members as part of the catalog snapshot (see
 [Catalog Snapshot Coverage](#catalog-snapshot-coverage)), subject to
@@ -1512,36 +1518,6 @@ catalog signer published those bytes, not what they mean.
 
 These examples are illustrative. None of them is a convention this
 specification defines or recommends.
-
-**Namespaced members following a linked-data convention.** Some producers
-want to describe entries with terms drawn from other vocabularies, using a
-prefix map in the style of JSON-LD. The entry below is a valid Catalog Entry.
-`@context`, `okf:taxonomy`, and `okf:conformsTo` are unrecognized members. A
-consumer of this specification reads `identifier`, `type`, `url`, and `tags`
-exactly as it would without them; a consumer that implements the convention
-can do more. A producer that prefers a defined extension point can carry the
-same vocabulary under an `extensions` key instead, as shown in
-[Extensions](#extensions).
-
-```json
-{
-  "specVersion": "1.0",
-  "entries": [
-    {
-      "@context": {
-        "okf": "https://openknowledgeformat.org/ns#",
-        "us-gaap": "https://xbrl.fasb.org/us-gaap/"
-      },
-      "identifier": "urn:air:treasury.gov:okf:fiscaldata",
-      "type": "text/vnd.okf+markdown",
-      "url": "https://example.org/sources/treasury-fiscaldata.md",
-      "tags": ["finance", "treasury"],
-      "okf:taxonomy": "us-gaap",
-      "okf:conformsTo": ["us-gaap:Revenue"]
-    }
-  ]
-}
-```
 
 **Local annotations in a private catalog.** An internal catalog that is
 never federated may annotate entries with members meaningful only inside the
@@ -2075,10 +2051,11 @@ Related Information:
 
 The following CDDL [[RFC8610]] defines the structural schema. The normative
 prose additionally constrains contributor URIs, manifest substance, subject
-binding, timestamp validity, and signature verification. The `AICatalog`
-and `CatalogEntry` maps are explicitly open (`* text => any`), as defined in
-[Unrecognized Members](#unrecognized-members). The remaining maps describe
-recognized members only; under [Version Handling](#version-handling),
+binding, timestamp validity, and signature verification. The `AICatalog`,
+`CatalogEntry`, `HostInfo`, and `Publisher` maps are explicitly open
+(`* text => any`), as defined in
+[Unrecognized Members](#unrecognized-members). The Trust Manifest maps
+describe recognized members only; under [Version Handling](#version-handling),
 consumers MUST ignore unrecognized members when validating any of these
 structures, but MUST retain them when constructing signed payloads.
 
@@ -2099,7 +2076,8 @@ HostInfo = {
   displayName: text,
   ? identifier: text,
   ? documentationUrl: text,
-  ? logoUrl: text
+  ? logoUrl: text,
+  * text => any
 }
 
 CatalogEntry = {
@@ -2121,7 +2099,8 @@ CatalogEntry = {
 Publisher = {
   identifier: text,
   displayName: text,
-  ? identityType: text
+  ? identityType: text,
+  * text => any
 }
 ```
 
