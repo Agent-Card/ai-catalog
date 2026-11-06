@@ -1408,7 +1408,7 @@
 <ol>
 <li><code>displayName</code> on the entry, if present — always takes precedence</li>
 <li>The artifact's own canonical name, if you've already fetched it (e.g., <code>name</code> on an A2A Agent Card, <code>title</code> on an MCP Server Card)</li>
-<li>The trailing segment of the <code>identifier</code>, without any <code>urn:air</code> <code>;kind</code> suffix, as a fallback (e.g., <code>urn:air:example.com:mcp:weather</code> or <code>urn:air:example.com:weather;mcp</code> → <code>weather</code>)</li>
+<li>The trailing segment of the <code>identifier</code>, without any <code>urn:air</code> <code>;kind</code> suffix, as a fallback (e.g., <code>urn:air:example.com:finance:weather</code> or <code>urn:air:example.com:weather;mcp</code> → <code>weather</code>)</li>
 </ol>
 <p>Avoid fetching an artifact at render time solely to obtain a name — resolve and cache the name at ingestion instead.</p>
 <h2 id="resolving-artifacts">Resolving artifacts<a class="headerlink" href="#resolving-artifacts" title="Permanent link">&para;</a></h2>
