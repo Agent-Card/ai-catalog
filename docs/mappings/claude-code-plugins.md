@@ -140,7 +140,7 @@ follows:
   },
   "entries": [
     {
-      "identifier": "urn:air:plugins.example:claude-code:review-tools",
+      "identifier": "urn:air:plugins.example:claude-code/review-tools",
       "type": "application/vnd.example.claude-code-plugin+json",
       "url": "https://plugins.example/artifacts/review-tools/1.2.0/plugin.json",
       "tags": ["development", "code-review", "review", "quality"],
