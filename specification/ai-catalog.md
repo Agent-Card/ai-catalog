@@ -1510,11 +1510,11 @@ they mean.
 
 | | `extensions` | Unrecognized members |
 |---|---|---|
-| Defined by this specification | Yes: key rules and official extensions | No |
-| Can collide with a future core member | No, keys are namespaced | Yes, no stability guarantee |
-| Meaning to a consumer of this specification | Whatever the extension defines | None |
-| Handling | Ignore unknown keys; retain in signed payloads | Ignore; preserve on republication; retain in signed payloads |
-| Intended for | Publisher-owned, named extensions | Outside conventions, local annotations, experimentation |
+| **Defined by this specification** | Yes: key rules and official extensions | No |
+| **Can collide with a future core member** | No, keys are namespaced | Yes, no stability guarantee |
+| **Meaning to a consumer of this specification** | Whatever the extension defines | None |
+| **Handling** | Ignore unknown keys; retain in signed payloads | Ignore; preserve on republication; retain in signed payloads |
+| **Intended for** | Publisher-owned, named extensions | Outside conventions, local annotations, experimentation |
 
 ## Examples
 
