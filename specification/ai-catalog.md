@@ -1496,13 +1496,15 @@ the ecosystem uses them.
 
 ## Trust and Signing
 
-An unrecognized member on a Catalog Entry or its Publisher object is not
-covered by any Trust Manifest `subject` and is not a claim of the entry's publisher unless
-another specification says so. A catalog signature covers unrecognized
-members as part of the catalog snapshot (see
+Unrecognized members within a Trust Manifest are signed as part of that
+Trust Manifest (see
+[Signed Payload and JWS Construction](#signed-payload-and-jws-construction)).
+Unrecognized members anywhere within a catalog are signed as part of that
+catalog's signature (see
 [Catalog Snapshot Coverage](#catalog-snapshot-coverage)), subject to
-[Catalog Authorization](#catalog-authorization); it authenticates that the
-catalog signer published those bytes, not what they mean.
+[Catalog Authorization](#catalog-authorization). In both cases the
+signature authenticates that the signer published those bytes, not what
+they mean.
 
 ## Relationship to `extensions`
 
