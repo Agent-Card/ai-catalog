@@ -1450,8 +1450,6 @@ For example, this entry excerpt supplies both links:
 The AI Catalog top-level object, Catalog Entry, Host Info, and Publisher
 objects are open: in addition to the members this specification defines,
 they MAY contain members it does not define. Such members are *unrecognized members*.
-This section states what an unrecognized member means to a consumer of
-this specification, which is nothing, and what a consumer does with it.
 
 This specification assigns no meaning to any unrecognized member. It takes
 no position on any convention a producer follows when choosing them,
