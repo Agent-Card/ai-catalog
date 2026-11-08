@@ -85,8 +85,6 @@
 +The AI Catalog top-level object, Catalog Entry, Host Info, and Publisher
 +objects are open: in addition to the members this specification defines,
 +they MAY contain members it does not define. Such members are unrecognized members.
-+This section states what an unrecognized member means to a consumer of
-+this specification, which is nothing, and what a consumer does with it.
 +
 +This specification assigns no meaning to any unrecognized member. It takes
 +no position on any convention a producer follows when choosing them,
@@ -134,13 +132,15 @@
 +
 +Trust and Signing
 +
-+An unrecognized member on a Catalog Entry or its Publisher object is not
-+covered by any Trust Manifest subject and is not a claim of the entry's publisher unless
-+another specification says so. A catalog signature covers unrecognized
-+members as part of the catalog snapshot (see
++Unrecognized members within a Trust Manifest are signed as part of that
++Trust Manifest (see
++Signed Payload and JWS Construction).
++Unrecognized members anywhere within a catalog are signed as part of that
++catalog's signature (see
 +Catalog Snapshot Coverage), subject to
-+Catalog Authorization; it authenticates that the
-+catalog signer published those bytes, not what they mean.
++Catalog Authorization. In both cases the
++signature authenticates that the signer published those bytes, not what
++they mean.
 +
 +Relationship to `extensions`
 +

@@ -80,9 +80,7 @@
 +<h1>Unrecognized Members</h1>
 +<p>The AI Catalog top-level object, Catalog Entry, Host Info, and Publisher
 +objects are open: in addition to the members this specification defines,
-+they MAY contain members it does not define. Such members are <em>unrecognized members</em>.
-+This section states what an unrecognized member means to a consumer of
-+this specification, which is nothing, and what a consumer does with it.</p>
++they MAY contain members it does not define. Such members are <em>unrecognized members</em>.</p>
 +<p>This specification assigns no meaning to any unrecognized member. It takes
 +no position on any convention a producer follows when choosing them,
 +including conventions defined by other specifications. A producer may use
@@ -124,13 +122,15 @@
 +</section>
 +<section id="trust-and-signing">
 +<h2>Trust and Signing</h2>
-+<p>An unrecognized member on a Catalog Entry or its Publisher object is not
-+covered by any Trust Manifest <code>subject</code> and is not a claim of the entry's publisher unless
-+another specification says so. A catalog signature covers unrecognized
-+members as part of the catalog snapshot (see
++<p>Unrecognized members within a Trust Manifest are signed as part of that
++Trust Manifest (see
++<a href="#signed-payload-and-jws-construction">Signed Payload and JWS Construction</a>).
++Unrecognized members anywhere within a catalog are signed as part of that
++catalog's signature (see
 +<a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>), subject to
-+<a href="#catalog-authorization">Catalog Authorization</a>; it authenticates that the
-+catalog signer published those bytes, not what they mean.</p>
++<a href="#catalog-authorization">Catalog Authorization</a>. In both cases the
++signature authenticates that the signer published those bytes, not what
++they mean.</p>
 +</section>
 +<section id="relationship-to-extensions">
 +<h2>Relationship to `extensions`</h2>
@@ -144,27 +144,27 @@
 +</thead>
 +<tbody>
 +<tr>
-+<td>Defined by this specification</td>
++<td><strong>Defined by this specification</strong></td>
 +<td>Yes: key rules and official extensions</td>
 +<td>No</td>
 +</tr>
 +<tr>
-+<td>Can collide with a future core member</td>
++<td><strong>Can collide with a future core member</strong></td>
 +<td>No, keys are namespaced</td>
 +<td>Yes, no stability guarantee</td>
 +</tr>
 +<tr>
-+<td>Meaning to a consumer of this specification</td>
++<td><strong>Meaning to a consumer of this specification</strong></td>
 +<td>Whatever the extension defines</td>
 +<td>None</td>
 +</tr>
 +<tr>
-+<td>Handling</td>
++<td><strong>Handling</strong></td>
 +<td>Ignore unknown keys; retain in signed payloads</td>
 +<td>Ignore; preserve on republication; retain in signed payloads</td>
 +</tr>
 +<tr>
-+<td>Intended for</td>
++<td><strong>Intended for</strong></td>
 +<td>Publisher-owned, named extensions</td>
 +<td>Outside conventions, local annotations, experimentation</td>
 +</tr>
