@@ -158,6 +158,8 @@ The catalog root can carry one `signature` object authenticating the complete ca
 
 The protected JWS header uses `typ: "ai-catalog+jws"`. Adding or changing a nested manifest or signature changes the snapshot and requires a new catalog signature.
 
+To attribute the snapshot to its declared operator, the `did:web` Catalog Profile applies the Signer Profile and requires the authenticated root `signature.signer` to exactly equal `host.identifier`. Use the same `did-web-v1` selector. This identifies the operator endorsing the snapshot; consumers still decide whether to trust that operator. It does not authenticate the publishers of individual entries.
+
 ## Complete example
 
 An entry with a contributor manifest, artifact digest, policy links, and a signature. The manifest signature endorses the artifact but does not authenticate the policy links in the entry extension. The digest and JWS values are illustrative placeholders:
