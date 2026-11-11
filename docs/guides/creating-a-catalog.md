@@ -256,6 +256,12 @@ Use the official `https://ai-catalog.org/extensions/policy-urls` entry extension
 
 Both fields are optional. The publisher or catalog operator can supply these links; they describe the artifact's governing policies, not the operator's own catalog policy. A Trust Manifest signature does not authenticate the extension. A catalog signature covers it as part of its signer's snapshot, with signer authorization checked separately. Signing the URLs does not authenticate the documents served there.
 
+### Members beyond the specification
+
+The top-level catalog object, each entry, and the Host Info and Publisher objects are open: they may contain members the specification does not define. The spec assigns them no meaning. Consumers ignore them, should preserve them when republishing an entry, and keep them inside signed payloads. Any undefined name may be claimed by a future version of the spec, so use `extensions` for data that needs a stable, namespaced home. See [Unrecognized Members](https://agent-card.github.io/ai-catalog/spec/#unrecognized-members).
+
+This is what lets a publisher follow a convention the spec does not define, for example a JSON-LD-style `@context` with prefixed members, or add private annotations to an internal catalog. A consumer of the spec reads the members the spec defines; everything else is passed through.
+
 ## Complete example
 
 ```json

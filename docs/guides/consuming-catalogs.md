@@ -36,7 +36,7 @@ A valid catalog has at minimum:
 
 Always check `specVersion` first:
 
-- If the **major version** matches what you support, proceed (ignore unrecognized fields)
+- If the **major version** matches what you support, proceed (ignore unrecognized members, and keep them if you republish the entry)
 - If the **major version** is higher than you support, reject with an informative error — don't silently misinterpret it
 - Minor version differences (e.g., you support 1.0, the catalog says 1.1) are safe to ignore
 
