@@ -1372,7 +1372,7 @@
 </span></code></pre></div>
 <p>Always check <code>specVersion</code> first:</p>
 <ul>
-<li>If the <strong>major version</strong> matches what you support, proceed (ignore unrecognized fields)</li>
+<li>If the <strong>major version</strong> matches what you support, proceed (ignore unrecognized members, and keep them if you republish the entry)</li>
 <li>If the <strong>major version</strong> is higher than you support, reject with an informative error — don't silently misinterpret it</li>
 <li>Minor version differences (e.g., you support 1.0, the catalog says 1.1) are safe to ignore</li>
 </ul>

@@ -641,6 +641,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#members-beyond-the-specification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Members beyond the specification
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1426,6 +1437,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#members-beyond-the-specification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Members beyond the specification
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1773,6 +1795,9 @@
 </span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>Both fields are optional. The publisher or catalog operator can supply these links; they describe the artifact's governing policies, not the operator's own catalog policy. A Trust Manifest signature does not authenticate the extension. A catalog signature covers it as part of its signer's snapshot, with signer authorization checked separately. Signing the URLs does not authenticate the documents served there.</p>
+<h3 id="members-beyond-the-specification">Members beyond the specification<a class="headerlink" href="#members-beyond-the-specification" title="Permanent link">&para;</a></h3>
+<p>The top-level catalog object, each entry, and the Host Info and Publisher objects are open: they may contain members the specification does not define. The spec assigns them no meaning. Consumers ignore them, should preserve them when republishing an entry, and keep them inside signed payloads. Any undefined name may be claimed by a future version of the spec, so use <code>extensions</code> for data that needs a stable, namespaced home. See <a href="https://agent-card.github.io/ai-catalog/spec/#unrecognized-members">Unrecognized Members</a>.</p>
+<p>This is what lets a publisher follow a convention the spec does not define, for example a JSON-LD-style <code>@context</code> with prefixed members, or add private annotations to an internal catalog. A consumer of the spec reads the members the spec defines; everything else is passed through.</p>
 <h2 id="complete-example">Complete example<a class="headerlink" href="#complete-example" title="Permanent link">&para;</a></h2>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;specVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
