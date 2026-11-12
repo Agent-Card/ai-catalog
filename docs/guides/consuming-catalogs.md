@@ -80,7 +80,7 @@ Ignore entries with unknown `type` values — new types will be added over time.
 
 1. `displayName` on the entry, if present — always takes precedence
 2. The artifact's own canonical name, if you've already fetched it (e.g., `name` on an A2A Agent Card, `title` on an MCP Server Card)
-3. For `urn:air`, use the portion of `{name}` after its final `/`, or all of `{name}` if it contains no `/` (e.g., `urn:air:acme.com:engineering/code-review:skill` → `code-review`). For other identifier formats, use the portion after the final `:` or `/` delimiter.
+3. For `urn:air`, use the entire `{name}` verbatim (e.g., `urn:air:acme.com:engineering/code-review:skill` → `engineering/code-review` and `urn:air:acme.com:engineering.code-review:skill` → `engineering.code-review`). For other identifier formats, use the portion after the final `:` or `/` delimiter.
 
 Avoid fetching an artifact at render time solely to obtain a name — resolve and cache the name at ingestion instead.
 

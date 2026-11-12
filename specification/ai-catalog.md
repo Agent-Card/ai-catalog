@@ -212,7 +212,7 @@ It MUST contain the following members:
     `urn:air:{publisher}:{name}[:{kind}]`
 
     - `{publisher}`: The domain name of the organization publishing the artifact (e.g., `example.com`).
-    - `{name}`: The stable logical name assigned by the publisher. It consists of one or more slash-separated segments, allowing names such as `engineering/code-review`.
+    - `{name}`: The stable logical name assigned by the publisher. Its internal structure is publisher-defined; for example, a publisher may use `engineering/code-review` or `engineering.code-review`.
     - `{kind}`: An OPTIONAL single-segment suffix describing the conceptual kind of artifact. Its value is assigned by the publisher; this specification defines no vocabulary of kinds.
 
     Colons separate the publisher, name, and optional kind; neither `{name}` nor `{kind}` contains a literal colon.
@@ -222,6 +222,7 @@ It MUST contain the following members:
     - `urn:air:acme.com:code-review`
     - `urn:air:acme.com:engineering/code-review`
     - `urn:air:acme.com:engineering/code-review:skill`
+    - `urn:air:acme.com:engineering.code-review:skill`
 
     For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.
 
@@ -365,11 +366,11 @@ SHOULD resolve one in the following order:
    already fetched or cached the artifact — for example the `name` field
    of an A2A Agent Card or the `title` field of an MCP Server Card.
 3. **A name derived from the entry's `identifier`** as a last resort.
-   For `urn:air`, use the portion of `{name}` after its final `/`, or all
-   of `{name}` if it contains no `/`. For example,
-   `urn:air:acme.com:code-review`,
-   `urn:air:acme.com:engineering/code-review`, and
-   `urn:air:acme.com:engineering/code-review:skill` all yield `code-review`.
+   For `urn:air`, use the entire `{name}` verbatim. For example,
+   `urn:air:acme.com:engineering/code-review:skill` yields
+   `engineering/code-review`, and
+   `urn:air:acme.com:engineering.code-review:skill` yields
+   `engineering.code-review`.
    For other identifier formats, use the portion after the final `:` or
    `/` delimiter.
 

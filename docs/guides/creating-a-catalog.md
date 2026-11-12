@@ -166,15 +166,16 @@ Each entry must provide its artifact content via exactly one of these fields:
 The spec highly recommends the `urn:air:{publisher}:{name}[:{kind}]` format for open and federated systems:
 
 - `{publisher}` — the domain name of the publishing organization
-- `{name}` — stable name assigned by the publisher, optionally including slash-separated namespaces
+- `{name}` — stable name assigned by the publisher, with publisher-defined internal structure
 - `{kind}` — optional publisher-assigned conceptual kind; it does not replace the entry's `type`
 
 | Identifier | Illustrates |
 |---|---|
-| `urn:air:acme.com:code-review` | A name without a namespace or kind |
-| `urn:air:acme.com:engineering/code-review` | A namespaced name without a kind |
-| `urn:air:acme.com:engineering/code-review:skill` | A namespaced skill |
+| `urn:air:acme.com:code-review` | A simple name without a kind |
+| `urn:air:acme.com:engineering/code-review` | A name using slashes for namespaces, without a kind |
+| `urn:air:acme.com:engineering/code-review:skill` | A skill using that naming convention |
 | `urn:air:acme.com:engineering/code-review:a2a` | The same name distinguished by a different kind |
+| `urn:air:acme.com:engineering.code-review:skill` | A skill using dots for namespaces |
 | `urn:air:acme.com:engineering/build-status:mcp` | An MCP server |
 | `urn:air:acme.com:engineering:catalog` | A nested catalog |
 
