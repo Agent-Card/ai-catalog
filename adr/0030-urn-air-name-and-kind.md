@@ -52,3 +52,8 @@ distinguish otherwise identical identifiers. A semicolon participates in
 the identifier but acts as a command separator in Bash when pasted
 without quoting. Using a colon to introduce the optional kind avoids both
 problems.
+
+URN syntax also permits adjacent colons. A future revision could therefore
+add components after an omitted kind by leaving its position empty, as in
+`urn:air:acme.com:code-review::future-value`; this proposal does not define
+those additional components or empty-kind behavior.
