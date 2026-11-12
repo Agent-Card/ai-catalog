@@ -7,18 +7,18 @@ The simplest valid AI Catalog — just a `specVersion` and a list of entries. Th
   "specVersion": "1.0",
   "entries": [
     {
-      "identifier": "urn:air:example.com:skill:code-review",
+      "identifier": "urn:air:example.com:code-review:skill",
       "displayName": "Code Review Assistant",
       "type": "application/agent-skills+zip",
       "url": "https://skills.example.com/code-review/skill.zip"
     },
     {
-      "identifier": "urn:air:example.com:mcp:weather",
+      "identifier": "urn:air:example.com:weather:mcp",
       "type": "application/mcp-server-card+json",
       "url": "https://api.example.com/mcp/server-card"
     },
     {
-      "identifier": "urn:air:example.com:a2a:research",
+      "identifier": "urn:air:example.com:research:a2a",
       "type": "application/a2a-agent-card+json",
       "url": "https://agents.example.com/researchAssistant"
     }
@@ -35,7 +35,7 @@ Identifies the version of the AI Catalog specification this document conforms to
 The list of artifacts. Each entry requires `identifier`, `type`, and `url` (or `data`).
 
 **`identifier`**
-A stable, unique string for this artifact. The recommended format is `urn:air:{domain}:{namespace}:{name}`. The identifier should not change when the artifact moves or is versioned.
+A stable, unique string for this artifact. The recommended format is `urn:air:{publisher}:{name}[:{kind}]`. The identifier should not change when the artifact moves or is versioned.
 
 **`type`**
 What kind of artifact this is. Clients use this to decide whether they can use the artifact — without fetching it.

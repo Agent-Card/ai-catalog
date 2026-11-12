@@ -3,6 +3,9 @@
 ## Status
 Accepted
 
+Proposed revision: [ADR-0030](0030-urn-air-name-and-kind.md) separates
+the publisher-relative name from an optional kind suffix.
+
 ## Date
 2026-05-13 (Proposed), 2026-05-28 (Accepted), 2026-06-25 (Updated)
 

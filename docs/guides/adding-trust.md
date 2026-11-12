@@ -111,7 +111,7 @@ For example, Acme can sign a manifest that endorses the artifact release without
 {
   "contributor": "did:web:acme-corp.com",
   "subject": {
-    "identifier": "urn:air:acme-corp.com:a2a:finance",
+    "identifier": "urn:air:acme-corp.com:finance:a2a",
     "type": "application/a2a-agent-card+json",
     "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
   },
@@ -164,7 +164,7 @@ An entry with a contributor manifest, artifact digest, policy links, and a signa
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:a2a:finance",
+  "identifier": "urn:air:acme-corp.com:finance:a2a",
   "type": "application/a2a-agent-card+json",
   "url": "https://agents.acme-corp.com/finance",
   "publisher": {
@@ -182,7 +182,7 @@ An entry with a contributor manifest, artifact digest, policy links, and a signa
     {
       "contributor": "did:web:acme-corp.com",
       "subject": {
-        "identifier": "urn:air:acme-corp.com:a2a:finance",
+        "identifier": "urn:air:acme-corp.com:finance:a2a",
         "type": "application/a2a-agent-card+json",
         "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
       },
