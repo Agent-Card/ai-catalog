@@ -39,7 +39,7 @@ AI Catalog (cross-artifact)
 | MCP Server Card | AI Catalog Equivalent |
 |:---|:---|
 | Server Card document (whole file) | Artifact content via entry `url` (type `application/mcp-server-card+json`) or `data` |
-| Server `name` (reverse-DNS identifier) | Entry `identifier` (mapped to the `urn:air:{publisher}:{namespace}:{name}` URN form — e.g. `urn:air:acme-corp.com:mcp:finance-server`) |
+| Server `name` (reverse-DNS identifier) | Entry `identifier` (mapped to the `urn:air:{publisher}:{name}[:{kind}]` URN form — e.g. `urn:air:acme-corp.com:finance-server:mcp`) |
 | `title` | Stays in the Server Card (which carries its own `title`); entry `displayName` is omitted unless the artifact lacks a name |
 | `description` | Stays in the Server Card (which carries its own `description`); entry `description` is omitted to avoid duplicating a value that can drift |
 | `version` | Stays in the Server Card (which carries its own `version`); entry `version` is omitted to avoid duplicating a value that can drift (a remote MCP server serves one Server Card, so a catalog never lists multiple versions of it) |
@@ -57,7 +57,7 @@ server's Server Card and whose `type` is the known type
 
 ```json
 {
-  "identifier": "urn:air:acme-corp.com:mcp:finance-server",
+  "identifier": "urn:air:acme-corp.com:finance-server:mcp",
   "type": "application/mcp-server-card+json",
   "url": "https://api.acme-corp.com/mcp/server-card",
   "tags": ["finance", "mcp"],
@@ -107,19 +107,19 @@ entry points to a server's Server Card:
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:mcp:finance-server",
+      "identifier": "urn:air:acme-corp.com:finance-server:mcp",
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/finance/server-card",
       "tags": ["finance", "mcp"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:mcp:docs-search",
+      "identifier": "urn:air:acme-corp.com:docs-search:mcp",
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/docs-search/server-card",
       "tags": ["search", "docs"]
     },
     {
-      "identifier": "urn:air:acme-corp.com:mcp:ci-cd",
+      "identifier": "urn:air:acme-corp.com:ci-cd:mcp",
       "type": "application/mcp-server-card+json",
       "url": "https://api.acme-corp.com/ci-cd/server-card",
       "tags": ["ci", "cd", "devops"]

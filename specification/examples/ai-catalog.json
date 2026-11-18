@@ -7,7 +7,7 @@
   },
   "entries": [
     {
-      "identifier": "urn:air:acme-corp.com:agent:finance",
+      "identifier": "urn:air:acme-corp.com:finance:agent",
       "type": "application/a2a-agent-card+json",
       "description": "Multi-protocol finance agent.",
       "tags": ["finance", "trading"],
@@ -30,7 +30,7 @@
             }
           ],
           "subject": {
-            "identifier": "urn:air:acme-corp.com:agent:finance",
+            "identifier": "urn:air:acme-corp.com:finance:agent",
             "type": "application/a2a-agent-card+json",
             "digest": "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
           },
@@ -44,7 +44,7 @@
       ]
     },
     {
-      "identifier": "urn:air:acme-corp.com:data:market-2026q1",
+      "identifier": "urn:air:acme-corp.com:market-2026q1:dataset",
       "displayName": "Market Dataset Q1 2026",
       "type": "application/parquet",
       "description": "Artifact-focused card for training and evaluation.",
@@ -53,7 +53,7 @@
       "updatedAt": "2026-02-22T16:00:00Z"
     },
     {
-      "identifier": "urn:air:acme-corp.com:plugin:finance-assistant-plugin",
+      "identifier": "urn:air:acme-corp.com:finance-assistant-plugin:plugin",
       "displayName": "Finance Assistant Plugin",
       "type": "application/agent-plugins+zip",
       "description": "Agent Plugin bundle with skills and MCP server for finance workflows.",
