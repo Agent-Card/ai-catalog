@@ -6,6 +6,10 @@ icon: material/home
 
 **A JSON format for making all your AI artifacts discoverable.**
 
+**Version 1.0 Release Candidate:** Ready for implementation and
+interoperability feedback, prior to the final v1.0 specification.
+See the [specification status and feedback guidance](specification.md).
+
 The AI ecosystem is growing fast — MCP servers, A2A agents, Claude Code plugins, datasets, model cards. Each protocol defines its own discovery mechanism, forcing clients to implement bespoke logic for every artifact type.
 
 AI Catalog solves this with a simple, typed JSON format that indexes any kind of AI artifact in one place. Clients read one file. Publishers maintain one list.

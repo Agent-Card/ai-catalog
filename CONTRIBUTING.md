@@ -4,7 +4,7 @@ Thank you for contributing to the AI Catalog project.
 
 This repository is currently used to develop the AI Catalog specification in
 public. The canonical specification source lives in
-the files under `specification/cddl/`, and changes are reviewed through GitHub
+`specification/ai-catalog.md`, and changes are reviewed through GitHub
 pull requests.
 
 ## Ways To Contribute
@@ -14,13 +14,19 @@ pull requests.
 - send a pull request with a proposed change to the specification, examples, or
   build tooling
 
+The Version 1.0 Release Candidate is ready for implementation feedback before
+the final v1.0 specification. When reporting implementation experience, include
+the specification revision or commit, relevant sections, and a reproducible
+example where possible. Requirements may change before final publication.
+
 For substantial specification changes, open an issue or discussion first so the
 proposed direction can be reviewed before detailed text is drafted.
 
 ## Repository Layout
 
 - `GOVERNANCE.md`: project governance and working rules
-- `specification/cddl/`: specification source files and comparison material
+- `specification/ai-catalog.md`: canonical specification source
+- `specification/respec-config.json`: publication metadata and references
 - `specification/examples/`: example AI Catalog documents
 
 Use the current repository contents as the source of truth when deciding where a
@@ -47,7 +53,7 @@ files and updating related examples.
 When proposing a specification change, update the relevant supporting material
 in the same pull request when applicable:
 
-- specification files under `specification/cddl/`
+- the specification source in `specification/ai-catalog.md`
 - examples under `specification/examples/`
 - explanatory text in `README.md`
 - governance or process documents when the change affects project workflow

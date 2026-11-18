@@ -10,6 +10,14 @@ Contact us via GitHub Discussions, [Issues](https://github.com/Agent-Card/ai-cat
 
 ## Specification Site
 
+The official **AI Catalog Version 1.0 Release Candidate** is ready for
+implementation and interoperability feedback. It is **not the final v1.0
+specification**; requirements may change as feedback is addressed.
+Implementations use `"specVersion": "1.0"` and should record the specification
+revision or commit separately. Please report implementation experience,
+ambiguities, and interoperability issues through
+[GitHub issues](https://github.com/Agent-Card/ai-catalog/issues).
+
 The AI Catalog specification is built from `specification/ai-catalog.md` and published to GitHub Pages by the workflow in `.github/workflows/publish-spec.yml`.
 
 Published site: [ai-catalog.io](https://ai-catalog.io/)

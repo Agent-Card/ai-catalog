@@ -1,3 +1,31 @@
+# Status of This Document
+
+This is the official **AI Catalog Version 1.0 Release Candidate**, published
+by the AI Catalog project for implementation and interoperability feedback.
+It is ready to implement and evaluate, but it is **not the final v1.0
+specification**.
+
+Implementers are encouraged to build producers and consumers against this
+document and report ambiguities, missing requirements, interoperability
+issues, and implementation experience through the project's
+[GitHub issues](https://github.com/Agent-Card/ai-catalog/issues).
+Reports should identify the specification revision or commit implemented,
+the relevant sections, and any examples needed to reproduce an issue.
+Feedback on discovery, catalog projection, version handling, and Trust
+Manifest signing and verification is particularly useful.
+
+Requirements may change in response to implementation feedback before
+final v1.0 publication, including changes that require implementations to
+be updated. Implementations of this release candidate use
+`"specVersion": "1.0"`; this value identifies the catalog format version,
+not the publication's maturity or a particular release-candidate revision.
+Implementers should record the specification revision separately.
+
+Final v1.0 publication is intended to follow evaluation of implementation
+feedback and resolution of issues affecting interoperability. Publication
+of this release candidate does not itself constitute IANA registration of
+the identifiers described in [IANA Considerations](#iana-considerations).
+
 # Introduction
 
 The AI ecosystem comprises a growing number of protocols, artifact
@@ -10,8 +38,8 @@ and reducing interoperability.
 
 This document defines the **AI Catalog**: a typed, nestable JSON
 container for discovering heterogeneous AI artifacts. Each entry
-declares its artifact type via a type identifier (which is an IANA media type) and may reference or
-embed the native artifact metadata. A minimal catalog is simply a
+declares its artifact type via a type identifier (preferably a media type)
+and may reference or embed the native artifact metadata. A minimal catalog is simply a
 list of entries — names, types, and URLs — requiring no additional
 infrastructure.
 
@@ -1373,6 +1401,7 @@ For example, a catalog entry with `extensions` representing metadata and a custo
     {
       "identifier": "urn:air:treasury.gov:okf:fiscaldata",
       "type": "text/vnd.okf+markdown",
+      "url": "https://data.example.com/fiscaldata.md",
       "tags": ["finance", "treasury"],
       "extensions": {
         "https://ai-catalog.org/extensions/metadata": {
@@ -1967,8 +1996,9 @@ classDiagram
 
 ## Media Type Registration: application/ai-catalog+json
 
-This section registers the `application/ai-catalog+json` media type
-[[RFC6838]] in the "Application" registry.
+This section specifies the requested registration of the
+`application/ai-catalog+json` media type [[RFC6838]] in the "Application"
+registry.
 
 Type name:
 : application
@@ -2014,8 +2044,8 @@ Restrictions on usage:
 
 ## Link Relation Registration: ai-catalog
 
-This section registers the `ai-catalog` link relation type in the
-IANA "Link Relations" registry [[RFC8288]].
+This section specifies the requested registration of the `ai-catalog`
+link relation type in the IANA "Link Relations" registry [[RFC8288]].
 
 Relation Name:
 : ai-catalog
@@ -2030,8 +2060,8 @@ Reference:
 
 ## Well-Known URI Registration: ai-catalog.json
 
-This section registers the `ai-catalog.json` well-known URI in the
-IANA "Well-Known URIs" registry [[RFC8615]].
+This section specifies the requested registration of the `ai-catalog.json`
+well-known URI in the IANA "Well-Known URIs" registry [[RFC8615]].
 
 URI Suffix:
 : ai-catalog.json
