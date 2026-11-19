@@ -6,12 +6,22 @@
   <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
   <script class="remove">
     var respecConfig = {
-      "specStatus": "Official",
-      "editors": [],
-      "latestVersion": null,
+      "specStatus": "base",
+      "editors": [
+            {
+                  "name": "Agent Card Working Group",
+                  "url": "https://github.com/Agent-Card/ai-catalog"
+            }
+      ],
+      "latestVersion": "https://ai-catalog.io/spec/",
       "noRecTrack": true,
+      "subtitle": "Version 0.9 - Release Candidate for v1.0",
       "shortName": "ai-catalog",
-      "edDraftURI": "https://ai-catalog.io/",
+      "edDraftURI": null,
+      "github": {
+            "repoURL": "https://github.com/Agent-Card/ai-catalog",
+            "branch": "main"
+      },
       "localBiblio": {
             "xRegistry": {
                   "title": "xRegistry: A Universal Registry Specification",
@@ -95,12 +105,7 @@
 
 <section id="abstract">
   <h2>Abstract</h2>
-  <p>This document defines the AI Catalog, a JSON format for discovering heterogeneous AI artifacts such as MCP servers, A2A agents, Claude Code plugins, datasets, and model cards. Each catalog entry declares the artifact's type via a media type and references or inlines the native artifact metadata, enabling a single discovery mechanism across protocols and platforms. The specification defines three conformance levels — Minimal, Discoverable, and Trusted — allowing implementations to start with a simple list of entries and progressively add host identity, well-known URI discovery, and verifiable trust metadata as needed. Optional independent Trust Manifests group contributor claims, compliance attestations, and provenance; each can carry one signature binding its contents to an artifact release, while a catalog signature authenticates the complete catalog snapshot without wrapping or modifying the artifact's native format. Informative appendices define a substrate-neutral distribution-mapping contract and concrete bindings to OCI distribution registries and xRegistry, plus mappings to the MCP Registry server.json format and the Claude Code Plugins marketplace.</p>
-</section>
-
-<section id="sotd">
-  <h2>Status of This Document</h2>
-  <p>This is a draft document and may be updated at any time.</p>
+  <p>This document defines the AI Catalog, a JSON format for discovering heterogeneous AI artifacts such as MCP servers, A2A agents, Claude Code plugins, datasets, and model cards. Each catalog entry declares the artifact's type via a type identifier, preferably a media type, and references or inlines the native artifact metadata, enabling a single discovery mechanism across protocols and platforms. The specification defines three conformance levels — Minimal, Discoverable, and Trusted — allowing implementations to start with a simple list of entries and progressively add host identity, optional well-known URI discovery, and verifiable trust metadata as needed. Optional independent Trust Manifests group contributor claims, compliance attestations, and provenance; each can carry one signature binding its contents to an artifact release, while a catalog signature authenticates the complete catalog snapshot without wrapping or modifying the artifact's native format. Informative ecosystem and distribution mappings are maintained separately in the project's developer documentation.</p>
 </section>
 
 <section id="conformance">
@@ -113,6 +118,33 @@
   </p>
 </section>
 
+<section class="introductory override" id="sotd">
+<h2>Status of This Document</h2>
+<p>This is the official <strong>AI Catalog v0.9 specification</strong>, a <strong>Release Candidate
+for v1.0</strong>, published by the AI Catalog project for implementation and
+interoperability feedback.
+It is ready to implement and evaluate, but it is <strong>not the final v1.0
+specification</strong>.</p>
+<p>Implementers are encouraged to build producers and consumers against this
+document and report ambiguities, missing requirements, interoperability
+issues, and implementation experience through the project's
+<a href="https://github.com/Agent-Card/ai-catalog/issues">GitHub issues</a>.
+Reports should identify the specification revision or commit implemented,
+the relevant sections, and any examples needed to reproduce an issue.
+Feedback on discovery, catalog projection, version handling, and Trust
+Manifest signing and verification is particularly useful.</p>
+<p>Requirements may change in response to implementation feedback before
+final v1.0 publication, including changes that require implementations to
+be updated. Implementations of this release candidate use
+<code>"specVersion": "0.9"</code> to identify this version of the specification.
+The final v1.0 specification will use <code>"specVersion": "1.0"</code>.
+Implementers should also record the specification revision or commit
+separately to distinguish updates within the v0.9 feedback phase.</p>
+<p>Final v1.0 publication is intended to follow evaluation of implementation
+feedback and resolution of issues affecting interoperability. Publication
+of this release candidate does not itself constitute IANA registration of
+the identifiers described in <a href="#iana-considerations">IANA Considerations</a>.</p>
+</section>
 <section id="introduction">
 <h1>Introduction</h1>
 <p>The AI ecosystem comprises a growing number of protocols, artifact
@@ -124,8 +156,8 @@ implement bespoke logic for each artifact type, increasing complexity
 and reducing interoperability.</p>
 <p>This document defines the <strong>AI Catalog</strong>: a typed, nestable JSON
 container for discovering heterogeneous AI artifacts. Each entry
-declares its artifact type via a type identifier (which is an IANA media type) and may reference or
-embed the native artifact metadata. A minimal catalog is simply a
+declares its artifact type via a type identifier (preferably a media type)
+and may reference or embed the native artifact metadata. A minimal catalog is simply a
 list of entries — names, types, and URLs — requiring no additional
 infrastructure.</p>
 <p>For environments that need verifiable identity, compliance evidence,
@@ -223,7 +255,7 @@ members:</p>
 <dl>
 <dt><code>specVersion</code></dt>
 <dd>A string indicating the version of this specification that the
-  catalog conforms to, in "Major.Minor" format (e.g., "1.0").
+  catalog conforms to, in "Major.Minor" format (e.g., "0.9").
   See <a href="#version-handling">Version Handling</a> for compatibility rules.</dd>
 <dt><code>entries</code></dt>
 <dd>An array of Catalog Entry objects as defined in <a href="#catalog-entry">Catalog Entry</a>.
@@ -231,7 +263,7 @@ members:</p>
 </dl>
 <p>For example, a minimal catalog listing four AI artifacts:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;entries&quot;: [
     {
       &quot;identifier&quot;: &quot;urn:air:example.com:code-review:skill&quot;,
@@ -564,7 +596,7 @@ version) or by <code>updatedAt</code>, and select the most recent. Clients
 that need a specific version SHOULD match on both <code>identifier</code> and <code>version</code>.</p>
 <p>For example, a catalog listing two versions of the same agent:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;entries&quot;: [
     {
       &quot;identifier&quot;: &quot;urn:air:acme.com:finance:agent&quot;,
@@ -1321,7 +1353,7 @@ can partition its catalog into sub-catalogs by department, product line,
 or region. Each sub-catalog is an independent AI Catalog document with
 its own <code>host</code> and entries:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;host&quot;: {
     &quot;displayName&quot;: &quot;Acme Enterprise AI&quot;,
     &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;
@@ -1401,11 +1433,12 @@ be a valid URL or a reverse-DNS string:</p>
 throwing an error.</p>
 <p>For example, a catalog entry with <code>extensions</code> representing metadata and a custom schema:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;entries&quot;: [
     {
       &quot;identifier&quot;: &quot;urn:air:treasury.gov:okf/fiscaldata&quot;,
       &quot;type&quot;: &quot;text/vnd.okf+markdown&quot;,
+      &quot;url&quot;: &quot;https://data.example.com/fiscaldata.md&quot;,
       &quot;tags&quot;: [&quot;finance&quot;, &quot;treasury&quot;],
       &quot;extensions&quot;: {
         &quot;https://ai-catalog.org/extensions/metadata&quot;: {
@@ -1608,8 +1641,11 @@ a catalog conforms to. This section defines how producers and consumers
 handle version differences.</p>
 <section id="version-format">
 <h2>Version Format</h2>
-<p>The <code>specVersion</code> value is a "Major.Minor" string (e.g., "1.0",
+<p>The <code>specVersion</code> value is a "Major.Minor" string (e.g., "0.9", "1.0",
 "1.1", "2.0"). Major and minor components are non-negative integers.</p>
+<p>Catalogs implementing this v0.9 release candidate use <code>"0.9"</code>. The
+planned final v1.0 specification will use <code>"1.0"</code>; v0.9 is not an alias
+for v1.0, and consumers should not assume compatibility between them.</p>
 </section>
 <section id="compatibility-rules">
 <h2>Compatibility Rules</h2>
@@ -2007,8 +2043,9 @@ classDiagram
 <h1>IANA Considerations</h1>
 <section id="media-type-registration-application-ai-catalog-json">
 <h2>Media Type Registration: application/ai-catalog+json</h2>
-<p>This section registers the <code>application/ai-catalog+json</code> media type
-[[RFC6838]] in the "Application" registry.</p>
+<p>This section specifies the requested registration of the
+<code>application/ai-catalog+json</code> media type [[RFC6838]] in the "Application"
+registry.</p>
 <dl>
 <dt>Type name:</dt>
 <dd>application</dd>
@@ -2043,8 +2080,8 @@ classDiagram
 </section>
 <section id="link-relation-registration-ai-catalog">
 <h2>Link Relation Registration: ai-catalog</h2>
-<p>This section registers the <code>ai-catalog</code> link relation type in the
-IANA "Link Relations" registry [[RFC8288]].</p>
+<p>This section specifies the requested registration of the <code>ai-catalog</code>
+link relation type in the IANA "Link Relations" registry [[RFC8288]].</p>
 <dl>
 <dt>Relation Name:</dt>
 <dd>ai-catalog</dd>
@@ -2058,8 +2095,8 @@ IANA "Link Relations" registry [[RFC8288]].</p>
 </section>
 <section id="well-known-uri-registration-ai-catalog-json">
 <h2>Well-Known URI Registration: ai-catalog.json</h2>
-<p>This section registers the <code>ai-catalog.json</code> well-known URI in the
-IANA "Well-Known URIs" registry [[RFC8615]].</p>
+<p>This section specifies the requested registration of the <code>ai-catalog.json</code>
+well-known URI in the IANA "Well-Known URIs" registry [[RFC8615]].</p>
 <dl>
 <dt>URI Suffix:</dt>
 <dd>ai-catalog.json</dd>
@@ -2199,7 +2236,7 @@ ProvenanceLink = {
 artifact types including a nested catalog packaging related artifacts.
 Digest and JWS strings in illustrative examples are placeholders.</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;host&quot;: {
     &quot;displayName&quot;: &quot;Acme Services Inc.&quot;,
     &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;,
@@ -2259,7 +2296,7 @@ Digest and JWS strings in illustrative examples are placeholders.</p>
         &quot;suite&quot;
       ],
       &quot;data&quot;: {
-        &quot;specVersion&quot;: &quot;1.0&quot;,
+        &quot;specVersion&quot;: &quot;0.9&quot;,
         &quot;entries&quot;: [
           {
             &quot;identifier&quot;: &quot;urn:air:acme.com:finance-a2a:a2a&quot;,
@@ -2321,7 +2358,7 @@ entries to organize a large number of artifacts into browsable
 categories. Each sub-catalog entry points to a separate AI Catalog
 document:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;host&quot;: {
     &quot;displayName&quot;: &quot;Acme Enterprise AI&quot;,
     &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;
@@ -2385,7 +2422,7 @@ containing both protocol-specific entries:</p>
     &quot;displayName&quot;: &quot;Acme Financial Corp&quot;
   },
   &quot;data&quot;: {
-    &quot;specVersion&quot;: &quot;1.0&quot;,
+    &quot;specVersion&quot;: &quot;0.9&quot;,
     &quot;entries&quot;: [
       {
         &quot;identifier&quot;: &quot;urn:air:acme.com:finance:mcp&quot;,
