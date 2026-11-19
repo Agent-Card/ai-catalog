@@ -14,7 +14,7 @@ An AI Catalog is a JSON object with two required top-level fields:
 ```
 
 `specVersion`
-:   The version of the AI Catalog specification this document conforms to, in `"Major.Minor"` format. Use `"1.0"` for the current version.
+:   The version of the AI Catalog specification this document conforms to, in `"Major.Minor"` format. The examples use `"1.0"` to illustrate the planned final version; the current specification is v0.9, a Release Candidate for v1.0.
 
 `entries`
 :   An ordered array of Catalog Entry objects. May be empty.

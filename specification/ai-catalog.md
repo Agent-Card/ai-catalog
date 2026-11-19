@@ -1,7 +1,8 @@
 # Status of This Document
 
-This is the official **AI Catalog Version 1.0 Release Candidate**, published
-by the AI Catalog project for implementation and interoperability feedback.
+This is the official **AI Catalog v0.9 specification**, a **Release Candidate
+for v1.0**, published by the AI Catalog project for implementation and
+interoperability feedback.
 It is ready to implement and evaluate, but it is **not the final v1.0
 specification**.
 
@@ -17,9 +18,10 @@ Manifest signing and verification is particularly useful.
 Requirements may change in response to implementation feedback before
 final v1.0 publication, including changes that require implementations to
 be updated. Implementations of this release candidate use
-`"specVersion": "1.0"`; this value identifies the catalog format version,
-not the publication's maturity or a particular release-candidate revision.
-Implementers should record the specification revision separately.
+`"specVersion": "0.9"` to identify this version of the specification.
+The final v1.0 specification will use `"specVersion": "1.0"`.
+Implementers should also record the specification revision or commit
+separately to distinguish updates within the v0.9 feedback phase.
 
 Final v1.0 publication is intended to follow evaluation of implementation
 feedback and resolution of issues affecting interoperability. Publication
@@ -133,7 +135,7 @@ members:
 
 `specVersion`
 : A string indicating the version of this specification that the
-  catalog conforms to, in "Major.Minor" format (e.g., "1.0").
+  catalog conforms to, in "Major.Minor" format (e.g., "0.9").
   See [Version Handling](#version-handling) for compatibility rules.
 
 `entries`
@@ -144,7 +146,7 @@ For example, a minimal catalog listing four AI artifacts:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "entries": [
     {
       "identifier": "urn:air:example.com:skill:code-review",
@@ -495,7 +497,7 @@ For example, a catalog listing two versions of the same agent:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "entries": [
     {
       "identifier": "urn:air:acme.com:agent:finance",
@@ -1306,7 +1308,7 @@ its own `host` and entries:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "host": {
     "displayName": "Acme Enterprise AI",
     "identifier": "did:web:acme-corp.com"
@@ -1396,7 +1398,7 @@ For example, a catalog entry with `extensions` representing metadata and a custo
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "entries": [
     {
       "identifier": "urn:air:treasury.gov:okf:fiscaldata",
@@ -1588,8 +1590,12 @@ handle version differences.
 
 ## Version Format
 
-The `specVersion` value is a "Major.Minor" string (e.g., "1.0",
+The `specVersion` value is a "Major.Minor" string (e.g., "0.9", "1.0",
 "1.1", "2.0"). Major and minor components are non-negative integers.
+
+Catalogs implementing this v0.9 release candidate use `"0.9"`. The
+planned final v1.0 specification will use `"1.0"`; v0.9 is not an alias
+for v1.0, and consumers should not assume compatibility between them.
 
 ## Compatibility Rules
 
@@ -2208,7 +2214,7 @@ Digest and JWS strings in illustrative examples are placeholders.
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "host": {
     "displayName": "Acme Services Inc.",
     "identifier": "did:web:acme-corp.com",
@@ -2268,7 +2274,7 @@ Digest and JWS strings in illustrative examples are placeholders.
         "suite"
       ],
       "data": {
-        "specVersion": "1.0",
+        "specVersion": "0.9",
         "entries": [
           {
             "identifier": "urn:air:acme.com:agent:finance-a2a",
@@ -2332,7 +2338,7 @@ document:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "host": {
     "displayName": "Acme Enterprise AI",
     "identifier": "did:web:acme-corp.com"
@@ -2399,7 +2405,7 @@ containing both protocol-specific entries:
     "displayName": "Acme Financial Corp"
   },
   "data": {
-    "specVersion": "1.0",
+    "specVersion": "0.9",
     "entries": [
       {
         "identifier": "urn:air:acme.com:agent:finance:mcp",

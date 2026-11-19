@@ -5,11 +5,15 @@ icon: material/file-document
 # Full Specification
 
 The AI Catalog specification is published by the AI Catalog project as the
-official **Version 1.0 Release Candidate**. It is ready for implementation
-and interoperability feedback, but is **not the final v1.0 specification**.
+official **v0.9 specification**, a **Release Candidate for v1.0**. It is ready
+for implementation and interoperability feedback, but is **not the final
+v1.0 specification**.
 Requirements may change in response to feedback before final publication.
 
-Implementations use `"specVersion": "1.0"` and should separately record the
+Documentation examples continue to use `"specVersion": "1.0"` to illustrate
+the planned final version.
+
+Implementations use `"specVersion": "0.9"` and should separately record the
 specification revision or commit they implement. Report implementation
 experience, ambiguities, and interoperability issues through
 [GitHub issues](https://github.com/Agent-Card/ai-catalog/issues).

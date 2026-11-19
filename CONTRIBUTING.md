@@ -14,10 +14,11 @@ pull requests.
 - send a pull request with a proposed change to the specification, examples, or
   build tooling
 
-The Version 1.0 Release Candidate is ready for implementation feedback before
-the final v1.0 specification. When reporting implementation experience, include
-the specification revision or commit, relevant sections, and a reproducible
-example where possible. Requirements may change before final publication.
+The v0.9 specification is a Release Candidate for v1.0, ready for implementation
+feedback before the final v1.0 specification. When reporting implementation
+experience, include the specification revision or commit, relevant sections,
+and a reproducible example where possible. Requirements may change before
+final publication.
 
 For substantial specification changes, open an issue or discussion first so the
 proposed direction can be reviewed before detailed text is drafted.

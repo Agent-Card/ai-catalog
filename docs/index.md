@@ -6,7 +6,7 @@ icon: material/home
 
 **A JSON format for making all your AI artifacts discoverable.**
 
-**Version 1.0 Release Candidate:** Ready for implementation and
+**v0.9 - Release Candidate for v1.0:** Ready for implementation and
 interoperability feedback, prior to the final v1.0 specification.
 See the [specification status and feedback guidance](specification.md).
 
