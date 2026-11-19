@@ -1257,7 +1257,7 @@
 <p>The simplest and most common approach: serve a static JSON file at the well-known URI.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>https://yourdomain.com/.well-known/ai-catalog.json
 </span></code></pre></div>
-<p>This path is a <a href="https://www.rfc-editor.org/rfc/rfc8615">well-known URI (RFC 8615)</a> registered with IANA. AI clients performing domain-level discovery check this path automatically — no prior configuration needed.</p>
+<p>This path is the specification's proposed <a href="https://www.rfc-editor.org/rfc/rfc8615">well-known URI (RFC 8615)</a>; its registration request is described in the specification's IANA Considerations. Clients implementing AI Catalog domain-level discovery can check this path without prior configuration.</p>
 <p>Serve the file over HTTPS with the <code>Content-Type</code> header:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Content-Type: application/ai-catalog+json
 </span></code></pre></div>
