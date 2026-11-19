@@ -1,5 +1,5 @@
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "host": {
     "displayName": "Acme Services Inc.",
     "identifier": "did:web:acme-corp.com",

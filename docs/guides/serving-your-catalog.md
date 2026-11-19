@@ -10,7 +10,7 @@ The simplest and most common approach: serve a static JSON file at the well-know
 https://yourdomain.com/.well-known/ai-catalog.json
 ```
 
-This path is a [well-known URI (RFC 8615)](https://www.rfc-editor.org/rfc/rfc8615) registered with IANA. AI clients performing domain-level discovery check this path automatically — no prior configuration needed.
+This path is the specification's proposed [well-known URI (RFC 8615)](https://www.rfc-editor.org/rfc/rfc8615); its registration request is described in the specification's IANA Considerations. Clients implementing AI Catalog domain-level discovery can check this path without prior configuration.
 
 Serve the file over HTTPS with the `Content-Type` header:
 

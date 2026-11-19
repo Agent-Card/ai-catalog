@@ -1,3 +1,33 @@
+# Status of This Document
+
+This is the official **AI Catalog v0.9 specification**, a **Release Candidate
+for v1.0**, published by the AI Catalog project for implementation and
+interoperability feedback.
+It is ready to implement and evaluate, but it is **not the final v1.0
+specification**.
+
+Implementers are encouraged to build producers and consumers against this
+document and report ambiguities, missing requirements, interoperability
+issues, and implementation experience through the project's
+[GitHub issues](https://github.com/Agent-Card/ai-catalog/issues).
+Reports should identify the specification revision or commit implemented,
+the relevant sections, and any examples needed to reproduce an issue.
+Feedback on discovery, catalog projection, version handling, and Trust
+Manifest signing and verification is particularly useful.
+
+Requirements may change in response to implementation feedback before
+final v1.0 publication, including changes that require implementations to
+be updated. Implementations of this release candidate use
+`"specVersion": "0.9"` to identify this version of the specification.
+The final v1.0 specification will use `"specVersion": "1.0"`.
+Implementers should also record the specification revision or commit
+separately to distinguish updates within the v0.9 feedback phase.
+
+Final v1.0 publication is intended to follow evaluation of implementation
+feedback and resolution of issues affecting interoperability. Publication
+of this release candidate does not itself constitute IANA registration of
+the identifiers described in [IANA Considerations](#iana-considerations).
+
 # Introduction
 
 The AI ecosystem comprises a growing number of protocols, artifact
@@ -10,8 +40,8 @@ and reducing interoperability.
 
 This document defines the **AI Catalog**: a typed, nestable JSON
 container for discovering heterogeneous AI artifacts. Each entry
-declares its artifact type via a type identifier (which is an IANA media type) and may reference or
-embed the native artifact metadata. A minimal catalog is simply a
+declares its artifact type via a type identifier (preferably a media type)
+and may reference or embed the native artifact metadata. A minimal catalog is simply a
 list of entries — names, types, and URLs — requiring no additional
 infrastructure.
 
@@ -105,7 +135,7 @@ members:
 
 `specVersion`
 : A string indicating the version of this specification that the
-  catalog conforms to, in "Major.Minor" format (e.g., "1.0").
+  catalog conforms to, in "Major.Minor" format (e.g., "0.9").
   See [Version Handling](#version-handling) for compatibility rules.
 
 `entries`
@@ -116,7 +146,7 @@ For example, a minimal catalog listing four AI artifacts:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "entries": [
     {
       "identifier": "urn:air:example.com:code-review:skill",
@@ -474,7 +504,7 @@ For example, a catalog listing two versions of the same agent:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "entries": [
     {
       "identifier": "urn:air:acme.com:finance:agent",
@@ -1285,7 +1315,7 @@ its own `host` and entries:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "host": {
     "displayName": "Acme Enterprise AI",
     "identifier": "did:web:acme-corp.com"
@@ -1375,11 +1405,12 @@ For example, a catalog entry with `extensions` representing metadata and a custo
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "entries": [
     {
       "identifier": "urn:air:treasury.gov:okf/fiscaldata",
       "type": "text/vnd.okf+markdown",
+      "url": "https://data.example.com/fiscaldata.md",
       "tags": ["finance", "treasury"],
       "extensions": {
         "https://ai-catalog.org/extensions/metadata": {
@@ -1566,8 +1597,12 @@ handle version differences.
 
 ## Version Format
 
-The `specVersion` value is a "Major.Minor" string (e.g., "1.0",
+The `specVersion` value is a "Major.Minor" string (e.g., "0.9", "1.0",
 "1.1", "2.0"). Major and minor components are non-negative integers.
+
+Catalogs implementing this v0.9 release candidate use `"0.9"`. The
+planned final v1.0 specification will use `"1.0"`; v0.9 is not an alias
+for v1.0, and consumers should not assume compatibility between them.
 
 ## Compatibility Rules
 
@@ -1974,8 +2009,9 @@ classDiagram
 
 ## Media Type Registration: application/ai-catalog+json
 
-This section registers the `application/ai-catalog+json` media type
-[[RFC6838]] in the "Application" registry.
+This section specifies the requested registration of the
+`application/ai-catalog+json` media type [[RFC6838]] in the "Application"
+registry.
 
 Type name:
 : application
@@ -2021,8 +2057,8 @@ Restrictions on usage:
 
 ## Link Relation Registration: ai-catalog
 
-This section registers the `ai-catalog` link relation type in the
-IANA "Link Relations" registry [[RFC8288]].
+This section specifies the requested registration of the `ai-catalog`
+link relation type in the IANA "Link Relations" registry [[RFC8288]].
 
 Relation Name:
 : ai-catalog
@@ -2037,8 +2073,8 @@ Reference:
 
 ## Well-Known URI Registration: ai-catalog.json
 
-This section registers the `ai-catalog.json` well-known URI in the
-IANA "Well-Known URIs" registry [[RFC8615]].
+This section specifies the requested registration of the `ai-catalog.json`
+well-known URI in the IANA "Well-Known URIs" registry [[RFC8615]].
 
 URI Suffix:
 : ai-catalog.json
@@ -2185,7 +2221,7 @@ Digest and JWS strings in illustrative examples are placeholders.
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "host": {
     "displayName": "Acme Services Inc.",
     "identifier": "did:web:acme-corp.com",
@@ -2245,7 +2281,7 @@ Digest and JWS strings in illustrative examples are placeholders.
         "suite"
       ],
       "data": {
-        "specVersion": "1.0",
+        "specVersion": "0.9",
         "entries": [
           {
             "identifier": "urn:air:acme.com:finance-a2a:a2a",
@@ -2309,7 +2345,7 @@ document:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "0.9",
   "host": {
     "displayName": "Acme Enterprise AI",
     "identifier": "did:web:acme-corp.com"
@@ -2376,7 +2412,7 @@ containing both protocol-specific entries:
     "displayName": "Acme Financial Corp"
   },
   "data": {
-    "specVersion": "1.0",
+    "specVersion": "0.9",
     "entries": [
       {
         "identifier": "urn:air:acme.com:finance:mcp",
