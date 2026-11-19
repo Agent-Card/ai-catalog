@@ -32,7 +32,7 @@ the identifiers described in [IANA Considerations](#iana-considerations).
 
 The AI ecosystem comprises a growing number of protocols, artifact
 formats, and service types. Model Context Protocol (MCP) servers,
-Agent-to-Agent (A2A) agents, Claude Code plugins, datasets, model cards,
+Agent-to-Agent (A2A) agents, Agent Plugins, datasets, model cards,
 and other AI artifacts each define their own metadata and discovery
 mechanisms. This fragmentation forces clients and registries to
 implement bespoke logic for each artifact type, increasing complexity
@@ -87,7 +87,7 @@ Trust Manifest
 
 Artifact
 : Any AI resource described by a catalog entry, such as an MCP server
-  manifest, an A2A agent card, a Claude Code plugin, a
+  manifest, an A2A agent card, an Agent Plugin, a
   dataset descriptor, or a nested AI Catalog.
 
 # Design Goals
