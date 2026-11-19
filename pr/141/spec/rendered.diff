@@ -1,6 +1,6 @@
 --- a/base/rendered.txt
 +++ b/head/rendered.txt
-@@ -1,16 +1,40 @@
+@@ -1,16 +1,42 @@
  Abstract
  
 -This document defines the AI Catalog, a JSON format for discovering heterogeneous AI artifacts such as MCP servers, A2A agents, Claude Code plugins, datasets, and model cards. Each catalog entry declares the artifact's type via a media type and references or inlines the native artifact metadata, enabling a single discovery mechanism across protocols and platforms. The specification defines three conformance levels — Minimal, Discoverable, and Trusted — allowing implementations to start with a simple list of entries and progressively add host identity, well-known URI discovery, and verifiable trust metadata as needed. Optional independent Trust Manifests group contributor claims, compliance attestations, and provenance; each can carry one signature binding its contents to an artifact release, while a catalog signature authenticates the complete catalog snapshot without wrapping or modifying the artifact's native format. Informative appendices define a substrate-neutral distribution-mapping contract and concrete bindings to OCI distribution registries and xRegistry, plus mappings to the MCP Registry server.json format and the Claude Code Plugins marketplace.
@@ -18,8 +18,9 @@
 +
 +Status of This Document
 +
-+This is the official AI Catalog Version 1.0 Release Candidate, published
-+by the AI Catalog project for implementation and interoperability feedback.
++This is the official AI Catalog v0.9 specification, a Release Candidate
++for v1.0, published by the AI Catalog project for implementation and
++interoperability feedback.
 +It is ready to implement and evaluate, but it is not the final v1.0
 +specification.
 +
@@ -35,9 +36,10 @@
 +Requirements may change in response to implementation feedback before
 +final v1.0 publication, including changes that require implementations to
 +be updated. Implementations of this release candidate use
-+"specVersion": "1.0"; this value identifies the catalog format version,
-+not the publication's maturity or a particular release-candidate revision.
-+Implementers should record the specification revision separately.
++"specVersion": "0.9" to identify this version of the specification.
++The final v1.0 specification will use "specVersion": "1.0".
++Implementers should also record the specification revision or commit
++separately to distinguish updates within the v0.9 feedback phase.
 +
 +Final v1.0 publication is intended to follow evaluation of implementation
 +feedback and resolution of issues affecting interoperability. Publication
@@ -46,7 +48,7 @@
  
  Introduction
  
-@@ -24,8 +48,8 @@
+@@ -24,8 +50,8 @@
  
  This document defines the AI Catalog: a typed, nestable JSON
  container for discovering heterogeneous AI artifacts. Each entry
@@ -57,8 +59,21 @@
  list of entries — names, types, and URLs — requiring no additional
  infrastructure.
  
-@@ -138,23 +162,23 @@
- "specVersion": "1.0",
+@@ -124,7 +150,7 @@
+ specVersion
+ 
+ A string indicating the version of this specification that the
+-catalog conforms to, in "Major.Minor" format (e.g., "1.0").
++catalog conforms to, in "Major.Minor" format (e.g., "0.9").
+ See Version Handling for compatibility rules.
+ 
+ entries
+@@ -135,26 +161,26 @@
+ For example, a minimal catalog listing four AI artifacts:
+ 
+ {
+-"specVersion": "1.0",
++"specVersion": "0.9",
  "entries": [
  {
 -"identifier": "urn:air:example.com:code-review:skill",
@@ -85,7 +100,7 @@
  "displayName": "Productivity Plugin",
  "type": "application/agent-plugins+zip",
  "description": "Tools for common productivity workflows.",
-@@ -240,25 +264,19 @@
+@@ -240,25 +266,19 @@
  A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific urn:air naming structure with its own domain in the {publisher} segment. A catalog operator incorporating an entry for the first time with a publisher-authorized urn:air identifier MUST preserve that identifier exactly.
  
  urn:air Identifier Format:
@@ -118,7 +133,7 @@
  
  For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.
  
-@@ -423,14 +441,11 @@
+@@ -423,14 +443,11 @@
  already fetched or cached the artifact — for example the name field
  of an A2A Agent Card or the title field of an MCP Server Card.
  
@@ -138,8 +153,12 @@
  
  A consumer SHOULD NOT dereference an artifact at render time solely to
  obtain a name. A registry, directory, or other service built on top of a
-@@ -532,14 +547,14 @@
- "specVersion": "1.0",
+@@ -529,17 +546,17 @@
+ For example, a catalog listing two versions of the same agent:
+ 
+ {
+-"specVersion": "1.0",
++"specVersion": "0.9",
  "entries": [
  {
 -"identifier": "urn:air:acme.com:finance:agent",
@@ -155,7 +174,7 @@
  "version": "2.0.0",
  "type": "application/a2a-agent-card+json",
  "url": "https://api.acme-corp.com/agents/finance/v2.0.json",
-@@ -737,7 +752,7 @@
+@@ -737,7 +754,7 @@
  For example, this unsigned entry carries independent contributions:
  
  {
@@ -164,7 +183,7 @@
  "type": "application/a2a-agent-card+json",
  "url": "https://acme.com/finance.json",
  "trustManifests": [
-@@ -1050,7 +1065,7 @@
+@@ -1050,7 +1067,7 @@
  {
  "contributor": "did:web:acme.com",
  "subject": {
@@ -173,7 +192,7 @@
  "type": "application/a2a-agent-card+json",
  "digest": "sha256:56bbd2ff730d81a52951fc2f58809dfb086b4be7a82766dcc18cfe32ff6acbbd"
  },
-@@ -1271,7 +1286,7 @@
+@@ -1271,7 +1288,7 @@
  matching the entry and verification of the artifact bytes against
  entry.digest.
  
@@ -182,7 +201,15 @@
  did:web:example.com. A valid signature by an assessor can endorse claims
  about that same release, but does not satisfy publisher authorization.
  Matching the publisher domain proves namespace control, not reputation,
-@@ -1390,19 +1405,19 @@
+@@ -1383,26 +1400,26 @@
+ its own host and entries:
+ 
+ {
+-"specVersion": "1.0",
++"specVersion": "0.9",
+ "host": {
+ "displayName": "Acme Enterprise AI",
+ "identifier": "did:web:acme-corp.com"
  },
  "entries": [
  {
@@ -205,7 +232,7 @@
  "displayName": "DevOps Tools",
  "type": "application/ai-catalog+json",
  "url": "https://acme.com/catalogs/devops.json"
-@@ -1416,7 +1431,7 @@
+@@ -1416,7 +1433,7 @@
  agent, an MCP server, and a dataset together:
  
  {
@@ -214,8 +241,12 @@
  "displayName": "Finance Plugin",
  "type": "application/ai-catalog+json",
  "url": "https://acme.com/plugins/finance-suite.json",
-@@ -1473,8 +1488,9 @@
- "specVersion": "1.0",
+@@ -1470,11 +1487,12 @@
+ For example, a catalog entry with extensions representing metadata and a custom schema:
+ 
+ {
+-"specVersion": "1.0",
++"specVersion": "0.9",
  "entries": [
  {
 -"identifier": "urn:air:treasury.gov:okf/fiscaldata",
@@ -225,7 +256,21 @@
  "tags": ["finance", "treasury"],
  "extensions": {
  "https://ai-catalog.org/extensions/metadata": {
-@@ -1988,8 +2004,8 @@
+@@ -1686,8 +1704,12 @@
+ 
+ Version Format
+ 
+-The specVersion value is a "Major.Minor" string (e.g., "1.0",
++The specVersion value is a "Major.Minor" string (e.g., "0.9", "1.0",
+ "1.1", "2.0"). Major and minor components are non-negative integers.
++
++Catalogs implementing this v0.9 release candidate use "0.9". The
++planned final v1.0 specification will use "1.0"; v0.9 is not an alias
++for v1.0, and consumers should not assume compatibility between them.
+ 
+ Compatibility Rules
+ 
+@@ -1988,8 +2010,8 @@
  Identifier Typosquatting
  
  Catalog entries are identified by URIs/URNs. An attacker can register
@@ -236,7 +281,7 @@
  malicious artifact.
  
  Registries and consumers SHOULD implement similarity checks on
-@@ -2117,8 +2133,9 @@
+@@ -2117,8 +2139,9 @@
  
  Media Type Registration: application/ai-catalog+json
  
@@ -248,7 +293,7 @@
  
  Type name:
  
-@@ -2177,8 +2194,8 @@
+@@ -2177,8 +2200,8 @@
  
  Link Relation Registration: ai-catalog
  
@@ -259,7 +304,7 @@
  
  Relation Name:
  
-@@ -2196,8 +2213,8 @@
+@@ -2196,8 +2219,8 @@
  
  Well-Known URI Registration: ai-catalog.json
  
@@ -270,7 +315,16 @@
  
  URI Suffix:
  
-@@ -2349,7 +2366,7 @@
+@@ -2341,7 +2364,7 @@
+ Digest and JWS strings in illustrative examples are placeholders.
+ 
+ {
+-"specVersion": "1.0",
++"specVersion": "0.9",
+ "host": {
+ "displayName": "Acme Services Inc.",
+ "identifier": "did:web:acme-corp.com",
+@@ -2349,7 +2372,7 @@
  },
  "entries": [
  {
@@ -279,7 +333,7 @@
  "version": "2.1.0",
  "type": "application/a2a-agent-card+json",
  "url": "https://api.acme-corp.com/agents/finance.json",
-@@ -2380,7 +2397,7 @@
+@@ -2380,7 +2403,7 @@
  ]
  },
  {
@@ -288,7 +342,7 @@
  "version": "1.4.0",
  "type": "application/mcp-server-card+json",
  "url": "https://api.acme-corp.com/mcp/server-card",
-@@ -2392,7 +2409,7 @@
+@@ -2392,7 +2415,7 @@
  "updatedAt": "2026-03-15T10:00:00Z"
  },
  {
@@ -297,8 +351,12 @@
  "displayName": "Acme Finance Suite",
  "type": "application/ai-catalog+json",
  "description": "A2A agent + MCP server + dataset for finance workflows.",
-@@ -2404,17 +2421,17 @@
- "specVersion": "1.0",
+@@ -2401,20 +2424,20 @@
+ "suite"
+ ],
+ "data": {
+-"specVersion": "1.0",
++"specVersion": "0.9",
  "entries": [
  {
 -"identifier": "urn:air:acme.com:finance-a2a:a2a",
@@ -318,7 +376,7 @@
  "displayName": "Market Dataset Q1 2026",
  "type": "application/parquet",
  "url": "https://data.acme-corp.com/market-2026q1.parquet",
-@@ -2439,7 +2456,7 @@
+@@ -2439,7 +2462,7 @@
  {
  "contributor": "did:web:acme.com",
  "subject": {
@@ -327,7 +385,15 @@
  "type": "application/ai-catalog+json",
  "digest": "sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111"
  },
-@@ -2470,14 +2487,14 @@
+@@ -2463,21 +2486,21 @@
+ document:
+ 
+ {
+-"specVersion": "1.0",
++"specVersion": "0.9",
+ "host": {
+ "displayName": "Acme Enterprise AI",
+ "identifier": "did:web:acme-corp.com"
  },
  "entries": [
  {
@@ -344,7 +410,7 @@
  "displayName": "Finance Services",
  "type": "application/ai-catalog+json",
  "url": "https://acme-corp.com/catalogs/finance.json",
-@@ -2485,7 +2502,7 @@
+@@ -2485,7 +2508,7 @@
  "tags": ["finance", "trading", "compliance"]
  },
  {
@@ -353,7 +419,7 @@
  "displayName": "Engineering Tools",
  "type": "application/ai-catalog+json",
  "url": "https://acme-corp.com/catalogs/engineering.json",
-@@ -2493,7 +2510,7 @@
+@@ -2493,7 +2516,7 @@
  "tags": ["engineering", "devops", "ci-cd"]
  },
  {
@@ -362,7 +428,7 @@
  "displayName": "ML Models",
  "type": "application/ai-catalog+json",
  "url": "https://acme-corp.com/catalogs/ml-models.json",
-@@ -2515,7 +2532,7 @@
+@@ -2515,7 +2538,7 @@
  containing both protocol-specific entries:
  
  {
@@ -371,8 +437,12 @@
  "displayName": "Acme Finance Agent",
  "type": "application/ai-catalog+json",
  "description": "Finance agent accessible via both MCP and A2A protocols.",
-@@ -2531,12 +2548,12 @@
- "specVersion": "1.0",
+@@ -2528,15 +2551,15 @@
+ "displayName": "Acme Financial Corp"
+ },
+ "data": {
+-"specVersion": "1.0",
++"specVersion": "0.9",
  "entries": [
  {
 -"identifier": "urn:air:acme.com:finance:mcp",

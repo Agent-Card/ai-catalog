@@ -15,7 +15,7 @@
       ],
       "latestVersion": "https://ai-catalog.io/spec/",
       "noRecTrack": true,
-      "subtitle": "Version 1.0 - Release Candidate",
+      "subtitle": "Version 0.9 - Release Candidate for v1.0",
       "shortName": "ai-catalog",
       "edDraftURI": null,
       "github": {
@@ -120,8 +120,9 @@
 
 <section class="introductory override" id="sotd">
 <h2>Status of This Document</h2>
-<p>This is the official <strong>AI Catalog Version 1.0 Release Candidate</strong>, published
-by the AI Catalog project for implementation and interoperability feedback.
+<p>This is the official <strong>AI Catalog v0.9 specification</strong>, a <strong>Release Candidate
+for v1.0</strong>, published by the AI Catalog project for implementation and
+interoperability feedback.
 It is ready to implement and evaluate, but it is <strong>not the final v1.0
 specification</strong>.</p>
 <p>Implementers are encouraged to build producers and consumers against this
@@ -135,9 +136,10 @@ Manifest signing and verification is particularly useful.</p>
 <p>Requirements may change in response to implementation feedback before
 final v1.0 publication, including changes that require implementations to
 be updated. Implementations of this release candidate use
-<code>"specVersion": "1.0"</code>; this value identifies the catalog format version,
-not the publication's maturity or a particular release-candidate revision.
-Implementers should record the specification revision separately.</p>
+<code>"specVersion": "0.9"</code> to identify this version of the specification.
+The final v1.0 specification will use <code>"specVersion": "1.0"</code>.
+Implementers should also record the specification revision or commit
+separately to distinguish updates within the v0.9 feedback phase.</p>
 <p>Final v1.0 publication is intended to follow evaluation of implementation
 feedback and resolution of issues affecting interoperability. Publication
 of this release candidate does not itself constitute IANA registration of
@@ -253,7 +255,7 @@ members:</p>
 <dl>
 <dt><code>specVersion</code></dt>
 <dd>A string indicating the version of this specification that the
-  catalog conforms to, in "Major.Minor" format (e.g., "1.0").
+  catalog conforms to, in "Major.Minor" format (e.g., "0.9").
   See <a href="#version-handling">Version Handling</a> for compatibility rules.</dd>
 <dt><code>entries</code></dt>
 <dd>An array of Catalog Entry objects as defined in <a href="#catalog-entry">Catalog Entry</a>.
@@ -261,7 +263,7 @@ members:</p>
 </dl>
 <p>For example, a minimal catalog listing four AI artifacts:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;entries&quot;: [
     {
       &quot;identifier&quot;: &quot;urn:air:example.com:skill:code-review&quot;,
@@ -588,7 +590,7 @@ version) or by <code>updatedAt</code>, and select the most recent. Clients
 that need a specific version SHOULD match on both <code>identifier</code> and <code>version</code>.</p>
 <p>For example, a catalog listing two versions of the same agent:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;entries&quot;: [
     {
       &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance&quot;,
@@ -1345,7 +1347,7 @@ can partition its catalog into sub-catalogs by department, product line,
 or region. Each sub-catalog is an independent AI Catalog document with
 its own <code>host</code> and entries:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;host&quot;: {
     &quot;displayName&quot;: &quot;Acme Enterprise AI&quot;,
     &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;
@@ -1425,7 +1427,7 @@ be a valid URL or a reverse-DNS string:</p>
 throwing an error.</p>
 <p>For example, a catalog entry with <code>extensions</code> representing metadata and a custom schema:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;entries&quot;: [
     {
       &quot;identifier&quot;: &quot;urn:air:treasury.gov:okf:fiscaldata&quot;,
@@ -1633,8 +1635,11 @@ a catalog conforms to. This section defines how producers and consumers
 handle version differences.</p>
 <section id="version-format">
 <h2>Version Format</h2>
-<p>The <code>specVersion</code> value is a "Major.Minor" string (e.g., "1.0",
+<p>The <code>specVersion</code> value is a "Major.Minor" string (e.g., "0.9", "1.0",
 "1.1", "2.0"). Major and minor components are non-negative integers.</p>
+<p>Catalogs implementing this v0.9 release candidate use <code>"0.9"</code>. The
+planned final v1.0 specification will use <code>"1.0"</code>; v0.9 is not an alias
+for v1.0, and consumers should not assume compatibility between them.</p>
 </section>
 <section id="compatibility-rules">
 <h2>Compatibility Rules</h2>
@@ -2225,7 +2230,7 @@ ProvenanceLink = {
 artifact types including a nested catalog packaging related artifacts.
 Digest and JWS strings in illustrative examples are placeholders.</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;host&quot;: {
     &quot;displayName&quot;: &quot;Acme Services Inc.&quot;,
     &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;,
@@ -2285,7 +2290,7 @@ Digest and JWS strings in illustrative examples are placeholders.</p>
         &quot;suite&quot;
       ],
       &quot;data&quot;: {
-        &quot;specVersion&quot;: &quot;1.0&quot;,
+        &quot;specVersion&quot;: &quot;0.9&quot;,
         &quot;entries&quot;: [
           {
             &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance-a2a&quot;,
@@ -2347,7 +2352,7 @@ entries to organize a large number of artifacts into browsable
 categories. Each sub-catalog entry points to a separate AI Catalog
 document:</p>
 <pre><code class="language-json">{
-  &quot;specVersion&quot;: &quot;1.0&quot;,
+  &quot;specVersion&quot;: &quot;0.9&quot;,
   &quot;host&quot;: {
     &quot;displayName&quot;: &quot;Acme Enterprise AI&quot;,
     &quot;identifier&quot;: &quot;did:web:acme-corp.com&quot;
@@ -2411,7 +2416,7 @@ containing both protocol-specific entries:</p>
     &quot;displayName&quot;: &quot;Acme Financial Corp&quot;
   },
   &quot;data&quot;: {
-    &quot;specVersion&quot;: &quot;1.0&quot;,
+    &quot;specVersion&quot;: &quot;0.9&quot;,
     &quot;entries&quot;: [
       {
         &quot;identifier&quot;: &quot;urn:air:acme.com:agent:finance:mcp&quot;,
