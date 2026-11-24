@@ -241,50 +241,59 @@ define. See [Unrecognized Members](#unrecognized-members).
 A Catalog Entry object describes a single AI artifact in the catalog.
 It MUST contain the following members:
 
-`identifier`
-: A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific `urn:air` naming structure with its own domain in the `{publisher}` segment. A catalog operator incorporating an entry for the first time with a publisher-authorized `urn:air` identifier MUST preserve that identifier exactly.
+<dl markdown="block">
+<dt><code>identifier</code></dt>
+<dd markdown="block">
 
-    **`urn:air` Identifier Format:**
-    `urn:air:{publisher}:{name}[:{kind}]`
+A string uniquely identifying this artifact. This field is an open text format (e.g., any valid URI or URN is accepted). Consumers that do not recognize an identifier scheme MUST treat the value as opaque. Identifier syntax alone does not verify publisher identity or establish trust. For open or federated systems, a globally unique absolute URI is RECOMMENDED. An artifact publisher that wants an entry identifier to be preserved when the artifact appears in other catalogs SHOULD use the AI Catalog-specific `urn:air` naming structure with its own domain in the `{publisher}` segment. A catalog operator incorporating an entry for the first time with a publisher-authorized `urn:air` identifier MUST preserve that identifier exactly.
 
-    - `{publisher}`: The domain name of the organization publishing the artifact (e.g., `example.com`).
-    - `{name}`: The stable logical name assigned by the publisher. Its internal structure is publisher-defined; for example, a publisher may use `engineering/code-review` or `engineering.code-review`.
-    - `{kind}`: An OPTIONAL single-segment suffix describing the conceptual kind of artifact. Its value is assigned by the publisher; this specification defines no vocabulary of kinds.
+**`urn:air` Identifier Format:**
+`urn:air:{publisher}:{name}[:{kind}]`
 
-    Colons separate the publisher, name, and optional kind; neither `{name}` nor `{kind}` contains a literal colon.
+- `{publisher}`: The domain name of the organization publishing the artifact (e.g., `example.com`).
+- `{name}`: The stable logical name assigned by the publisher. Its internal structure is publisher-defined; for example, a publisher may use `engineering/code-review` or `engineering.code-review`.
+- `{kind}`: An OPTIONAL single-segment suffix describing the conceptual kind of artifact. Its value is assigned by the publisher; this specification defines no vocabulary of kinds.
 
-    *Examples:*
+Colons separate the publisher, name, and optional kind; neither `{name}` nor `{kind}` contains a literal colon.
 
-    - `urn:air:acme.com:code-review`
-    - `urn:air:acme.com:engineering/code-review`
-    - `urn:air:acme.com:engineering/code-review:skill`
-    - `urn:air:acme.com:engineering.code-review:skill`
+*Examples:*
 
-    For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.
+- `urn:air:acme.com:code-review`
+- `urn:air:acme.com:engineering/code-review`
+- `urn:air:acme.com:engineering/code-review:skill`
+- `urn:air:acme.com:engineering.code-review:skill`
 
-    See [Multi-Version Entries](#multi-version-entries) for uniqueness rules when multiple versions are present, and [Catalog Projection](#catalog-projection) for identifiers assigned while projecting an existing Catalog Entry or source-system record.
+For closed or local systems where a different identifier format is used, client implementations are responsible for parsing and processing the custom format as appropriate.
 
-`type`
-: A string containing the identifier that specifies the type of the
-  referenced artifact. This field is an open text format, so any string value is accepted. However, to ensure interoperability, it is RECOMMENDED to use one of the following recognized "known types" in the ecosystem when applicable, partitioned by their respective governance boundaries:
+See [Multi-Version Entries](#multi-version-entries) for uniqueness rules when multiple versions are present, and [Catalog Projection](#catalog-projection) for identifiers assigned while projecting an existing Catalog Entry or source-system record.
 
-    **Core Protocol Types (Governed by the AI Catalog WG):**
+</dd>
+<dt><code>type</code></dt>
+<dd markdown="block">
 
-    - `application/ai-catalog+json` — a nested AI Catalog
-    - `application/agent-card+json` — reserved for a generic Agent Card format
+A string containing the identifier that specifies the type of the
+referenced artifact. This field is an open text format, so any string value is accepted. However, to ensure interoperability, it is RECOMMENDED to use one of the following recognized "known types" in the ecosystem when applicable, partitioned by their respective governance boundaries:
 
-    **Integrated Ecosystem & Third-Party Types (Governed externally):**
+**Core Protocol Types (Governed by the AI Catalog WG):**
 
-    - `application/a2a-agent-card+json` — an A2A Agent Card
-    - `application/mcp-server-card+json` — an MCP Server Card
-    - `application/agent-skills+json` — Agent Skill Metadata json file
-    - `application/agent-skills+md` — an Agent Skill defined in a standard Markdown file (the suffix `+md` is to be registered)
-    - `application/agent-skills+zip` — an Agent Skill bundle (ZIP archive)
-    - `application/agent-skills+gzip` — an Agent Skill bundle (gzipped tarball)
-    - `application/agent-plugins+zip` — an Agent Plugin bundle (ZIP archive)
-    - `application/agent-plugins+gzip` — an Agent Plugin bundle (gzipped tarball)
+- `application/ai-catalog+json` — a nested AI Catalog
+- `application/agent-card+json` — reserved for a generic Agent Card format
 
-    These values are designed to align with official IANA media type registration standards. Standard ecosystem types use registered structured syntax suffixes (`+json`, `+zip`, `+gzip`). For any new or custom types not listed here, it is up to the specific client implementation to handle them correctly.
+**Integrated Ecosystem & Third-Party Types (Governed externally):**
+
+- `application/a2a-agent-card+json` — an A2A Agent Card
+- `application/mcp-server-card+json` — an MCP Server Card
+- `application/agent-skills+json` — Agent Skill Metadata json file
+- `application/agent-skills+md` — an Agent Skill defined in a standard Markdown file (the suffix `+md` is to be registered)
+- `application/agent-skills+zip` — an Agent Skill bundle (ZIP archive)
+- `application/agent-skills+gzip` — an Agent Skill bundle (gzipped tarball)
+- `application/agent-plugins+zip` — an Agent Plugin bundle (ZIP archive)
+- `application/agent-plugins+gzip` — an Agent Plugin bundle (gzipped tarball)
+
+These values are designed to align with official IANA media type registration standards. Standard ecosystem types use registered structured syntax suffixes (`+json`, `+zip`, `+gzip`). For any new or custom types not listed here, it is up to the specific client implementation to handle them correctly.
+
+</dd>
+</dl>
 
 A Catalog Entry MUST contain exactly one of the following members to
 provide the artifact content:
@@ -301,67 +310,82 @@ provide the artifact content:
 
 The following members are OPTIONAL:
 
-`displayName`
-: A string containing a human-readable name for the artifact.
-  This field SHOULD be set only when the referenced artifact does not
-  already carry its own canonical human-readable name — for example a
-  raw dataset (`application/parquet`), a model blob, a skill bundle
-  (`application/agent-skills+zip`), or an Agent Plugin bundle
-  (`application/agent-plugins+zip`), none of which directly expose a
-  self-describing name without processing the artifact. When the referenced
-  artifact does carry such a name — for
-  example the `name` field of an A2A Agent Card or the `title` field of
-  an MCP Server Card — that artifact is the authoritative source and
-  `displayName` SHOULD be omitted to avoid duplicating a value that can
-  drift out of sync. When `displayName` *is* present, however, it takes
-  precedence: it is the authoritative value for display, and a consumer
-  SHOULD render it as given even when it differs from a name carried by
-  the referenced artifact. Setting `displayName` is how a publisher
-  deliberately overrides the artifact's own name. See
-  [Resolving an Artifact's Display Name](#resolving-an-artifact-s-display-name)
-  for the full consumer resolution order.
+<dl markdown="block">
+<dt><code>displayName</code></dt>
+<dd markdown="span">
 
-`description`
-: A string containing a short description of the artifact. Like
-  `displayName`, `description` is OPTIONAL and follows the same
-  authoritative-source rule: when the referenced artifact carries its
-  own canonical description — for example the `description` field of an
-  A2A Agent Card or an MCP Server Card — that artifact is the
-  authoritative source and entry `description` SHOULD be omitted to
-  avoid duplicating a value that can drift out of sync. When entry
-  `description` *is* present, however, it takes precedence: a consumer
-  SHOULD render it as given even when it differs from a description
-  carried by the referenced artifact, which is how a publisher provides
-  a listing-specific blurb. See
-  [Resolving an Artifact's Description](#resolving-an-artifact-s-description)
-  for the full consumer resolution order.
+A string containing a human-readable name for the artifact.
+This field SHOULD be set only when the referenced artifact does not
+already carry its own canonical human-readable name — for example a
+raw dataset (`application/parquet`), a model blob, a skill bundle
+(`application/agent-skills+zip`), or an Agent Plugin bundle
+(`application/agent-plugins+zip`), none of which directly expose a
+self-describing name without processing the artifact. When the referenced
+artifact does carry such a name — for
+example the `name` field of an A2A Agent Card or the `title` field of
+an MCP Server Card — that artifact is the authoritative source and
+`displayName` SHOULD be omitted to avoid duplicating a value that can
+drift out of sync. When `displayName` *is* present, however, it takes
+precedence: it is the authoritative value for display, and a consumer
+SHOULD render it as given even when it differs from a name carried by
+the referenced artifact. Setting `displayName` is how a publisher
+deliberately overrides the artifact's own name. See
+[Resolving an Artifact's Display Name](#resolving-an-artifact-s-display-name)
+for the full consumer resolution order.
 
-`tags`
-: An array of strings serving as keywords for filtering and discovery.
+</dd>
+<dt><code>description</code></dt>
+<dd markdown="span">
 
-`version`
-: A string containing the version of this artifact.
-  [Semantic Versioning](https://semver.org/) is RECOMMENDED but not
-  required. See [Multi-Version Entries](#multi-version-entries) for
-  how versions interact with `identifier`.
+A string containing a short description of the artifact. Like
+`displayName`, `description` is OPTIONAL and follows the same
+authoritative-source rule: when the referenced artifact carries its
+own canonical description — for example the `description` field of an
+A2A Agent Card or an MCP Server Card — that artifact is the
+authoritative source and entry `description` SHOULD be omitted to
+avoid duplicating a value that can drift out of sync. When entry
+`description` *is* present, however, it takes precedence: a consumer
+SHOULD render it as given even when it differs from a description
+carried by the referenced artifact, which is how a publisher provides
+a listing-specific blurb. See
+[Resolving an Artifact's Description](#resolving-an-artifact-s-description)
+for the full consumer resolution order.
 
-    Like `displayName` and `description`, `version` can restate a value
-    the referenced artifact already carries (an A2A Agent Card
-    `version`, an MCP Server Card `version`), and when a single entry
-    references such an artifact the entry `version` SHOULD be omitted to
-    avoid drift — the consumer can read it from the artifact. An entry
-    MAY include that version when it needs to be signed directly. Unlike
-    `displayName` and `description`, however, `version` is not merely
-    cosmetic: it is part of the entry's uniqueness key, so it is
-    REQUIRED when a catalog lists multiple versions of the same
-    `identifier` (see [Multi-Version Entries](#multi-version-entries)).
-    A present `version` is used for catalog-level sorting and selection
-    rather than as a free-form display override, so it SHOULD equal the
-    version the referenced artifact reports; an entry `version` that
-    contradicts the artifact's own version is a publishing error, not a
-    deliberate override. See
-    [Resolving an Artifact's Version](#resolving-an-artifact-s-version)
-    for the full consumer resolution order.
+</dd>
+<dt><code>tags</code></dt>
+<dd markdown="span">
+
+An array of strings serving as keywords for filtering and discovery.
+
+</dd>
+<dt><code>version</code></dt>
+<dd markdown="block">
+
+A string containing the version of this artifact.
+[Semantic Versioning](https://semver.org/) is RECOMMENDED but not
+required. See [Multi-Version Entries](#multi-version-entries) for
+how versions interact with `identifier`.
+
+Like `displayName` and `description`, `version` can restate a value
+the referenced artifact already carries (an A2A Agent Card
+`version`, an MCP Server Card `version`), and when a single entry
+references such an artifact the entry `version` SHOULD be omitted to
+avoid drift — the consumer can read it from the artifact. An entry
+MAY include that version when it needs to be signed directly. Unlike
+`displayName` and `description`, however, `version` is not merely
+cosmetic: it is part of the entry's uniqueness key, so it is
+REQUIRED when a catalog lists multiple versions of the same
+`identifier` (see [Multi-Version Entries](#multi-version-entries)).
+A present `version` is used for catalog-level sorting and selection
+rather than as a free-form display override, so it SHOULD equal the
+version the referenced artifact reports; an entry `version` that
+contradicts the artifact's own version is a publishing error, not a
+deliberate override. See
+[Resolving an Artifact's Version](#resolving-an-artifact-s-version)
+for the full consumer resolution order.
+
+</dd>
+</dl>
 
 `updatedAt`
 : A string containing an ISO 8601 [[RFC3339]] timestamp indicating
