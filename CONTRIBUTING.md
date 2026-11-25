@@ -91,8 +91,12 @@ Examples:
 
 ## Review Expectations
 
-All substantive changes should go through pull request review. When proposing a
-specification update, explain:
+All substantive changes should go through pull request review. Maintainers are
+trusted to merge PRs with one peer review. The TSC can revert or block changes
+with 2 (of 4) votes. Each project's maintainers are listed in
+[`MAINTAINERS.md`](MAINTAINERS.md).
+
+When proposing a specification update, explain:
 
 - what problem the change solves
 - whether it changes interoperability expectations
