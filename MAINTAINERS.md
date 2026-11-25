@@ -10,7 +10,7 @@ Maintainers are trusted to merge PRs with one peer review. The TSC can revert or
 
 Repository: [Agent-Card/ai-catalog](https://github.com/Agent-Card/ai-catalog)
 
-Lead Maintainers:
+Maintainers:
 
 | Company | Representative | Contact |
 | :--- | :--- | :--- |
@@ -22,7 +22,7 @@ Lead Maintainers:
 
 Repository: [Agent-Card/ai-catalog-rust](https://github.com/Agent-Card/ai-catalog-rust)
 
-Lead Maintainers:
+Maintainers:
 
 | Company | Representative | Contact |
 | :--- | :--- | :--- |
@@ -33,7 +33,7 @@ Lead Maintainers:
 
 Repository: [Agent-Card/ai-catalog-go](https://github.com/Agent-Card/ai-catalog-go)
 
-Lead Maintainers:
+Maintainers:
 
 | Company | Representative | Contact |
 | :--- | :--- | :--- |
@@ -44,7 +44,7 @@ Lead Maintainers:
 
 Repository: [Agent-Card/ai-catalog-cli](https://github.com/Agent-Card/ai-catalog-cli)
 
-Lead Maintainers:
+Maintainers:
 
 | Company | Representative | Contact |
 | :--- | :--- | :--- |
