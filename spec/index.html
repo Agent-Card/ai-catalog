@@ -1243,7 +1243,8 @@ authenticates a signer using a root <code>did:web</code> DID and an ES256 assert
 It can authenticate a publisher, assessor, registry, or other contributor.
 Authentication does not by itself grant publisher, host, or catalog authority.
 The <a href="#the-did-web-publisher-profile"><code>did:web</code> Publisher Profile</a> adds publisher
-namespace authorization.</p>
+namespace authorization. The <a href="#the-did-web-catalog-profile"><code>did:web</code> Catalog Profile</a>
+establishes attribution to the declared catalog operator.</p>
 <p>The Signature object's <code>signer</code> MUST be a root <code>did:web</code> DID. Its domain
 MUST be lowercase ASCII, with no port, IP address, trailing root dot, or
 Unicode U-label; IDNA A-labels are permitted [[DIDWEB]] [[RFC5890]]
@@ -1353,15 +1354,38 @@ the artifact release.</p>
 </section>
 <section id="catalog-authorization">
 <h3>Catalog Authorization</h3>
-<p>A catalog signature includes Host Info when present. The <code>did:web</code> Signer
-Profile can authenticate catalog signers, but this specification does not
-define a universal mapping from a signer to catalog authority. A separate
-profile or configured policy MUST identify authorized operators before a
-consumer accepts a signature as a catalog endorsement. A signer-supplied
-<code>host.identifier</code> alone is not a trust anchor.</p>
+<p>Consumers accepting a signature as a catalog endorsement MUST establish its
+signer's authority for the catalog using a catalog-authorization profile or
+configured policy. The following profile establishes attribution to the
+operator identified in the signed Host Info.</p>
+<section id="the-did-web-catalog-profile">
+<h4>The `did:web` Catalog Profile</h4>
+<p>This profile applies the <a href="#the-did-web-signer-profile"><code>did:web</code> Signer Profile</a>
+with two additional requirements:</p>
+<ul>
+<li><strong>Catalog coverage:</strong> The root signature MUST satisfy
+  <a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>, including the
+  protected JWS <code>typ</code> value <code>ai-catalog+jws</code>.</li>
+<li><strong>Operator attribution:</strong> The catalog MUST contain <code>host.identifier</code>, and
+  its value MUST exactly equal the authenticated root <code>signature.signer</code>.
+  Consumers MUST compare the decoded JSON strings case-sensitively, without
+  URI normalization. The Signer Profile's root <code>did:web</code> restrictions apply.</li>
+</ul>
+<p>The Catalog Profile uses the Signer Profile's <code>profile: "did-web-v1"</code> and
+adds the checks above for accepting a catalog endorsement. A matching unsigned
+<code>host.identifier</code> alone does not establish operator attribution.</p>
+<p>For example, a catalog with <code>host.identifier</code> set to <code>did:web:registry.example</code>
+and a valid root signature from that DID satisfies operator attribution.
+This authenticates the snapshot as that declared operator's endorsement.
+It does not establish the operator's reputation, legal identity, or that
+this is the catalog expected by a particular application. Consumers determine
+whether the authenticated operator meets their trust policy. The profile
+neither binds the catalog to its retrieval URL nor establishes publisher
+authority for its entries.</p>
 <p>HTTPS authenticates the serving domain for transport. A DID document's
 service endpoint may describe a location, but is not by itself proof that
-the retrieved catalog was signed or authorized by that identity.</p>
+the retrieved catalog was signed by that identity.</p>
+</section>
 </section>
 <section id="publisher-and-policy-metadata">
 <h3>Publisher and Policy Metadata</h3>
@@ -1898,7 +1922,8 @@ present at any level, MUST satisfy <a href="#manifest-validity">Manifest Validit
   define additional interoperable authentication and authorization mechanisms.</li>
 <li>SHOULD provide catalog-level integrity through a content-addressed channel
   or a signature satisfying <a href="#catalog-snapshot-coverage">Catalog Snapshot Coverage</a>
-  and an applicable operator-authorization policy.</li>
+  and <a href="#the-did-web-catalog-profile">the <code>did:web</code> Catalog Profile</a> or another
+  applicable operator-authorization profile or configured policy.</li>
 <li>MAY include signed attestations, provenance, and manifest extensions,
   according to consumer policy.</li>
 </ul>
