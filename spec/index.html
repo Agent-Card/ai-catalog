@@ -250,6 +250,17 @@ capitals, as shown here.</p>
 </section>
 <section id="top-level-structure">
 <h2>Top-Level Structure</h2>
+<p>Producers MUST ensure that each complete AI Catalog document is valid input
+to JCS [[RFC8785]], including all nested values, whether or not the catalog is
+signed. Consumers MAY reject documents that do not satisfy this requirement.
+This requirement does not mandate validation during ingestion. Producers need
+not serialize the JSON in canonical form.</p>
+<p>Consumers MAY reject JSON objects containing duplicate member names.
+Otherwise, they MUST retain only the last occurrence of each name after JSON
+escape processing. This rule also applies when preparing data for JCS-based
+signing or verification; it does not require a separate duplicate-detection
+pass. Signature verification and subsequent processing of authenticated
+claims MUST use the same resulting JSON value.</p>
 <p>An AI Catalog document is a JSON object that MUST contain the following
 members:</p>
 <dl>
@@ -308,8 +319,9 @@ members:</p>
   catalog operator; see <a href="#catalog-authorization">Catalog Authorization</a>.</dd>
 <dt><code>additionalSignatures</code></dt>
 <dd>Reserved for future use. Producers SHOULD omit this member. Consumers MUST
-  accept and ignore it regardless of its value. It is excluded from this
-  catalog's signature payload; it establishes no endorsement in this version.</dd>
+  accept and ignore any value permitted by the catalog's JCS input
+  requirements. It is excluded from this catalog's signature payload; it
+  establishes no endorsement in this version.</dd>
 </dl>
 <p>The AI Catalog top-level object MAY also contain members this specification
 does not define. See <a href="#unrecognized-members">Unrecognized Members</a>.</p>
@@ -403,7 +415,8 @@ provide the artifact content:</p>
 <dt><code>data</code></dt>
 <dd>A JSON value containing the complete artifact document inline. The
   structure of this value is determined by the <code>type</code> field and
-  is opaque to this specification.</dd>
+  is opaque to this specification. Like all catalog data, it is subject to
+  the JCS input requirements in <a href="#top-level-structure">Top-Level Structure</a>.</dd>
 </dl>
 <p>The following members are OPTIONAL:</p>
 <dl>
@@ -491,9 +504,8 @@ for the full consumer resolution order.</p>
 <dt><code>digest</code></dt>
 <dd>A string containing the artifact content digest in <a href="#digest-format">Digest Format</a>.
   For <code>url</code>, hash the exact retrieved artifact bytes. For <code>data</code>, hash the
-  UTF-8 JCS-canonicalized [[RFC8785]] JSON value. Inline <code>data</code> MUST satisfy
-  JCS's input requirements for artifact verification to succeed. A digest
-  alone does not authenticate its source; see
+  UTF-8 JCS-canonicalized [[RFC8785]] JSON value. A digest alone does not
+  authenticate its source; see
   <a href="#entry-release-coverage">Entry Release Coverage</a>.</dd>
 <dt><code>trustManifests</code></dt>
 <dd>An array of <a href="#trust-manifest">Trust Manifest</a> objects. Each manifest groups
@@ -771,8 +783,9 @@ does not establish verification. Empty manifests MUST be omitted.</p>
   contents, including its subject and contributor identity.</dd>
 <dt><code>additionalSignatures</code></dt>
 <dd>Reserved for future use. Producers SHOULD omit this member. Consumers MUST
-  accept and ignore it regardless of its value. It is excluded from this
-  manifest's signature payload; it establishes no endorsement in this version.</dd>
+  accept and ignore any value permitted by the catalog's JCS input
+  requirements. It is excluded from this manifest's signature payload; it
+  establishes no endorsement in this version.</dd>
 <dt><code>trustSchema</code></dt>
 <dd>A <a href="#trust-schema-object">Trust Schema object</a> describing the framework the
   contributor applies to its claims about this artifact. The descriptor does
@@ -1079,9 +1092,9 @@ catalog signature includes complete nested Trust Manifests and their signatures.
 payload. Use ordinary base64url-encoded JWS signing input, then omit only the
 payload segment from the stored compact serialization, as specified in
 Appendix F of [[RFC7515]]. Verifiers reconstruct that segment to verify the
-JWS. The payload MUST satisfy JCS's I-JSON constraints; parsers MUST reject
-duplicate JSON member names rather than silently discard one. Large integers
-that cannot round-trip as IEEE 754 doubles SHOULD be encoded as strings.</p>
+JWS. The JSON value supplied to JCS MUST satisfy its input requirements.
+Large integers that cannot round-trip as IEEE 754 doubles SHOULD be encoded
+as strings.</p>
 <p>The protected header MUST contain <code>alg</code> and <code>typ</code>. The <code>typ</code> value MUST
 exactly match the kind of containing object:</p>
 <table>
