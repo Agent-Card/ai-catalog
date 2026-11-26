@@ -373,7 +373,7 @@ It MUST contain the following members:</p>
 <dt><code>type</code></dt>
 <dd>
 <p>A string containing the identifier that specifies the type of the
-  referenced artifact. This field is an open text format, so any string value is accepted. However, to ensure interoperability, it is RECOMMENDED to use one of the following recognized "known types" in the ecosystem when applicable, partitioned by their respective governance boundaries:</p>
+referenced artifact. This field is an open text format, so any string value is accepted. However, to ensure interoperability, it is RECOMMENDED to use one of the following recognized "known types" in the ecosystem when applicable, partitioned by their respective governance boundaries:</p>
 <p><strong>Core Protocol Types (Governed by the AI Catalog WG):</strong></p>
 <ul>
 <li><code>application/ai-catalog+json</code> — a nested AI Catalog</li>
@@ -408,46 +408,58 @@ provide the artifact content:</p>
 <p>The following members are OPTIONAL:</p>
 <dl>
 <dt><code>displayName</code></dt>
-<dd>A string containing a human-readable name for the artifact.
-  This field SHOULD be set only when the referenced artifact does not
-  already carry its own canonical human-readable name — for example a
-  raw dataset (<code>application/parquet</code>), a model blob, a skill bundle
-  (<code>application/agent-skills+zip</code>), or an Agent Plugin bundle
-  (<code>application/agent-plugins+zip</code>), none of which directly expose a
-  self-describing name without processing the artifact. When the referenced
-  artifact does carry such a name — for
-  example the <code>name</code> field of an A2A Agent Card or the <code>title</code> field of
-  an MCP Server Card — that artifact is the authoritative source and
-  <code>displayName</code> SHOULD be omitted to avoid duplicating a value that can
-  drift out of sync. When <code>displayName</code> <em>is</em> present, however, it takes
-  precedence: it is the authoritative value for display, and a consumer
-  SHOULD render it as given even when it differs from a name carried by
-  the referenced artifact. Setting <code>displayName</code> is how a publisher
-  deliberately overrides the artifact's own name. See
-  <a href="#resolving-an-artifact-s-display-name">Resolving an Artifact's Display Name</a>
-  for the full consumer resolution order.</dd>
+<dd>
+
+A string containing a human-readable name for the artifact.
+This field SHOULD be set only when the referenced artifact does not
+already carry its own canonical human-readable name — for example a
+raw dataset (<code>application/parquet</code>), a model blob, a skill bundle
+(<code>application/agent-skills+zip</code>), or an Agent Plugin bundle
+(<code>application/agent-plugins+zip</code>), none of which directly expose a
+self-describing name without processing the artifact. When the referenced
+artifact does carry such a name — for
+example the <code>name</code> field of an A2A Agent Card or the <code>title</code> field of
+an MCP Server Card — that artifact is the authoritative source and
+<code>displayName</code> SHOULD be omitted to avoid duplicating a value that can
+drift out of sync. When <code>displayName</code> <em>is</em> present, however, it takes
+precedence: it is the authoritative value for display, and a consumer
+SHOULD render it as given even when it differs from a name carried by
+the referenced artifact. Setting <code>displayName</code> is how a publisher
+deliberately overrides the artifact's own name. See
+<a href="#resolving-an-artifact-s-display-name">Resolving an Artifact's Display Name</a>
+for the full consumer resolution order.
+
+</dd>
 <dt><code>description</code></dt>
-<dd>A string containing a short description of the artifact. Like
-  <code>displayName</code>, <code>description</code> is OPTIONAL and follows the same
-  authoritative-source rule: when the referenced artifact carries its
-  own canonical description — for example the <code>description</code> field of an
-  A2A Agent Card or an MCP Server Card — that artifact is the
-  authoritative source and entry <code>description</code> SHOULD be omitted to
-  avoid duplicating a value that can drift out of sync. When entry
-  <code>description</code> <em>is</em> present, however, it takes precedence: a consumer
-  SHOULD render it as given even when it differs from a description
-  carried by the referenced artifact, which is how a publisher provides
-  a listing-specific blurb. See
-  <a href="#resolving-an-artifact-s-description">Resolving an Artifact's Description</a>
-  for the full consumer resolution order.</dd>
+<dd>
+
+A string containing a short description of the artifact. Like
+<code>displayName</code>, <code>description</code> is OPTIONAL and follows the same
+authoritative-source rule: when the referenced artifact carries its
+own canonical description — for example the <code>description</code> field of an
+A2A Agent Card or an MCP Server Card — that artifact is the
+authoritative source and entry <code>description</code> SHOULD be omitted to
+avoid duplicating a value that can drift out of sync. When entry
+<code>description</code> <em>is</em> present, however, it takes precedence: a consumer
+SHOULD render it as given even when it differs from a description
+carried by the referenced artifact, which is how a publisher provides
+a listing-specific blurb. See
+<a href="#resolving-an-artifact-s-description">Resolving an Artifact's Description</a>
+for the full consumer resolution order.
+
+</dd>
 <dt><code>tags</code></dt>
-<dd>An array of strings serving as keywords for filtering and discovery.</dd>
+<dd>
+
+An array of strings serving as keywords for filtering and discovery.
+
+</dd>
 <dt><code>version</code></dt>
 <dd>
 <p>A string containing the version of this artifact.
-  <a href="https://semver.org/">Semantic Versioning</a> is RECOMMENDED but not
-  required. See <a href="#multi-version-entries">Multi-Version Entries</a> for
-  how versions interact with <code>identifier</code>.</p>
+<a href="https://semver.org/">Semantic Versioning</a> is RECOMMENDED but not
+required. See <a href="#multi-version-entries">Multi-Version Entries</a> for
+how versions interact with <code>identifier</code>.</p>
 <p>Like <code>displayName</code> and <code>description</code>, <code>version</code> can restate a value
 the referenced artifact already carries (an A2A Agent Card
 <code>version</code>, an MCP Server Card <code>version</code>), and when a single entry
