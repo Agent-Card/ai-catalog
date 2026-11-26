@@ -105,7 +105,7 @@
 
 <section id="abstract">
   <h2>Abstract</h2>
-  <p>This document defines the AI Catalog, a JSON format for discovering heterogeneous AI artifacts such as MCP servers, A2A agents, Claude Code plugins, datasets, and model cards. Each catalog entry declares the artifact's type via a type identifier, preferably a media type, and references or inlines the native artifact metadata, enabling a single discovery mechanism across protocols and platforms. The specification defines three conformance levels — Minimal, Discoverable, and Trusted — allowing implementations to start with a simple list of entries and progressively add host identity, optional well-known URI discovery, and verifiable trust metadata as needed. Optional independent Trust Manifests group contributor claims, compliance attestations, and provenance; each can carry one signature binding its contents to an artifact release, while a catalog signature authenticates the complete catalog snapshot without wrapping or modifying the artifact's native format. Informative ecosystem and distribution mappings are maintained separately in the project's developer documentation.</p>
+  <p>This document defines the AI Catalog, a JSON format for discovering heterogeneous AI artifacts such as MCP servers, A2A agents, Agent Plugins, datasets, and model cards. Each catalog entry declares the artifact's type via a type identifier, preferably a media type, and references or inlines the native artifact metadata, enabling a single discovery mechanism across protocols and platforms. The specification defines three conformance levels — Minimal, Discoverable, and Trusted — allowing implementations to start with a simple list of entries and progressively add host identity, optional well-known URI discovery, and verifiable trust metadata as needed. Optional independent Trust Manifests group contributor claims, compliance attestations, and provenance; each can carry one signature binding its contents to an artifact release, while a catalog signature authenticates the complete catalog snapshot without wrapping or modifying the artifact's native format. Informative ecosystem and distribution mappings are maintained separately in the project's developer documentation.</p>
 </section>
 
 <section id="conformance">
@@ -149,7 +149,7 @@ the identifiers described in <a href="#iana-considerations">IANA Considerations<
 <h1>Introduction</h1>
 <p>The AI ecosystem comprises a growing number of protocols, artifact
 formats, and service types. Model Context Protocol (MCP) servers,
-Agent-to-Agent (A2A) agents, Claude Code plugins, datasets, model cards,
+Agent-to-Agent (A2A) agents, Agent Plugins, datasets, model cards,
 and other AI artifacts each define their own metadata and discovery
 mechanisms. This fragmentation forces clients and registries to
 implement bespoke logic for each artifact type, increasing complexity
@@ -196,7 +196,7 @@ capitals, as shown here.</p>
   its optional signature authenticates that contributor's claims.</dd>
 <dt>Artifact</dt>
 <dd>Any AI resource described by a catalog entry, such as an MCP server
-  manifest, an A2A agent card, a Claude Code plugin, a
+  manifest, an A2A agent card, an Agent Plugin, a
   dataset descriptor, or a nested AI Catalog.</dd>
 </dl>
 </section>
