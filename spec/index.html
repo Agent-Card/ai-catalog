@@ -728,7 +728,8 @@ Consumers MUST compare these decoded JSON strings case-sensitively, without
 URI normalization. Verifying the signature and this equality authenticates
 the contributor attribution. Accepting the claims for an entry additionally
 requires <a href="#entry-release-coverage">entry release binding</a>. A signature over
-one manifest does not authenticate other manifests or other entry fields.</p>
+one manifest does not authenticate other manifests. Entry extensions can be
+authenticated separately through <a href="#extension-digest-verification">Extension Digest Verification</a>.</p>
 </section>
 <section id="independent-contributions-and-updates">
 <h2>Independent Contributions and Updates</h2>
@@ -785,7 +786,9 @@ does not establish verification. Empty manifests MUST be omitted.</p>
 <dd>A JSON object containing this contributor's additional trust metadata, using
   the namespaced keys defined in <a href="#extensions">Extensions</a>. Entry extensions
   describe shared artifact metadata; manifest extensions express a particular
-  contributor's claims. A manifest signature covers only the latter.</dd>
+  contributor's claims. Manifest extensions are covered directly by the
+  signature; selected entry extensions can be bound through
+  <code>subject.extensionDigests</code>.</dd>
 </dl>
 <p>For example, this unsigned entry carries independent contributions:</p>
 <pre><code class="language-json">{
@@ -834,6 +837,15 @@ It MUST contain:</p>
 <dd>A string containing the artifact release version. <code>subject.version</code> MUST
   be present exactly when <code>entry.version</code> is present, and its value MUST
   exactly equal <code>entry.version</code>.</dd>
+</dl>
+<p>The following member is OPTIONAL:</p>
+<dl>
+<dt><code>extensionDigests</code></dt>
+<dd>A JSON object mapping exact keys in the containing entry's <code>extensions</code>
+  object to digest strings in <a href="#digest-format">Digest Format</a>. Each digest
+  covers the UTF-8 JCS-canonicalized value of that entire extension. Omitting
+  this object or providing an empty object selects no entry extensions.
+  See <a href="#extension-digest-verification">Extension Digest Verification</a>.</dd>
 </dl>
 <p>These fields deliberately repeat entry values to make the signed manifest
 self-contained. Verification of a standalone manifest authenticates its
@@ -1137,10 +1149,65 @@ Consumers MUST NOT combine fields from different manifests to establish binding.
 <p>The consumer MUST also verify the artifact bytes against the matching digest
 using <a href="#verifying-artifact-integrity">Verifying Artifact Integrity</a>. The
 retrieval URL is not signed by the Trust Manifest, permitting mirrors serving
-identical bytes. Other entry fields, including entry extensions and
-<a href="#unrecognized-members">unrecognized members</a>, are outside the manifest
-signature's scope. Referenced evidence retains its own
-verification requirements.</p>
+identical bytes.</p>
+<p>Entry extensions selected through <code>subject.extensionDigests</code> can also be
+authenticated under
+<a href="#extension-digest-verification">Extension Digest Verification</a>. The manifest
+does not authenticate entry fields outside its subject bindings, including
+unselected extensions and <a href="#unrecognized-members">unrecognized members</a>
+directly on the entry. Referenced evidence retains its own verification
+requirements.</p>
+</section>
+<section id="extension-digest-verification">
+<h3>Extension Digest Verification</h3>
+<p>A contributor MAY authenticate selected entry extensions by including
+<code>subject.extensionDigests</code> in its signed manifest. The map keys and digest
+strings are authenticated by the manifest signature. Each binding identifies
+one complete extension value; it does not select nested properties or make
+claims about the presence or absence of unselected extensions. No profile
+defined by this specification requires selecting any entry extension.</p>
+<p>For example, this Subject excerpt selects two entry extensions (the digests
+are illustrative placeholders):</p>
+<pre><code class="language-json">{
+  &quot;extensionDigests&quot;: {
+    &quot;com.example.capabilities&quot;: &quot;sha256:...&quot;,
+    &quot;https://example.org/extensions/assessment&quot;: &quot;sha256:...&quot;
+  }
+}
+</code></pre>
+<p>Before treating an entry extension as authenticated by a contributor's Trust
+Manifest, consumers MUST authenticate the contributor and verify the manifest's
+artifact binding under <a href="#entry-release-coverage">Entry Release Coverage</a>.
+For each extension whose authentication they evaluate, consumers MUST:</p>
+<ol>
+<li>Find its exact key in <code>subject.extensionDigests</code>. If absent, this manifest
+   does not authenticate the extension. Keys are compared as decoded JSON
+   strings without case folding, URI normalization, or dereferencing.</li>
+<li>Require that exact key to exist in the entry's <code>extensions</code> object. A
+   missing member fails the binding; a JSON <code>null</code> value is not a missing member.</li>
+<li>Canonicalize the entire extension value using JCS [[RFC8785]] and hash its
+   UTF-8 bytes using the algorithm declared by the selected digest. The value
+   MUST satisfy JCS input requirements for this binding to succeed. No members
+   are removed, including nested <code>signature</code>, <code>jws</code>, or <code>additionalSignatures</code>.</li>
+<li>Compare the result under <a href="#digest-format">Digest Format</a>. A mismatch,
+   unsupported algorithm, invalid value, or failed canonicalization MUST NOT
+   count as a verified extension binding.</li>
+</ol>
+<p>Consumers MUST distinguish between a matching binding, a binding that could
+not be verified, and an extension not selected by the manifest. Verification is
+independent for each selected extension: a failed binding MUST NOT invalidate
+an otherwise verified artifact binding, the manifest's signature, or another
+matching extension binding. Consumers MUST retain the complete manifest,
+including all digest entries, when constructing its signature payload.</p>
+<p>Changing or removing a selected extension affects its binding. Adding,
+removing, or changing unselected extensions does not affect these bindings.
+Checking an extension's digest requires the steps above, even when the
+consumer does not understand its semantics.</p>
+<p>Successful verification authenticates the contributor's endorsement of that
+extension value. It does not establish who authored or added the extension,
+the truth of that value, or that claims about an older value apply to a
+replacement. Consumers MAY require particular authenticated extensions
+under their own acceptance policies.</p>
 </section>
 <section id="catalog-snapshot-coverage">
 <h3>Catalog Snapshot Coverage</h3>
@@ -1286,18 +1353,16 @@ the retrieved catalog was signed or authorized by that identity.</p>
 <section id="publisher-and-policy-metadata">
 <h3>Publisher and Policy Metadata</h3>
 <p>A Trust Manifest signature does not authenticate the entry's <code>publisher</code>
-object, its entry extensions, including the
-<a href="#policy-urls-extension">Policy URLs extension</a>, or its
-<a href="#unrecognized-members">unrecognized members</a>. These fields are outside
-its payload. Consumers MUST distinguish publisher-authenticated metadata
-from metadata supplied or endorsed by another entity. A catalog signature
-covers them as part of its signer's snapshot, subject to
-<a href="#catalog-authorization">Catalog Authorization</a>; this does not by itself establish
-publisher endorsement of those values. This specification does not define
-a verification profile for a <code>publisher-identity</code> attestation.</p>
-<p>An accepted publisher endorsement of the artifact does not authenticate its
-policy links. Signing the catalog authenticates the URL strings in its
-policy extension, not the contents of documents served at those URLs.</p>
+object, which is outside its payload. Consumers MUST distinguish publisher
+authority established by the Publisher Profile from display metadata supplied
+or endorsed by another entity. This specification does not define a
+verification profile for a <code>publisher-identity</code> attestation.</p>
+<p>Policy URLs are carried in the <a href="#policy-urls-extension">Policy URLs extension</a>.
+Their authentication is optional through the ordinary extension-digest
+mechanism. An accepted publisher endorsement of the artifact does not imply
+that it authenticates the policy extension. A matching extension binding
+attributes its values to that manifest's contributor; it does not authenticate
+the contents of documents served at those URLs.</p>
 </section>
 <section id="verifying-artifact-integrity">
 <h3>Verifying Artifact Integrity</h3>
@@ -1441,8 +1506,10 @@ be a valid URL or a reverse-DNS string:</p>
 <li><strong>URL prefix</strong> for publicly accessible extension schemas:
   <code>https://cisco.com/extensions/security-scan</code>.</li>
 </ul>
-<p>Consumers that do not recognize an extension key MUST ignore it without
-throwing an error.</p>
+<p>Consumers that do not recognize an extension key MUST ignore its semantics
+without throwing an error. They MUST retain its value when constructing a
+signed payload and apply <a href="#extension-digest-verification">Extension Digest Verification</a>
+when evaluating its authentication through a manifest.</p>
 <p>For example, a catalog entry with <code>extensions</code> representing metadata and a custom schema:</p>
 <pre><code class="language-json">{
   &quot;specVersion&quot;: &quot;0.9&quot;,
@@ -1500,9 +1567,10 @@ are OPTIONAL:</p>
 <p>A publisher or catalog operator MAY populate this extension. An operator's
 own catalog policy is not a substitute for the artifact's governing policy.
 The extension's presence does not establish who authenticated its values.</p>
-<p>A Trust Manifest signature does not authenticate this extension. A catalog
-signature covers its complete value as part of the catalog snapshot, subject
-to <a href="#catalog-authorization">Catalog Authorization</a>. Signing authenticates
+<p>A contributor MAY authenticate the complete extension value through
+<code>subject.extensionDigests</code>, as specified in
+<a href="#extension-digest-verification">Extension Digest Verification</a>. No profile
+defined by this specification requires this coverage. Signing authenticates
 the URL strings, not the contents of policy documents that can change at
 those URLs. Consumers fetching those documents MUST follow
 <a href="#safe-fetching">Safe Fetching</a>.</p>
@@ -2015,6 +2083,7 @@ classDiagram
         type string
         digest string
         version string
+        extensionDigests object
     }
     class TrustSchema {
         identifier string
@@ -2195,7 +2264,8 @@ Subject = {
   identifier: text,
   type: text,
   digest: text,
-  ? version: text
+  ? version: text,
+  ? extensionDigests: { * text =&gt; text }
 }
 
 Signature = {
