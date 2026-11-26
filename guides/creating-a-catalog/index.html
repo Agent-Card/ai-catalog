@@ -1517,6 +1517,11 @@
 <dt><code>extensions</code></dt>
 <dd>A map of custom or vendor-specific extensions, keyed by a URL or reverse-DNS name. See <a href="#extensions">Extensions</a>.</dd>
 </dl>
+<p>The complete catalog must be valid input to JCS (RFC 8785), even when
+unsigned, so others can import its entries or embed the catalog without
+introducing canonicalization problems. This applies to all values, including
+extensions and inline artifacts. You do not need to serialize the JSON in
+canonical form.</p>
 <h2 id="adding-a-host-object">Adding a <code>host</code> object<a class="headerlink" href="#adding-a-host-object" title="Permanent link">&para;</a></h2>
 <p>The <code>host</code> object identifies who operates the catalog. Adding it upgrades you to Level 2 (Discoverable):</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
@@ -1715,7 +1720,7 @@
 <dt><code>url</code></dt>
 <dd>A URL where clients fetch the full artifact. The server at that URL should respond with the content type declared in <code>type</code>. This is the recommended approach for most cases.</dd>
 <dt><code>data</code></dt>
-<dd>The complete artifact document embedded directly as a JSON value. The structure is determined by the <code>type</code> field and is opaque to the AI Catalog spec.</dd>
+<dd>The complete artifact document embedded directly as a JSON value. The structure is determined by the <code>type</code> field and is opaque to the AI Catalog spec. Like all catalog data, the value must be valid input to JCS; canonical serialization is not required.</dd>
 </dl>
 <p><strong>Use <code>url</code> when:</strong>
 - The artifact is large
