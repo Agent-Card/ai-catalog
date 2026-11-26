@@ -1320,9 +1320,11 @@ are the catalog entries; each entry's artifact is the Resource document.</p>
 <p><strong>Trust Manifests</strong> are carried as an array in a Resource
    extension attribute (for example <code>aicatalog_trustmanifests</code>), or as related
    Resources referenced from <code>meta.xref</code>, preserving each manifest, including
-   its contributor, subject, and signature. Carry <code>entry.digest</code> separately,
+   its contributor, subject, and signature. Carry <code>entry.digest</code>, when present, separately,
    for example as <code>aicatalog_digest</code>. Preserve the signed manifest contents
-   so signature payloads can be reconstructed unchanged.</p>
+   so signature payloads can be reconstructed unchanged. Preserve any selected
+   <code>subject.url</code> as the reconstructed <code>entry.url</code>; URL-only binding does not
+   authenticate the bytes of the Resource document.</p>
 </li>
 <li>
 <p><strong>Nested catalog entries</strong> become nested Groups; the parent entry's
@@ -1343,7 +1345,7 @@ are the catalog entries; each entry's artifact is the Resource document.</p>
 <li>Restore <code>trustManifests</code> and <code>digest</code>
    from their extension attributes or related Resources, then verify the
    signatures and signed artifact bindings against the reconstructed entry
-   and served bytes.</li>
+   and, when a digest is present, served bytes.</li>
 <li>Resolve <code>xref</code>'d nested Groups into nested catalog entries.</li>
 <li>Assemble the logical <code>application/ai-catalog+json</code> document.</li>
 </ol>
